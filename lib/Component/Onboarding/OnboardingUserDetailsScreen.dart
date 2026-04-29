@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:igit_connects/Storage_Backend.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../Screens/FacultyVerificationScreen.dart';
 import '../AppColour.dart';
 import '../../MainScreen.dart';
 
@@ -58,6 +61,8 @@ class _OnboardingUserDetailsScreenState
   String designation = "";
   String phone = "";
 
+  String? facultyProof;
+
   @override
   void initState() {
     super.initState();
@@ -72,7 +77,9 @@ class _OnboardingUserDetailsScreenState
   void detectRole() {
     if (graduatingYear == null) return;
 
-    final currentYear = DateTime.now().year;
+    final currentYear = DateTime
+        .now()
+        .year;
 
     setState(() {
       userType = graduatingYear! <= currentYear ? "alumni" : "student";
@@ -102,29 +109,30 @@ class _OnboardingUserDetailsScreenState
     await Supabase.instance.client
         .from("users")
         .update({
-          "user_type": userType,
-          "college": college,
+      "user_type": userType,
+      "college": college,
 
-          if (widget.userMode == "student") ...{
-            "branch": branch,
-            "stream": stream,
-            "graduating_year": graduatingYear,
-            "department": null,
-            "designation": null,
-            "phone": null,
-          },
+      if (widget.userMode == "student") ...{
+        "branch": branch,
+        "stream": stream,
+        "graduating_year": graduatingYear,
+        "department": null,
+        "designation": null,
+        "phone": null,
+      },
 
-          if (widget.userMode == "faculty") ...{
-            "branch": null,
-            "stream": null,
-            "graduating_year": null,
-            "department": department,
-            "designation": designation,
-            "phone": phone,
-          },
+      if (widget.userMode == "faculty") ...{
+        "branch": null,
+        "stream": null,
+        "graduating_year": null,
+        "department": department,
+        "designation": designation,
+        "phone": phone,
+        "faculty_proof":facultyProof
+      },
 
-          "profile_completed": true,
-        })
+      "profile_completed": true,
+    })
         .eq("id", uid);
 
     final prefs = await SharedPreferences.getInstance();
@@ -138,6 +146,9 @@ class _OnboardingUserDetailsScreenState
       MaterialPageRoute(builder: (_) => const MainScreen()),
     );
   }
+
+  String? imageUrl;
+  bool isProofUploaded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -205,8 +216,8 @@ class _OnboardingUserDetailsScreenState
                           items: branches
                               .map(
                                 (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)),
-                              )
+                                DropdownMenuItem(value: e, child: Text(e)),
+                          )
                               .toList(),
                           onChanged: (v) {
                             setState(() {
@@ -225,8 +236,8 @@ class _OnboardingUserDetailsScreenState
                           items: streams
                               .map(
                                 (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)),
-                              )
+                                DropdownMenuItem(value: e, child: Text(e)),
+                          )
                               .toList(),
                           onChanged: (v) {
                             setState(() {
@@ -244,11 +255,12 @@ class _OnboardingUserDetailsScreenState
                           decoration: inputStyle("Graduating Year"),
                           items: years
                               .map(
-                                (e) => DropdownMenuItem(
+                                (e) =>
+                                DropdownMenuItem(
                                   value: e,
                                   child: Text("$e"),
                                 ),
-                              )
+                          )
                               .toList(),
                           onChanged: (v) {
                             graduatingYear = v;
@@ -266,8 +278,8 @@ class _OnboardingUserDetailsScreenState
                           items: departments
                               .map(
                                 (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)),
-                              )
+                                DropdownMenuItem(value: e, child: Text(e)),
+                          )
                               .toList(),
                           onChanged: (v) {
                             setState(() {
@@ -292,10 +304,85 @@ class _OnboardingUserDetailsScreenState
                           style: const TextStyle(color: AppColours.primaryText),
                           decoration: inputStyle("Phone"),
                         ),
+
+                        const SizedBox(height: 12),
+
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.red),
+                            color: AppColours.cardColor,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'Faculty Verification Required\nPlease submit a live photo for verification. Our team will review it securely and verify your faculty account within 48 hours.',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        SizedBox(
+                          width: 200,
+                          height: 54,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (
+                                      _) => const FacultyVerificationScreen(),
+                                ),
+                              );
+
+                              if (result != null) {
+                                setState(() {
+                                  isProofUploaded = true;
+                                  facultyProof = result;
+                                });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isProofUploaded
+                                  ? Colors.green
+                                  : AppColours.primaryText,
+                              foregroundColor: isProofUploaded
+                                  ? Colors.white
+                                  : Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (isProofUploaded) ...[
+                                  const Icon(Icons.check_circle, size: 22),
+                                  const SizedBox(width: 8),
+                                ],
+                                Text(
+                                  isProofUploaded ? "Uploaded" : "Upload Proof",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+
                       ],
 
-                      const SizedBox(height: 24),
-
+                      //const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         height: 54,
