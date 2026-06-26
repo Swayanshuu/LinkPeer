@@ -1,5 +1,3 @@
-// create_post_screen.dart
-
 import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,7 +7,7 @@ import 'package:igit_connects/Storage_Backend.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../Component/AppColour.dart';
+import '../../Component/app_colors.dart';
 import '../../Component/CreatePost/CreatePostInputCard.dart';
 import '../../Component/CreatePost/CreatePostLivePreview.dart';
 import '../../Component/CreatePost/CreatePostTopSection.dart';
@@ -116,53 +114,37 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final user = ref.watch(userProvider);
 
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       floatingActionButton: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // SizedBox(width: 40),
-          //
-          // // PICK IMAGE BUTTON
-          // FloatingActionButton.extended(
-          //   icon: const Icon(Icons.post_add),
-          //   label: Text("Pick Image"),
-          //   backgroundColor: AppColours.primaryText,
-          //
-          //   foregroundColor: Colors.black,
-          //
-          //   elevation: 0,
-          //   onPressed: () async {
-          //     XFile? image = await StorageBackend().pickImage();
-          //     if (image == null) return;
-          //
-          //     Uint8List url = await StorageBackend().uploadImage(image);
-          //     imageBytes = url;
-          //     setState(() {});
-          //   },
-          // ),
-
-          Spacer(),
+          const Spacer(),
 
           FloatingActionButton.extended(
             onPressed: posting ? null : createPost,
 
-            backgroundColor: AppColours.primaryText,
+            backgroundColor: colors.primaryText,
 
-            foregroundColor: Colors.black,
+            foregroundColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black
+                : Colors.white,
 
             elevation: 0,
 
             icon: posting
-                ? const SizedBox(
+                ? SizedBox(
                     height: 18,
                     width: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.black,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.black
+                          : Colors.white,
                     ),
                   )
                 : const Icon(Icons.send_rounded),
@@ -182,8 +164,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           child: user.when(
             loading: () => const Center(child: CircularProgressIndicator()),
 
-            error: (e, s) => const Center(
-              child: Text("Error", style: TextStyle(color: Colors.white)),
+            error: (e, s) => Center(
+              child: Text("Error", style: TextStyle(color: colors.primaryText)),
             ),
 
             data: (data) {
@@ -236,11 +218,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       content: content.text,
                       link: link.text,
                     ),
-
-                    // // showing image from supabase
-                    // imageBytes != null
-                    //     ? Image.memory(imageBytes!)
-                    //     : SizedBox(),
                   ],
                 ),
               );

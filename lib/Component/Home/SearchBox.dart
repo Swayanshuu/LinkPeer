@@ -1,34 +1,28 @@
 import 'package:flutter/material.dart';
-import '../AppColour.dart';
+import '../app_colors.dart';
 
 class SearchBox extends StatelessWidget {
   const SearchBox({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Container(
       height: 54,
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 14,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: AppColours.cardColor,
-        borderRadius:
-        BorderRadius.circular(18),
+        color: colors.cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colors.borderColor),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.search,
-              color:
-              AppColours.secondaryText),
-          SizedBox(width: 10),
+          Icon(Icons.search, color: colors.secondaryText),
+          const SizedBox(width: 10),
           Text(
             "Search jobs, alumni...",
-            style: TextStyle(
-              color:
-              AppColours.secondaryText,
-            ),
+            style: TextStyle(color: colors.secondaryText),
           ),
         ],
       ),

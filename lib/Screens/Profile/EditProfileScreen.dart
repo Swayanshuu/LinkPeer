@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../Component/AppColour.dart';
+import '../../Component/app_colors.dart';
 import '../../Controllers/UserProvider.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -42,6 +42,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget field({
+    required BuildContext context,
+    required AppColors colors,
     required String label,
     required TextEditingController controller,
     TextInputType keyboard = TextInputType.text,
@@ -51,15 +53,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       child: TextField(
         controller: controller,
         keyboardType: keyboard,
-        style: const TextStyle(color: AppColours.primaryText),
+        style: TextStyle(color: colors.primaryText),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: AppColours.secondaryText),
+          labelStyle: TextStyle(color: colors.secondaryText),
           filled: true,
-          fillColor: AppColours.cardColor,
+          fillColor: colors.cardColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(color: colors.borderColor),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(color: colors.primaryText),
           ),
         ),
       ),
@@ -110,35 +120,39 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(userProvider);
 
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColours.bgColor,
-        title: const Text(
+        backgroundColor: colors.bgColor,
+        iconTheme: IconThemeData(color: colors.primaryText),
+        title: Text(
           "Edit Profile",
-          style: TextStyle(color: AppColours.primaryText),
+          style: TextStyle(color: colors.primaryText),
         ),
       ),
+
       floatingActionButton: FloatingActionButton.extended(
         elevation: 10,
-        backgroundColor: AppColours.primaryText,
-        foregroundColor: AppColours.cardColor,
+        backgroundColor: colors.primaryText,
+        foregroundColor: isDark ? colors.cardColor : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColours.borderColor),
+          side: BorderSide(color: colors.borderColor),
         ),
         icon: const Icon(Icons.cloud_download, size: 18),
         label: saving
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.black,
+                  color: isDark ? Colors.black : Colors.white,
                 ),
               )
             : const Text(
@@ -174,62 +188,60 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             padding: const EdgeInsets.all(18),
             child: Column(
               children: [
-                field(label: "Full Name", controller: nameController),
+                field(
+                  context: context,
+                  colors: colors,
+                  label: "Full Name",
+                  controller: nameController,
+                ),
 
                 field(
+                  context: context,
+                  colors: colors,
                   label: "Phone",
                   controller: phoneController,
                   keyboard: TextInputType.phone,
                 ),
 
                 if (userType == "faculty") ...[
-                  field(label: "Department", controller: departmentController),
+                  field(
+                    context: context,
+                    colors: colors,
+                    label: "Department",
+                    controller: departmentController,
+                  ),
 
                   field(
+                    context: context,
+                    colors: colors,
                     label: "Designation",
                     controller: designationController,
                   ),
                 ] else ...[
-                  field(label: "Branch", controller: branchController),
-
-                  field(label: "Stream", controller: streamController),
+                  field(
+                    context: context,
+                    colors: colors,
+                    label: "Branch",
+                    controller: branchController,
+                  ),
 
                   field(
+                    context: context,
+                    colors: colors,
+                    label: "Stream",
+                    controller: streamController,
+                  ),
+
+                  field(
+                    context: context,
+                    colors: colors,
                     label: "Graduating Year",
                     controller: yearController,
                     keyboard: TextInputType.number,
                   ),
                 ],
 
-                const SizedBox(height: 20),
-
-                // SizedBox(
-                //   width: double.infinity,
-                //   height: 54,
-                //   child: ElevatedButton(
-                //     onPressed: saving ? null : save,
-                //     style: ElevatedButton.styleFrom(
-                //       backgroundColor: AppColours.primaryText,
-                //       foregroundColor: Colors.black,
-                //       shape: RoundedRectangleBorder(
-                //         borderRadius: BorderRadius.circular(18),
-                //       ),
-                //     ),
-                //     child: saving
-                //         ? const SizedBox(
-                //             width: 20,
-                //             height: 20,
-                //             child: CircularProgressIndicator(
-                //               strokeWidth: 2,
-                //               color: Colors.black,
-                //             ),
-                //           )
-                //         : const Text(
-                //             "Save Changes",
-                //             style: TextStyle(fontWeight: FontWeight.bold),
-                //           ),
-                //   ),
-                // ),
+                const SizedBox(height: 80),
               ],
             ),
           );
@@ -237,7 +249,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
         loading: () => const Center(child: CircularProgressIndicator()),
 
-        error: (e, s) => const Center(child: Text("Failed to load profile")),
+        error: (e, s) => Center(
+          child: Text(
+            "Failed to load profile",
+            style: TextStyle(color: colors.primaryText),
+          ),
+        ),
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../Component/AppColour.dart';
+import '../../Component/app_colors.dart';
 import '../../Component/HashtagText.dart';
 
 class EditPostScreen extends ConsumerStatefulWidget {
@@ -99,7 +99,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     }
   }
 
-  Widget chip(String type) {
+  Widget chip(String type, AppColors colors) {
     final selected = postType == type;
 
     return GestureDetector(
@@ -112,14 +112,14 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? typeColor() : AppColours.cardColor,
+          color: selected ? typeColor() : colors.cardColor,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColours.borderColor),
+          border: Border.all(color: colors.borderColor),
         ),
         child: Text(
           type.toUpperCase(),
-          style: const TextStyle(
-            color: AppColours.primaryText,
+          style: TextStyle(
+            color: selected ? Colors.white : colors.primaryText,
             fontWeight: FontWeight.bold,
             fontSize: 11,
           ),
@@ -130,15 +130,19 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       appBar: AppBar(
-        backgroundColor: AppColours.bgColor,
+        backgroundColor: colors.bgColor,
         elevation: 0,
-        title: const Text(
+        iconTheme: IconThemeData(color: colors.primaryText),
+        title: Text(
           "Edit Post",
-          style: TextStyle(color: AppColours.primaryText),
+          style: TextStyle(color: colors.primaryText),
         ),
       ),
 
@@ -150,11 +154,12 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
             children: [
               TextField(
                 controller: title,
-                style: const TextStyle(color: AppColours.primaryText),
+                style: TextStyle(color: colors.primaryText),
                 decoration: InputDecoration(
                   hintText: "Title",
+                  hintStyle: TextStyle(color: colors.secondaryText),
                   filled: true,
-                  fillColor: AppColours.cardColor,
+                  fillColor: colors.cardColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
                     borderSide: BorderSide.none,
@@ -167,11 +172,12 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
               TextField(
                 controller: content,
                 maxLines: 6,
-                style: const TextStyle(color: AppColours.primaryText),
+                style: TextStyle(color: colors.primaryText),
                 decoration: InputDecoration(
                   hintText: "Write here...",
+                  hintStyle: TextStyle(color: colors.secondaryText),
                   filled: true,
-                  fillColor: AppColours.cardColor,
+                  fillColor: colors.cardColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
                     borderSide: BorderSide.none,
@@ -183,11 +189,12 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
 
               TextField(
                 controller: link,
-                style: const TextStyle(color: AppColours.primaryText),
+                style: TextStyle(color: colors.primaryText),
                 decoration: InputDecoration(
                   hintText: "Link",
+                  hintStyle: TextStyle(color: colors.secondaryText),
                   filled: true,
-                  fillColor: AppColours.cardColor,
+                  fillColor: colors.cardColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
                     borderSide: BorderSide.none,
@@ -201,20 +208,20 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    chip("normal"),
-                    chip("job"),
-                    chip("announcement"),
-                    chip("internship"),
+                    chip("normal", colors),
+                    chip("job", colors),
+                    chip("announcement", colors),
+                    chip("internship", colors),
                   ],
                 ),
               ),
 
               const SizedBox(height: 22),
 
-              const Text(
+              Text(
                 "Preview",
                 style: TextStyle(
-                  color: AppColours.primaryText,
+                  color: colors.primaryText,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -226,8 +233,9 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: AppColours.cardColor,
+                  color: colors.cardColor,
                   borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: colors.borderColor),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,8 +264,8 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                     if (title.text.isNotEmpty)
                       Text(
                         title.text,
-                        style: const TextStyle(
-                          color: AppColours.primaryText,
+                        style: TextStyle(
+                          color: colors.primaryText,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
@@ -282,19 +290,19 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
             child: ElevatedButton(
               onPressed: loading ? null : savePost,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColours.primaryText,
-                foregroundColor: Colors.black,
+                backgroundColor: colors.primaryText,
+                foregroundColor: isDark ? Colors.black : Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
               child: loading
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.black,
+                        color: isDark ? Colors.black : Colors.white,
                       ),
                     )
                   : const Text(

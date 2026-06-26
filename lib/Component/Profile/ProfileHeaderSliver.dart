@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../AppColour.dart';
+import '../app_colors.dart';
 import 'ProfileGridPainter.dart';
 import '../../Controllers/UserProvider.dart';
 import '../../Screens/Profile/EditProfileScreen.dart';
@@ -23,6 +23,9 @@ class ProfileHeaderSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final name = data["name"] ?? "User";
 
     final email = data["email"] ?? "";
@@ -33,7 +36,7 @@ class ProfileHeaderSliver extends StatelessWidget {
       stretch: true,
       expandedHeight: 350,
       elevation: 0,
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       flexibleSpace: FlexibleSpaceBar(
         background: ClipRRect(
@@ -45,11 +48,23 @@ class ProfileHeaderSliver extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Container(color: AppColours.bgColor),
+              Container(color: colors.bgColor),
 
-              CustomPaint(painter: GridLinePainter()),
+              CustomPaint(
+                painter: GridLinePainter(
+                  // dark → faint white lines; light → faint black lines
+                  color: isDark
+                      ? Colors.white.withOpacity(0.07)
+                      : Colors.black.withOpacity(0.07),
+                ),
+              ),
 
-              Container(color: Colors.black.withOpacity(0.18)),
+              // Overlay adapts: darker for dark theme, lighter for light theme
+              Container(
+                color: isDark
+                    ? Colors.black.withOpacity(0.18)
+                    : Colors.black.withOpacity(0.06),
+              ),
 
               SafeArea(
                 child: Padding(
@@ -63,10 +78,10 @@ class ProfileHeaderSliver extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                         children: [
-                          const Text(
+                          Text(
                             "Profile",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: colors.primaryText,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
@@ -87,12 +102,14 @@ class ProfileHeaderSliver extends StatelessWidget {
                             },
 
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColours.primaryText,
+                              foregroundColor: colors.primaryText,
 
-                              backgroundColor: Colors.white.withOpacity(0.06),
+                              backgroundColor: isDark
+                                  ? Colors.white.withOpacity(0.06)
+                                  : Colors.black.withOpacity(0.06),
 
-                              side: const BorderSide(
-                                color: Colors.white24,
+                              side: BorderSide(
+                                color: isDark ? Colors.white24 : Colors.black26,
                                 width: 1,
                               ),
 
@@ -108,16 +125,17 @@ class ProfileHeaderSliver extends StatelessWidget {
                               ),
                             ),
 
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.edit_outlined, size: 16),
+                                Icon(Icons.edit_outlined, size: 16, color: colors.primaryText),
 
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
 
                                 Text(
                                   "Edit",
                                   style: TextStyle(
+                                    color: colors.primaryText,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 13,
                                   ),
@@ -136,7 +154,7 @@ class ProfileHeaderSliver extends StatelessWidget {
                             ? NetworkImage(photo)
                             : null,
                         child: photo.toString().isEmpty
-                            ? const Icon(Icons.person)
+                            ? Icon(Icons.person, color: colors.primaryText)
                             : null,
                       ),
 
@@ -144,8 +162,8 @@ class ProfileHeaderSliver extends StatelessWidget {
 
                       Text(
                         name,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: colors.primaryText,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -155,7 +173,7 @@ class ProfileHeaderSliver extends StatelessWidget {
 
                       Text(
                         email,
-                        style: const TextStyle(color: Colors.white70),
+                        style: TextStyle(color: colors.secondaryText),
                       ),
 
                       const SizedBox(height: 18),

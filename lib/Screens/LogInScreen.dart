@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../Component/AppColour.dart';
+import '../Component/app_colors.dart';
 import '../Controllers/AuthGate.dart';
 import '../Controllers/GoogleAuthController.dart';
 
@@ -43,8 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       body: SafeArea(
         child: Padding(
@@ -56,14 +59,14 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const Spacer(),
 
-              const Icon(Icons.school, size: 90, color: AppColours.primaryText),
+              Icon(Icons.school, size: 90, color: colors.primaryText),
 
               const SizedBox(height: 18),
 
-              const Text(
+              Text(
                 "IGIT Connects",
                 style: TextStyle(
-                  color: AppColours.primaryText,
+                  color: colors.primaryText,
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
                 ),
@@ -71,10 +74,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 10),
 
-              const Text(
+              Text(
                 "Connect Students, Alumni & Faculty",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColours.secondaryText, fontSize: 15),
+                style: TextStyle(color: colors.secondaryText, fontSize: 15),
               ),
 
               const Spacer(),
@@ -87,20 +90,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: loading ? null : () => login("student"),
 
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColours.primaryText,
-                    foregroundColor: Colors.black,
+                    backgroundColor: colors.primaryText,
+                    foregroundColor: isDark ? Colors.black : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
 
                   child: loading
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 22,
                           width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.black,
+                            color: isDark ? Colors.black : Colors.white,
                           ),
                         )
                       : const Text(
@@ -120,16 +123,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: loading ? null : () => login("faculty"),
 
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColours.borderColor),
+                    side: BorderSide(color: colors.borderColor),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
 
-                  child: const Text(
+                  child: Text(
                     "Faculty Login",
                     style: TextStyle(
-                      color: AppColours.primaryText,
+                      color: colors.primaryText,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -138,10 +141,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 22),
 
-              const Text(
+              Text(
                 "By continuing you agree to community guidelines.",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColours.secondaryText, fontSize: 12),
+                style: TextStyle(color: colors.secondaryText, fontSize: 12),
               ),
             ],
           ),

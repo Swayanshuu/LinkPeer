@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Component/AppColour.dart';
+import 'Component/app_colors.dart';
 import 'Screens/HomeScreen.dart';
 import 'Screens/SearchScreen.dart';
 import 'Screens/Post/CreatePostScreen.dart';
@@ -24,8 +24,10 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       body: IndexedStack(
         index: currentIndex,
@@ -39,9 +41,9 @@ class _MainScreenState extends State<MainScreen> {
             currentIndex = value;
           });
         },
-        backgroundColor: AppColours.cardColor,
-        selectedItemColor: AppColours.primaryText,
-        unselectedItemColor: AppColours.secondaryText,
+        backgroundColor: colors.cardColor,
+        selectedItemColor: colors.primaryText,
+        unselectedItemColor: colors.secondaryText,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(

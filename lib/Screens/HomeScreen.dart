@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../Component/AppColour.dart';
+import '../Component/app_colors.dart';
 import '../Component/Home/FeedFilterBar.dart';
 import '../Component/Home/HomeHeader.dart';
 import '../Component/Home/PostCard.dart';
@@ -64,20 +64,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(userProvider);
 
     final posts = ref.watch(postsProvider);
 
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       floatingActionButton: showFab
           ? FloatingActionButton(
               onPressed: scrollToTop,
 
-              backgroundColor: AppColours.primaryText,
+              backgroundColor: colors.primaryText,
 
-              foregroundColor: Colors.black,
+              // dark mode → primaryText is near-white → black icon readable
+              // light mode → primaryText is near-black → white icon readable
+              foregroundColor: isDark ? Colors.black : Colors.white,
 
               child: const Icon(Icons.keyboard_arrow_up_rounded, size: 30),
             )
@@ -87,8 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: user.when(
           loading: () => const Center(child: CircularProgressIndicator()),
 
-          error: (e, s) => const Center(
-            child: Text("Error", style: TextStyle(color: Colors.white)),
+          error: (e, s) => Center(
+            child: Text("Error", style: TextStyle(color: colors.primaryText)),
           ),
 
           data: (me) => RefreshIndicator(
@@ -96,9 +100,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onRefresh: () async {
               ref.refresh(postsProvider);
             },
-            color: Colors.black,
-            backgroundColor:
-            AppColours.primaryText,
+            color: isDark ? Colors.black : Colors.white,
+            backgroundColor: colors.primaryText,
 
             strokeWidth: 2.8,
 
@@ -133,10 +136,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                   const SizedBox(height: 20),
 
-                  const Text(
+                  Text(
                     "Latest Posts",
                     style: TextStyle(
-                      color: AppColours.primaryText,
+                      color: colors.primaryText,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
@@ -148,11 +151,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
 
-                    error: (e, s) => const Padding(
-                      padding: EdgeInsets.only(top: 20),
+                    error: (e, s) => Padding(
+                      padding: const EdgeInsets.only(top: 20),
                       child: Text(
                         "Error loading posts",
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: colors.primaryText),
                       ),
                     ),
 
@@ -168,12 +171,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 .toList();
 
                       if (filtered.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.only(top: 30),
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 30),
                           child: Center(
                             child: Text(
                               "No posts found",
-                              style: TextStyle(color: AppColours.secondaryText),
+                              style: TextStyle(color: colors.secondaryText),
                             ),
                           ),
                         );

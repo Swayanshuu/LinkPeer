@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../Screens/FacultyVerificationScreen.dart';
-import '../AppColour.dart';
+import '../app_colors.dart';
 import '../../MainScreen.dart';
 
 class OnboardingUserDetailsScreen extends StatefulWidget {
@@ -22,27 +22,12 @@ class OnboardingUserDetailsScreen extends StatefulWidget {
 class _OnboardingUserDetailsScreenState
     extends State<OnboardingUserDetailsScreen> {
   final departments = [
-    "CSE",
-    "ECE",
-    "EEE",
-    "Mechanical",
-    "Civil",
-    "Production",
-    "Chemical",
-    "Mathematics",
-    "Physics",
-    "Chemistry",
-    "Humanities",
+    "CSE", "ECE", "EEE", "Mechanical", "Civil",
+    "Production", "Chemical", "Mathematics", "Physics", "Chemistry", "Humanities",
   ];
 
   final branches = [
-    "CSE",
-    "ECE",
-    "EEE",
-    "Mechanical",
-    "Civil",
-    "Production",
-    "Chemical",
+    "CSE", "ECE", "EEE", "Mechanical", "Civil", "Production", "Chemical",
   ];
 
   final streams = ["BTech", "MTech", "MCA"];
@@ -77,28 +62,26 @@ class _OnboardingUserDetailsScreenState
   void detectRole() {
     if (graduatingYear == null) return;
 
-    final currentYear = DateTime
-        .now()
-        .year;
+    final currentYear = DateTime.now().year;
 
     setState(() {
       userType = graduatingYear! <= currentYear ? "alumni" : "student";
     });
   }
 
-  InputDecoration inputStyle(String label) {
+  InputDecoration inputStyle(String label, AppColors colors) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: AppColours.secondaryText),
+      labelStyle: TextStyle(color: colors.secondaryText),
       filled: true,
-      fillColor: AppColours.cardColor,
+      fillColor: colors.cardColor,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: AppColours.borderColor),
+        borderSide: BorderSide(color: colors.borderColor),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: AppColours.primaryText),
+        borderSide: BorderSide(color: colors.primaryText),
       ),
     );
   }
@@ -128,7 +111,7 @@ class _OnboardingUserDetailsScreenState
         "department": department,
         "designation": designation,
         "phone": phone,
-        "faculty_proof":facultyProof
+        "faculty_proof": facultyProof
       },
 
       "profile_completed": true,
@@ -152,10 +135,12 @@ class _OnboardingUserDetailsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFaculty = widget.userMode == "faculty";
 
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       body: SafeArea(
         child: Padding(
@@ -169,14 +154,14 @@ class _OnboardingUserDetailsScreenState
                 width: double.infinity,
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: AppColours.cardColor,
+                  color: colors.cardColor,
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: AppColours.borderColor),
+                  border: Border.all(color: colors.borderColor),
                 ),
                 child: Text(
                   isFaculty ? "Faculty Profile" : "Complete Profile",
-                  style: const TextStyle(
-                    color: AppColours.primaryText,
+                  style: TextStyle(
+                    color: colors.primaryText,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
@@ -192,8 +177,8 @@ class _OnboardingUserDetailsScreenState
                       TextFormField(
                         readOnly: true,
                         initialValue: userType,
-                        style: const TextStyle(color: AppColours.primaryText),
-                        decoration: inputStyle("User Type"),
+                        style: TextStyle(color: colors.primaryText),
+                        decoration: inputStyle("User Type", colors),
                       ),
 
                       const SizedBox(height: 12),
@@ -201,8 +186,8 @@ class _OnboardingUserDetailsScreenState
                       TextFormField(
                         readOnly: true,
                         initialValue: college,
-                        style: const TextStyle(color: AppColours.primaryText),
-                        decoration: inputStyle("College"),
+                        style: TextStyle(color: colors.primaryText),
+                        decoration: inputStyle("College", colors),
                       ),
 
                       const SizedBox(height: 12),
@@ -210,9 +195,9 @@ class _OnboardingUserDetailsScreenState
                       if (!isFaculty) ...[
                         DropdownButtonFormField<String>(
                           value: branch,
-                          dropdownColor: AppColours.cardColor,
-                          style: const TextStyle(color: AppColours.primaryText),
-                          decoration: inputStyle("Branch"),
+                          dropdownColor: colors.cardColor,
+                          style: TextStyle(color: colors.primaryText),
+                          decoration: inputStyle("Branch", colors),
                           items: branches
                               .map(
                                 (e) =>
@@ -230,9 +215,9 @@ class _OnboardingUserDetailsScreenState
 
                         DropdownButtonFormField<String>(
                           value: stream,
-                          dropdownColor: AppColours.cardColor,
-                          style: const TextStyle(color: AppColours.primaryText),
-                          decoration: inputStyle("Stream"),
+                          dropdownColor: colors.cardColor,
+                          style: TextStyle(color: colors.primaryText),
+                          decoration: inputStyle("Stream", colors),
                           items: streams
                               .map(
                                 (e) =>
@@ -250,9 +235,9 @@ class _OnboardingUserDetailsScreenState
 
                         DropdownButtonFormField<int>(
                           value: graduatingYear,
-                          dropdownColor: AppColours.cardColor,
-                          style: const TextStyle(color: AppColours.primaryText),
-                          decoration: inputStyle("Graduating Year"),
+                          dropdownColor: colors.cardColor,
+                          style: TextStyle(color: colors.primaryText),
+                          decoration: inputStyle("Graduating Year", colors),
                           items: years
                               .map(
                                 (e) =>
@@ -272,9 +257,9 @@ class _OnboardingUserDetailsScreenState
                       if (isFaculty) ...[
                         DropdownButtonFormField<String>(
                           value: department,
-                          dropdownColor: AppColours.cardColor,
-                          style: const TextStyle(color: AppColours.primaryText),
-                          decoration: inputStyle("Department"),
+                          dropdownColor: colors.cardColor,
+                          style: TextStyle(color: colors.primaryText),
+                          decoration: inputStyle("Department", colors),
                           items: departments
                               .map(
                                 (e) =>
@@ -292,8 +277,8 @@ class _OnboardingUserDetailsScreenState
 
                         TextFormField(
                           onChanged: (v) => designation = v,
-                          style: const TextStyle(color: AppColours.primaryText),
-                          decoration: inputStyle("Designation"),
+                          style: TextStyle(color: colors.primaryText),
+                          decoration: inputStyle("Designation", colors),
                         ),
 
                         const SizedBox(height: 12),
@@ -301,8 +286,8 @@ class _OnboardingUserDetailsScreenState
                         TextFormField(
                           keyboardType: TextInputType.phone,
                           onChanged: (v) => phone = v,
-                          style: const TextStyle(color: AppColours.primaryText),
-                          decoration: inputStyle("Phone"),
+                          style: TextStyle(color: colors.primaryText),
+                          decoration: inputStyle("Phone", colors),
                         ),
 
                         const SizedBox(height: 12),
@@ -312,7 +297,7 @@ class _OnboardingUserDetailsScreenState
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.red),
-                            color: AppColours.cardColor,
+                            color: colors.cardColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text(
@@ -336,8 +321,7 @@ class _OnboardingUserDetailsScreenState
                               final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (
-                                      _) => const FacultyVerificationScreen(),
+                                  builder: (_) => const FacultyVerificationScreen(),
                                 ),
                               );
 
@@ -351,10 +335,10 @@ class _OnboardingUserDetailsScreenState
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isProofUploaded
                                   ? Colors.green
-                                  : AppColours.primaryText,
+                                  : colors.primaryText,
                               foregroundColor: isProofUploaded
                                   ? Colors.white
-                                  : Colors.black,
+                                  : (isDark ? Colors.black : Colors.white),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18),
                               ),
@@ -378,19 +362,16 @@ class _OnboardingUserDetailsScreenState
                         ),
 
                         const SizedBox(height: 12),
-
-
                       ],
 
-                      //const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         height: 54,
                         child: ElevatedButton(
                           onPressed: save,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColours.primaryText,
-                            foregroundColor: Colors.black,
+                            backgroundColor: colors.primaryText,
+                            foregroundColor: isDark ? Colors.black : Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18),
                             ),

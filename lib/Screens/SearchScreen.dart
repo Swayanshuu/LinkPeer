@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../Component/AppColour.dart';
+import '../Component/app_colors.dart';
 import '../Component/Home/PostCard.dart';
 import '../Controllers/PostProvider.dart';
 
@@ -25,10 +25,11 @@ class _SearchscreenState extends ConsumerState<Searchscreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final posts = ref.watch(postsProvider);
 
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       body: SafeArea(
         child: Column(
@@ -44,16 +45,16 @@ class _SearchscreenState extends ConsumerState<Searchscreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 14),
 
                       decoration: BoxDecoration(
-                        color: AppColours.cardColor,
+                        color: colors.cardColor,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColours.borderColor),
+                        border: Border.all(color: colors.borderColor),
                       ),
 
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.search,
-                            color: AppColours.secondaryText,
+                            color: colors.secondaryText,
                           ),
 
                           const SizedBox(width: 10),
@@ -64,15 +65,15 @@ class _SearchscreenState extends ConsumerState<Searchscreen> {
 
                               autofocus: true,
 
-                              style: const TextStyle(
-                                color: AppColours.primaryText,
+                              style: TextStyle(
+                                color: colors.primaryText,
                               ),
 
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 border: InputBorder.none,
                                 hintText: "Search name, title, content...",
                                 hintStyle: TextStyle(
-                                  color: AppColours.secondaryText,
+                                  color: colors.secondaryText,
                                 ),
                               ),
 
@@ -94,9 +95,9 @@ class _SearchscreenState extends ConsumerState<Searchscreen> {
                                 });
                               },
 
-                              child: const Icon(
+                              child: Icon(
                                 Icons.close,
-                                color: AppColours.secondaryText,
+                                color: colors.secondaryText,
                               ),
                             ),
                         ],
@@ -120,14 +121,14 @@ class _SearchscreenState extends ConsumerState<Searchscreen> {
                       width: 44,
 
                       decoration: BoxDecoration(
-                        color: AppColours.cardColor,
+                        color: colors.cardColor,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColours.borderColor),
+                        border: Border.all(color: colors.borderColor),
                       ),
 
-                      child: const Icon(
+                      child: Icon(
                         Icons.close_rounded,
-                        color: AppColours.primaryText,
+                        color: colors.primaryText,
                         size: 22,
                       ),
                     ),
@@ -141,10 +142,10 @@ class _SearchscreenState extends ConsumerState<Searchscreen> {
               child: posts.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
 
-                error: (e, s) => const Center(
+                error: (e, s) => Center(
                   child: Text(
                     "Failed to load",
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: colors.primaryText),
                   ),
                 ),
 
@@ -170,19 +171,19 @@ class _SearchscreenState extends ConsumerState<Searchscreen> {
                         }).toList();
 
                   if (query.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
                         "Search posts by user, title or content",
-                        style: TextStyle(color: AppColours.secondaryText),
+                        style: TextStyle(color: colors.secondaryText),
                       ),
                     );
                   }
 
                   if (filtered.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
                         "No results found",
-                        style: TextStyle(color: AppColours.secondaryText),
+                        style: TextStyle(color: colors.secondaryText),
                       ),
                     );
                   }

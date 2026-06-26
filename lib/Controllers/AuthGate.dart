@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../Component/AppColour.dart';
+import '../Component/app_colors.dart';
 import '../Controllers/PostProvider.dart';
 import '../Controllers/UserProvider.dart';
 import '../Screens/LogInScreen.dart';
@@ -61,7 +61,6 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
     if (isProfileCompleted) {
       await prefs.setBool('profile_completed_$uid', true);
-
       _openMainScreen();
     } else {
       _openOnboarding();
@@ -78,7 +77,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   void _openOnboarding() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) =>  OnBoardingscreen(userMode: widget.userMode)),
+      MaterialPageRoute(builder: (_) => OnBoardingscreen(userMode: widget.userMode)),
     );
   }
 
@@ -91,22 +90,24 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.school, size: 70, color: AppColours.primaryText),
+              Icon(Icons.school, size: 70, color: colors.primaryText),
 
               const SizedBox(height: 18),
 
-              const Text(
+              Text(
                 "IGIT Connects",
                 style: TextStyle(
-                  color: AppColours.primaryText,
+                  color: colors.primaryText,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
@@ -114,10 +115,10 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
               const SizedBox(height: 8),
 
-              const Text(
+              Text(
                 "Connecting Students & Alumni",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColours.secondaryText),
+                style: TextStyle(color: colors.secondaryText),
               ),
 
               const SizedBox(height: 30),

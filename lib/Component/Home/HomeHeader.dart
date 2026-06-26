@@ -1,12 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../Controllers/AuthGate.dart';
 import '../../Controllers/PostProvider.dart';
 import '../../Controllers/UserProvider.dart';
-import '../AppColour.dart';
+import '../../Controllers/ThemeProvider.dart';
+import '../app_colors.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class HomeHeader extends ConsumerWidget {
   final Map me;
@@ -15,12 +16,15 @@ class HomeHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
+    final isDark = ref.watch(themeProvider) == ThemeMode.dark;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
 
       decoration: BoxDecoration(
-        color: AppColours.cardColor,
+        color: colors.cardColor,
 
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(18),
@@ -29,7 +33,7 @@ class HomeHeader extends ConsumerWidget {
           bottomRight: Radius.circular(28),
         ),
 
-        border: Border.all(color: AppColours.borderColor),
+        border: Border.all(color: colors.borderColor),
       ),
 
       child: Row(
@@ -38,10 +42,10 @@ class HomeHeader extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Welcome back",
                   style: TextStyle(
-                    color: AppColours.secondaryText,
+                    color: colors.secondaryText,
                     fontSize: 13,
                   ),
                 ),
@@ -53,8 +57,8 @@ class HomeHeader extends ConsumerWidget {
                   maxLines: 1,
                   minFontSize: 18,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColours.primaryText,
+                  style: TextStyle(
+                    color: colors.primaryText,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
@@ -65,12 +69,32 @@ class HomeHeader extends ConsumerWidget {
 
           const SizedBox(width: 14),
 
+          // Theme toggle button
+          GestureDetector(
+            onTap: () => ref.read(themeProvider.notifier).toggle(),
+            child: Container(
+              width: 38,
+              height: 38,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: colors.bgColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.borderColor),
+              ),
+              child: Icon(
+                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                color: colors.primaryText,
+                size: 20,
+              ),
+            ),
+          ),
+
           GestureDetector(
             onTap: () {
               showModalBottomSheet(
                 context: context,
 
-                backgroundColor: AppColours.cardColor,
+                backgroundColor: colors.cardColor,
 
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -88,7 +112,7 @@ class HomeHeader extends ConsumerWidget {
                             width: 42,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: AppColours.borderColor,
+                              color: colors.borderColor,
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
@@ -97,7 +121,7 @@ class HomeHeader extends ConsumerWidget {
 
                           CircleAvatar(
                             radius: 28,
-                            backgroundColor: AppColours.borderColor,
+                            backgroundColor: colors.borderColor,
                             backgroundImage:
                                 (me["photo_url"] != null &&
                                     me["photo_url"].toString().isNotEmpty)
@@ -106,9 +130,9 @@ class HomeHeader extends ConsumerWidget {
                             child:
                                 (me["photo_url"] == null ||
                                     me["photo_url"].toString().isEmpty)
-                                ? const Icon(
+                                ? Icon(
                                     Icons.verified_user,
-                                    color: AppColours.primaryText,
+                                    color: colors.primaryText,
                                   )
                                 : null,
                           ),
@@ -117,14 +141,43 @@ class HomeHeader extends ConsumerWidget {
 
                           Text(
                             me["name"] ?? "User",
-                            style: const TextStyle(
-                              color: AppColours.primaryText,
+                            style: TextStyle(
+                              color: colors.primaryText,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
 
                           const SizedBox(height: 22),
+
+                          if(me["role"] == "admin")...  [
+                            SizedBox(
+                              height: 52,width: MediaQuery.of(context).size.width/2,
+                              child: InkWell(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: colors.primaryText,
+                                    borderRadius: BorderRadius.circular(18)
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.security, color: colors.cardColor),
+                                      Text("Go to App Manager", style: TextStyle(color: colors.cardColor)),
+                                    ],
+                                  ),
+                                ),
+                                onTap: (){
+                                  // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_){
+                                  //   return ;
+                                  // }));
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 22,)
+                          ],
 
                           SizedBox(
                             width: double.infinity,

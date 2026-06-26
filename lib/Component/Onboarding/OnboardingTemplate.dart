@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
-import '../AppColour.dart';
+import '../app_colors.dart';
 
 
 class ExactOnboardingUI extends StatelessWidget {
@@ -9,10 +9,11 @@ class ExactOnboardingUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final media = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -26,19 +27,19 @@ class ExactOnboardingUI extends StatelessWidget {
                 height: media.height * 0.30,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColours.cardColor,
+                  color: colors.cardColor,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: AppColours.borderColor,
+                    color: colors.borderColor,
                   ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "Built for",
                       style: TextStyle(
-                        color: AppColours.secondaryText,
+                        color: colors.secondaryText,
                         fontSize: 15,
                       ),
                     ),
@@ -51,29 +52,29 @@ class ExactOnboardingUI extends StatelessWidget {
                       animatedTexts: [
                         TypewriterAnimatedText(
                           "Coding",
-                          speed: Duration(milliseconds: 120),
+                          speed: const Duration(milliseconds: 120),
                           textStyle: TextStyle(
                             fontSize: 40,
                             fontWeight: FontWeight.bold,
-                            color: AppColours.primaryText,
+                            color: colors.primaryText,
                           ),
                         ),
                         TypewriterAnimatedText(
                           "Writing",
-                          speed: Duration(milliseconds: 120),
+                          speed: const Duration(milliseconds: 120),
                           textStyle: TextStyle(
                             fontSize: 40,
                             fontWeight: FontWeight.bold,
-                            color: AppColours.primaryText,
+                            color: colors.primaryText,
                           ),
                         ),
                         TypewriterAnimatedText(
                           "Learning",
-                          speed: Duration(milliseconds: 120),
+                          speed: const Duration(milliseconds: 120),
                           textStyle: TextStyle(
                             fontSize: 40,
                             fontWeight: FontWeight.bold,
-                            color: AppColours.primaryText,
+                            color: colors.primaryText,
                           ),
                         ),
                       ],
@@ -81,10 +82,10 @@ class ExactOnboardingUI extends StatelessWidget {
 
                     const SizedBox(height: 8),
 
-                    const Text(
+                    Text(
                       "and much more...",
                       style: TextStyle(
-                        color: AppColours.secondaryText,
+                        color: colors.secondaryText,
                         fontSize: 14,
                       ),
                     ),
@@ -108,22 +109,21 @@ class ExactOnboardingUI extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       stops: const [0.0, 0.08, 1.0],
                       colors: [
-                        const Color(0xff2B2B29), // slight light top fade
-                        AppColours.cardColor,   // center card tone
-                        AppColours.bgColor,     // blends into background
+                        colors.borderColor,   // slight light top fade
+                        colors.cardColor,     // center card tone
+                        colors.bgColor,       // blends into background
                       ],
                     ),
-
                   ),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Your AI workspace,\nmade simple",
+                        Text(
+                          "Your campus network,\nmade simple",
                           style: TextStyle(
-                            color: AppColours.primaryText,
+                            color: colors.primaryText,
                             fontSize: 34,
                             fontWeight: FontWeight.bold,
                             height: 1.1,
@@ -132,10 +132,10 @@ class ExactOnboardingUI extends StatelessWidget {
 
                         const SizedBox(height: 18),
 
-                        const Text(
-                          "Chat, create, code, organize ideas,\nand get answers instantly in one calm,\npowerful workspace.",
+                        Text(
+                          "Connect, share, discover jobs,\nannouncements and internships\nin one calm, powerful workspace.",
                           style: TextStyle(
-                            color: AppColours.secondaryText,
+                            color: colors.secondaryText,
                             fontSize: 17,
                             height: 1.5,
                           ),
@@ -143,15 +143,15 @@ class ExactOnboardingUI extends StatelessWidget {
 
                         const SizedBox(height: 26),
 
-                        const Text(
-                          "• Instant answers with context\n"
-                              "• Smart writing assistance\n"
-                              "• Code generation & debugging\n"
-                              "• Brainstorming ideas faster\n"
-                              "• Summaries in seconds\n"
-                              "• Daily productivity support",
+                        Text(
+                          "• Discover jobs & internships\n"
+                              "• Campus announcements\n"
+                              "• Connect with alumni & faculty\n"
+                              "• Share your achievements\n"
+                              "• Stay updated in real-time\n"
+                              "• Build your campus profile",
                           style: TextStyle(
-                            color: AppColours.primaryText,
+                            color: colors.primaryText,
                             fontSize: 16,
                             height: 1.8,
                           ),
@@ -159,10 +159,10 @@ class ExactOnboardingUI extends StatelessWidget {
 
                         const SizedBox(height: 28),
 
-                        const Text(
-                          "Designed with clarity, speed, and focus — so your work feels effortless every day.",
+                        Text(
+                          "Designed with clarity, speed, and focus — so your campus life feels effortless.",
                           style: TextStyle(
-                            color: AppColours.secondaryText,
+                            color: colors.secondaryText,
                             fontSize: 15,
                             height: 1.6,
                           ),

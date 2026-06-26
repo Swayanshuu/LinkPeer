@@ -1,18 +1,26 @@
+// AppColour.dart — kept for backward-compatibility.
+// All color logic has moved to app_colors.dart.
+// New code should import app_colors.dart directly.
+export 'app_colors.dart';
+
+// Alias so that existing code using AppColours.xxx still compiles.
+// AppColours is now a typedef alias of AppColors.
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
-class AppColours {
-  // Claude dark background
-  static const Color bgColor = Color(0xff141413);
+// ignore: camel_case_types
+typedef AppColours = _AppColoursCompat;
 
-  // Neutral dark card surface
-  static const Color cardColor = Color(0xff1E1E1C);
+/// Compatibility shim — provides the same static-const API that widgets
+/// currently use, so no existing widget code needs to change.
+/// All values are DARK theme values (the app was previously always dark).
+/// New widgets should use AppColors.of(context) for theme-aware colours.
+class _AppColoursCompat {
+  const _AppColoursCompat._();
 
-  // Subtle grey border
-  static const Color borderColor = Color(0xff2C2C29);
-
-  // Clean soft white text
-  static const Color primaryText = Color(0xffF7F7F5);
-
-  // Muted secondary grey text
-  static const Color secondaryText = Color(0xffA1A1A0);
+  static const Color bgColor = AppColors.bgColorDark;
+  static const Color cardColor = AppColors.cardColorDark;
+  static const Color borderColor = AppColors.borderColorDark;
+  static const Color primaryText = AppColors.primaryTextDark;
+  static const Color secondaryText = AppColors.secondaryTextDark;
 }

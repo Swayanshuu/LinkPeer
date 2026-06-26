@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../app_colors.dart';
+
 class ProfileStatBox extends StatelessWidget {
   final String title;
   final String value;
@@ -13,31 +15,26 @@ class ProfileStatBox extends StatelessWidget {
   });
 
   @override
-  Widget build(
-      BuildContext context) {
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Column(
       children: [
         Text(
           value,
-          style:
-          const TextStyle(
-            color:
-            Colors.white,
+          style: TextStyle(
+            color: colors.primaryText,
             fontSize: 18,
-            fontWeight:
-            FontWeight.bold,
+            fontWeight: FontWeight.bold,
           ),
         ),
 
-        const SizedBox(
-            height: 4),
+        const SizedBox(height: 4),
 
         Text(
           title,
-          style:
-          const TextStyle(
-            color:
-            Colors.white70,
+          style: TextStyle(
+            color: colors.secondaryText,
             fontSize: 12,
           ),
         ),

@@ -1,8 +1,6 @@
-// create_post_preview_section.dart
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../Component/AppColour.dart';
+import '../../../Component/app_colors.dart';
 
 class CreatePostPreviewSection extends StatelessWidget {
   final String name;
@@ -40,7 +38,7 @@ class CreatePostPreviewSection extends StatelessWidget {
     }
   }
 
-  Widget hashText(String text) {
+  Widget hashText(String text, AppColors colors) {
     final words = text.split(" ");
 
     return Wrap(
@@ -50,7 +48,7 @@ class CreatePostPreviewSection extends StatelessWidget {
         return Text(
           "$e ",
           style: TextStyle(
-            color: hash ? Colors.blue : AppColours.primaryText,
+            color: hash ? Colors.blue : colors.primaryText,
             fontWeight: hash ? FontWeight.bold : FontWeight.normal,
           ),
         );
@@ -60,13 +58,15 @@ class CreatePostPreviewSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Live Preview",
           style: TextStyle(
-            color: AppColours.primaryText,
+            color: colors.primaryText,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
@@ -78,8 +78,9 @@ class CreatePostPreviewSection extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColours.cardColor,
+            color: colors.cardColor,
             borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: colors.borderColor),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,10 +89,13 @@ class CreatePostPreviewSection extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 22,
+                    backgroundColor: colors.borderColor,
                     backgroundImage: photo.isNotEmpty
                         ? NetworkImage(photo)
                         : null,
-                    child: photo.isEmpty ? const Icon(Icons.person) : null,
+                    child: photo.isEmpty
+                        ? Icon(Icons.person, color: colors.primaryText)
+                        : null,
                   ),
 
                   const SizedBox(width: 10),
@@ -101,8 +105,8 @@ class CreatePostPreviewSection extends StatelessWidget {
                     children: [
                       Text(
                         name,
-                        style: const TextStyle(
-                          color: AppColours.primaryText,
+                        style: TextStyle(
+                          color: colors.primaryText,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -111,9 +115,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                         userType == "faculty" && department.isNotEmpty
                             ? "faculty • $department"
                             : userType,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColours.secondaryText,
+                          color: colors.secondaryText,
                         ),
                       ),
                     ],
@@ -147,8 +151,8 @@ class CreatePostPreviewSection extends StatelessWidget {
               if (title.isNotEmpty)
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: AppColours.primaryText,
+                  style: TextStyle(
+                    color: colors.primaryText,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -157,11 +161,11 @@ class CreatePostPreviewSection extends StatelessWidget {
               if (title.isNotEmpty) const SizedBox(height: 8),
 
               content.isEmpty
-                  ? const Text(
+                  ? Text(
                       "Your post content...",
-                      style: TextStyle(color: AppColours.primaryText),
+                      style: TextStyle(color: colors.secondaryText),
                     )
-                  : hashText(content),
+                  : hashText(content, colors),
 
               if (link.isNotEmpty) ...[
                 const SizedBox(height: 14),
@@ -179,12 +183,13 @@ class CreatePostPreviewSection extends StatelessWidget {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColours.bgColor,
+                      color: colors.bgColor,
                       borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: colors.borderColor),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Open Link",
-                      style: TextStyle(color: AppColours.primaryText),
+                      style: TextStyle(color: colors.primaryText),
                     ),
                   ),
                 ),

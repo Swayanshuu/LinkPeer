@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../Component/AppColour.dart';
+import '../../Component/app_colors.dart';
 import '../../Component/HashtagText.dart';
 
 class FullPostScreen extends StatelessWidget {
@@ -22,6 +22,8 @@ class FullPostScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     final name = (post["user_name"] ?? "User").toString();
 
     final photo = (post["user_photo"] ?? "").toString();
@@ -41,13 +43,14 @@ class FullPostScreen extends StatelessWidget {
     final date = createdAt.isNotEmpty ? createdAt.substring(0, 10) : "";
 
     return Scaffold(
-      backgroundColor: AppColours.bgColor,
+      backgroundColor: colors.bgColor,
 
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColours.bgColor,
+        backgroundColor: colors.bgColor,
         surfaceTintColor: Colors.transparent,
         leadingWidth: 44,
+        iconTheme: IconThemeData(color: colors.primaryText),
 
         titleSpacing: 0,
 
@@ -55,13 +58,13 @@ class FullPostScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: AppColours.borderColor,
+              backgroundColor: colors.borderColor,
               backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
               child: photo.isEmpty
-                  ? const Icon(
+                  ? Icon(
                       Icons.person,
                       size: 18,
-                      color: AppColours.primaryText,
+                      color: colors.primaryText,
                     )
                   : null,
             ),
@@ -77,8 +80,8 @@ class FullPostScreen extends StatelessWidget {
                     name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColours.primaryText,
+                    style: TextStyle(
+                      color: colors.primaryText,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
@@ -90,8 +93,8 @@ class FullPostScreen extends StatelessWidget {
                         : "$userType • $date",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColours.secondaryText,
+                    style: TextStyle(
+                      color: colors.secondaryText,
                       fontSize: 11,
                     ),
                   ),
@@ -104,9 +107,9 @@ class FullPostScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(
+            icon: Icon(
               Icons.share_outlined,
-              color: AppColours.primaryText,
+              color: colors.primaryText,
             ),
           ),
 
@@ -117,11 +120,11 @@ class FullPostScreen extends StatelessWidget {
       floatingActionButton: link.isNotEmpty
           ? FloatingActionButton.extended(
               elevation: 0,
-              backgroundColor: AppColours.cardColor,
-              foregroundColor: AppColours.primaryText,
+              backgroundColor: colors.cardColor,
+              foregroundColor: colors.primaryText,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
-                side: const BorderSide(color: AppColours.borderColor),
+                side: BorderSide(color: colors.borderColor),
               ),
               icon: const Icon(Icons.open_in_new, size: 18),
               label: const Text(
@@ -145,8 +148,8 @@ class FullPostScreen extends StatelessWidget {
             if (title.isNotEmpty)
               Text(
                 title,
-                style: const TextStyle(
-                  color: AppColours.primaryText,
+                style: TextStyle(
+                  color: colors.primaryText,
                   fontSize: 26,
                   height: 1.3,
                   fontWeight: FontWeight.bold,

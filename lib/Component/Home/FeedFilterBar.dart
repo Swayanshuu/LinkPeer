@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../AppColour.dart';
+import '../app_colors.dart';
 
 class FeedFilterBar extends StatelessWidget {
   final String selected;
@@ -14,6 +14,9 @@ class FeedFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeTextColor = isDark ? Colors.black : Colors.white;
     final items = ["all", "job", "announcement", "internship"];
 
     return SizedBox(
@@ -38,16 +41,12 @@ class FeedFilterBar extends StatelessWidget {
                   alignment: Alignment.center,
 
                   decoration: BoxDecoration(
-                    color: active
-                        ? AppColours.primaryText
-                        : AppColours.cardColor,
+                    color: active ? colors.primaryText : colors.cardColor,
 
                     borderRadius: BorderRadius.circular(14),
 
                     border: Border.all(
-                      color: active
-                          ? AppColours.primaryText
-                          : AppColours.borderColor,
+                      color: active ? colors.primaryText : colors.borderColor,
                     ),
                   ),
 
@@ -59,7 +58,7 @@ class FeedFilterBar extends StatelessWidget {
                         item.toUpperCase(),
                         maxLines: 1,
                         style: TextStyle(
-                          color: active ? Colors.black : AppColours.primaryText,
+                          color: active ? activeTextColor : colors.primaryText,
 
                           fontWeight: FontWeight.bold,
 

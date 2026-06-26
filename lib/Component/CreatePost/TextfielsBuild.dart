@@ -1,20 +1,23 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../AppColour.dart';
+import '../app_colors.dart';
 
 Widget buildField({
+  required BuildContext context,
   required TextEditingController controller,
   required String hint,
   int maxLines = 1,
   int? maxLength,
   IconData? icon,
 }) {
+  final colors = AppColors.of(context);
+
   return Container(
     decoration: BoxDecoration(
-      color: AppColours.bgColor,
+      color: colors.bgColor,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: AppColours.borderColor),
+      border: Border.all(color: colors.borderColor),
     ),
 
     child: TextField(
@@ -22,23 +25,23 @@ Widget buildField({
       maxLines: maxLines,
       maxLength: maxLength,
 
-      style: const TextStyle(
-        color: AppColours.primaryText,
+      style: TextStyle(
+        color: colors.primaryText,
         fontSize: 15,
         height: 1.4,
       ),
 
       decoration: InputDecoration(
-        counterStyle: const TextStyle(color: AppColours.secondaryText),
+        counterStyle: TextStyle(color: colors.secondaryText),
 
         prefixIcon: icon != null
-            ? Icon(icon, color: AppColours.secondaryText, size: 20)
+            ? Icon(icon, color: colors.secondaryText, size: 20)
             : null,
 
         hintText: hint,
 
-        hintStyle: const TextStyle(
-          color: AppColours.secondaryText,
+        hintStyle: TextStyle(
+          color: colors.secondaryText,
           fontSize: 14,
         ),
 

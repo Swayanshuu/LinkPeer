@@ -4,7 +4,7 @@ import 'package:igit_connects/Component/HashtagText.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../Component/AppColour.dart';
+import '../../Component/app_colors.dart';
 import '../../Screens/Post/EditPostScreen.dart';
 import '../../Screens/Post/FullPostScreen.dart';
 
@@ -63,6 +63,7 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final post = widget.post;
 
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -101,9 +102,9 @@ class _PostCardState extends State<PostCard> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColours.cardColor,
+        color: colors.cardColor,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColours.borderColor),
+        border: Border.all(color: colors.borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +115,7 @@ class _PostCardState extends State<PostCard> {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: AppColours.borderColor,
+                backgroundColor: colors.borderColor,
                 backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
                 child: photo.isEmpty ? const Icon(Icons.person) : null,
               ),
@@ -127,8 +128,8 @@ class _PostCardState extends State<PostCard> {
                   children: [
                     Text(
                       userName,
-                      style: const TextStyle(
-                        color: AppColours.primaryText,
+                      style: TextStyle(
+                        color: colors.primaryText,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -163,8 +164,8 @@ class _PostCardState extends State<PostCard> {
                           userType == "faculty" && department.isNotEmpty
                               ? "$department • $date"
                               : date,
-                          style: const TextStyle(
-                            color: AppColours.secondaryText,
+                          style: TextStyle(
+                            color: colors.secondaryText,
                             fontSize: 12,
                           ),
                         ),
@@ -175,7 +176,7 @@ class _PostCardState extends State<PostCard> {
               ),
 
               PopupMenuButton(
-                color: AppColours.cardColor,
+                color: colors.cardColor,
                 onSelected: (value) async {
                   if (value == "edit") {
                     final updated = await Navigator.push(
@@ -196,9 +197,15 @@ class _PostCardState extends State<PostCard> {
                 },
                 itemBuilder: (_) {
                   if (isOwner) {
-                    return const [
-                      PopupMenuItem(value: "edit", child: Text("Edit")),
-                      PopupMenuItem(value: "delete", child: Text("Delete")),
+                    return [
+                      PopupMenuItem(
+                        value: "edit",
+                        child: Text("Edit", style: TextStyle(color: colors.primaryText)),
+                      ),
+                      PopupMenuItem(
+                        value: "delete",
+                        child: Text("Delete", style: TextStyle(color: colors.primaryText)),
+                      ),
                     ];
                   }
 
@@ -233,8 +240,8 @@ class _PostCardState extends State<PostCard> {
           if (title.isNotEmpty)
             Text(
               title,
-              style: const TextStyle(
-                color: AppColours.primaryText,
+              style: TextStyle(
+                color: colors.primaryText,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -290,15 +297,19 @@ class _PostCardState extends State<PostCard> {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColours.bgColor,
+                    color: colors.bgColor,
                     borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: colors.borderColor),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.attach_file),
+                      Icon(Icons.attach_file, color: colors.secondaryText),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(fileName.isEmpty ? "Open File" : fileName),
+                        child: Text(
+                          fileName.isEmpty ? "Open File" : fileName,
+                          style: TextStyle(color: colors.primaryText),
+                        ),
                       ),
                     ],
                   ),
@@ -325,10 +336,14 @@ class _PostCardState extends State<PostCard> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColours.bgColor,
+                      color: colors.bgColor,
                       borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: colors.borderColor),
                     ),
-                    child: const Text("Open Link"),
+                    child: Text(
+                      "Open Link",
+                      style: TextStyle(color: colors.primaryText),
+                    ),
                   ),
                 ),
               ),
