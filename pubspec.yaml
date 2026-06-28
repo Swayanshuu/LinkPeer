@@ -49,6 +49,7 @@ dependencies:
   url_launcher: ^6.3.2
   file_picker: ^11.0.2
   image_picker: ^1.2.1
+  google_mobile_ads: ^9.0.0
 
 dev_dependencies:
   flutter_test:

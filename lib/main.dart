@@ -7,6 +7,7 @@ import 'package:igit_connects/Controllers/AuthGate.dart';
 import 'package:igit_connects/Controllers/ThemeProvider.dart';
 import 'package:igit_connects/firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,11 +22,10 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
-  debugPrint("Supabase Initialized");
 
-  // ── Read stored theme preference BEFORE runApp so there is no flash ────────
-  // • First launch → ThemeMode.system  (follows device dark/light setting)
-  // • Subsequent launches → user's last manually chosen theme (dark or light)
+  debugPrint("Supabase Initialized");
+  await MobileAds.instance.initialize();
+  debugPrint("AdMob Initialized");
   final initialTheme = await ThemeNotifier.loadInitial();
 
   runApp(ProviderScope(child: MyApp(initialTheme: initialTheme)));

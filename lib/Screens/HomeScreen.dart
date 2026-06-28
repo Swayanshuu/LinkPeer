@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:igit_connects/Ads/BannerAdWidget.dart';
+import 'package:igit_connects/utils/adPosition.dart';
 
 import '../Component/app_colors.dart';
 import '../Component/Home/FeedFilterBar.dart';
@@ -79,8 +81,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               backgroundColor: colors.primaryText,
 
-              // dark mode → primaryText is near-white → black icon readable
-              // light mode → primaryText is near-black → white icon readable
               foregroundColor: isDark ? Colors.black : Colors.white,
 
               child: const Icon(Icons.keyboard_arrow_up_rounded, size: 30),
@@ -96,7 +96,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
 
           data: (me) => RefreshIndicator(
-
             onRefresh: () async {
               ref.refresh(postsProvider);
             },
@@ -182,17 +181,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         );
                       }
 
+                      final adPositions = generateAdPositions(filtered.length);
+
+                      final feedItems = [];
+
+                      for (int i = 0; i < filtered.length; i++) {
+                        feedItems.add(filtered[i]);
+
+                        if (adPositions.contains(i + 1)) {
+                          feedItems.add("__AD__");
+                        }
+                      }
+
                       return ListView.builder(
                         shrinkWrap: true,
-
                         physics: const NeverScrollableScrollPhysics(),
 
-                        itemCount: filtered.length,
+                        itemCount: feedItems.length,
 
                         itemBuilder: (context, index) {
-                          return PostCard(
-                            post: filtered[index],
+                          final item = feedItems[index];
 
+                          if (item == "__AD__") {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10),
+                              child: BannerAdWidget(),
+                            );
+                          }
+
+                          return PostCard(
+                            post: item,
                             onRefresh: () {
                               ref.invalidate(postsProvider);
                             },
