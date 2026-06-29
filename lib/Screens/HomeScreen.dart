@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/Ads/BannerAdWidget.dart';
+import 'package:igit_connects/Screens/Post/FullPostScreen.dart';
 import 'package:igit_connects/utils/adPosition.dart';
 
 import '../Component/app_colors.dart';
@@ -209,11 +210,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             );
                           }
 
-                          return PostCard(
-                            post: item,
-                            onRefresh: () {
-                              ref.invalidate(postsProvider);
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      FullPostScreen(post: item),
+                                ),
+                              );
                             },
+                            child: PostCard(
+                              post: item,
+                              onRefresh: () {
+                                ref.invalidate(postsProvider);
+                              },
+                            ),
                           );
                         },
                       );
