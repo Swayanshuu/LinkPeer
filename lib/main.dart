@@ -8,11 +8,23 @@ import 'package:igit_connects/Controllers/ThemeProvider.dart';
 import 'package:igit_connects/firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Always call initializeApp() and catch the 'duplicate-app' error that
+  // Flutter Web raises when the Firebase JS SDK is already initialized
+  // (e.g. after a hot-restart). Any other error is rethrown.
+  // Using Firebase.apps.isEmpty is NOT safe on web — accessing that getter
+  // via JS interop before the SDK is ready throws 'Unexpected null value'.
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') rethrow;
+  }
   debugPrint("Firebase Initialized");
 
   await dotenv.load(fileName: ".env");
@@ -24,7 +36,9 @@ Future<void> main() async {
   );
 
   debugPrint("Supabase Initialized");
-  await MobileAds.instance.initialize();
+  if (!kIsWeb) {
+    await MobileAds.instance.initialize();
+  }
   debugPrint("AdMob Initialized");
   final initialTheme = await ThemeNotifier.loadInitial();
 

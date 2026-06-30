@@ -73,4 +73,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'igit-connects.firebasestorage.app',
     measurementId: 'G-1QFTRM8EFH',
   );
+
 }
