@@ -359,7 +359,7 @@ void showAppSnackBar({
     ..showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        width: 300,
+        //width: 300,
         elevation: 0,
         backgroundColor: backgroundColor,
         margin: const EdgeInsets.only(left: 24, right: 24, bottom: 90),

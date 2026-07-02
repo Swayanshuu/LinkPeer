@@ -129,8 +129,8 @@ class Googleauthcontroller {
       final authorizationClient = gUser.authorizationClient;
 
       // authorize the user
-      GoogleSignInClientAuthorization? authorization =
-          await authorizationClient.authorizationForScopes(['email', 'profile']);
+      GoogleSignInClientAuthorization? authorization = await authorizationClient
+          .authorizationForScopes(['email', 'profile']);
 
       // getting access token
       final accessToken = authorization!.accessToken;
@@ -142,8 +142,8 @@ class Googleauthcontroller {
       );
 
       // sign in
-      final UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
 
       final User? user = userCredential.user;
 

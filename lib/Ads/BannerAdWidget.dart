@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'package:flutter/foundation.dart';
+
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
 
@@ -15,22 +17,28 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   void initState() {
     super.initState();
 
-    _bannerAd = BannerAd(
-      size: AdSize.banner,
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          debugPrint('AD LOADED');
-        },
-        onAdFailedToLoad: (ad, error) {
-          debugPrint('AD FAILED: $error');
-          ad.dispose();
-        },
-      ),
-    );
+    final isMobile = !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS);
 
-    _bannerAd!.load();
+    if (isMobile) {
+      _bannerAd = BannerAd(
+        size: AdSize.banner,
+        adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            debugPrint('AD LOADED');
+          },
+          onAdFailedToLoad: (ad, error) {
+            debugPrint('AD FAILED: $error');
+            ad.dispose();
+          },
+        ),
+      );
+
+      _bannerAd!.load();
+    }
   }
 
   @override

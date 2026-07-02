@@ -43,18 +43,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     Future.microtask(() {
       ref.invalidate(userProvider);
     });
-
-    title.addListener(refresh);
-
-    content.addListener(refresh);
-
-    link.addListener(refresh);
-  }
-
-  void refresh() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   @override
@@ -207,16 +195,21 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
                     const SizedBox(height: 22),
 
-                    // Preview
-                    CreatePostPreviewSection(
-                      name: name,
-                      photo: photo,
-                      userType: userType,
-                      department: department,
-                      postType: postType,
-                      title: title.text,
-                      content: content.text,
-                      link: link.text,
+                    // Preview — AnimatedBuilder listens to all three
+                    // controllers without calling setState on every keystroke,
+                    // so the TextField composition buffer is never interrupted.
+                    AnimatedBuilder(
+                      animation: Listenable.merge([title, content, link]),
+                      builder: (context, _) => CreatePostPreviewSection(
+                        name: name,
+                        photo: photo,
+                        userType: userType,
+                        department: department,
+                        postType: postType,
+                        title: title.text,
+                        content: content.text,
+                        link: link.text,
+                      ),
                     ),
                   ],
                 ),

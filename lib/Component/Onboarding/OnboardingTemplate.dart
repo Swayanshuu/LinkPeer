@@ -10,7 +10,6 @@ class ExactOnboardingUI extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final media = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: colors.bgColor,
@@ -19,12 +18,11 @@ class ExactOnboardingUI extends StatelessWidget {
           children: [
             const SizedBox(height: 18),
 
-            /// TOP CARD
+            /// TOP CARD — natural height (no fixed size), content never overflows
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Container(
                 width: double.infinity,
-                height: media.height * 0.32,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: colors.cardColor,
@@ -33,6 +31,7 @@ class ExactOnboardingUI extends StatelessWidget {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
                       children: [
@@ -113,7 +112,10 @@ class ExactOnboardingUI extends StatelessWidget {
                       ],
                     ),
 
-                    const Spacer(),
+                    // Replaced Spacer() with a fixed gap — Spacer inside a
+                    // fixed-height (or naturally-sized) container can overflow
+                    // when siblings already consume the available height.
+                    const SizedBox(height: 20),
 
                     Row(
                       children: [
@@ -141,7 +143,8 @@ class ExactOnboardingUI extends StatelessWidget {
 
             const SizedBox(height: 18),
 
-            /// BOTTOM CARD
+            /// BOTTOM CARD — Expanded so it fills remaining space, inner content
+            /// scrolls on small screens instead of overflowing
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
@@ -154,13 +157,15 @@ class ExactOnboardingUI extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       stops: const [0.0, 0.08, 1.0],
                       colors: [
-                        colors.borderColor, // slight light top fade
-                        colors.cardColor, // center card tone
-                        colors.bgColor, // blends into background
+                        colors.borderColor,
+                        colors.cardColor,
+                        colors.bgColor,
                       ],
                     ),
                   ),
-                  child: Padding(
+                  // SingleChildScrollView lets content scroll on short phones
+                  // instead of throwing a RenderFlex overflow error
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(24, 28, 24, 14),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +243,7 @@ class ExactOnboardingUI extends StatelessWidget {
                           ),
                         ),
 
-                        const Spacer(),
+                        const SizedBox(height: 28),
 
                         Center(
                           child: Container(
@@ -273,7 +278,9 @@ class ExactOnboardingUI extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Spacer(),
+
+                        const SizedBox(height: 20),
+
                         Center(
                           child: RichText(
                             text: TextSpan(
@@ -288,9 +295,7 @@ class ExactOnboardingUI extends StatelessWidget {
                                   alignment: PlaceholderAlignment.middle,
                                   child: GestureDetector(
                                     onTap: () async {
-                                      final uri = Uri.parse(
-                                        "https://swynx.dev",
-                                      );
+                                      final uri = Uri.parse("https://swynx.dev");
                                       await launchUrl(
                                         uri,
                                         mode: LaunchMode.externalApplication,
@@ -299,9 +304,7 @@ class ExactOnboardingUI extends StatelessWidget {
                                     child: Text(
                                       "swynx.dev",
                                       style: TextStyle(
-                                        color: const Color(
-                                          0xFF6366F1,
-                                        ), // Indigo
+                                        color: const Color(0xFF6366F1),
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 0.3,
                                       ),
@@ -313,7 +316,7 @@ class ExactOnboardingUI extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),

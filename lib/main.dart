@@ -36,7 +36,7 @@ Future<void> main() async {
   );
 
   debugPrint("Supabase Initialized");
-  if (!kIsWeb) {
+  if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
     await MobileAds.instance.initialize();
   }
   debugPrint("AdMob Initialized");
