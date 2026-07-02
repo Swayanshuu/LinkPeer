@@ -3,7 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final userProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final uid = FirebaseAuth.instance.currentUser!.uid;
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+
+  if (uid == null) {
+    return {};
+  }
 
   final data = await Supabase.instance.client
       .from('users')

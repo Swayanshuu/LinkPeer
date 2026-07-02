@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:igit_connects/Component/AppColour.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../Component/Onboarding/OnboardingTemplate.dart';
@@ -18,6 +19,7 @@ class _OnBoardingscreenState extends State<OnBoardingscreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Scaffold(
       backgroundColor: Colors.black,
 
@@ -40,11 +42,13 @@ class _OnBoardingscreenState extends State<OnBoardingscreen> {
               controller: controller,
               count: 2,
 
-              effect: const ExpandingDotsEffect(
-                dotColor: Colors.white38,
-                activeDotColor: Colors.white,
-                dotHeight: 12,
-                dotWidth: 12,
+              effect: ExpandingDotsEffect(
+                dotColor: colors.borderColor,
+                activeDotColor: colors.primaryText,
+                dotHeight: 8,
+                dotWidth: 8,
+                expansionFactor: 4,
+                spacing: 6,
               ),
             ),
           ),

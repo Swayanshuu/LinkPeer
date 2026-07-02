@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "igit_connects",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      // Never pause on exceptions that are already caught by a try/catch block.
+      // Without this, VS Code pauses at every "throw" site even when the
+      // exception is properly handled — which makes cancelled Google sign-in
+      // look like a crash because pressing Stop terminates the app.
+      "exceptionBreakpointMode": "Unhandled"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Component/app_colors.dart';
 import '../Controllers/PostProvider.dart';
 import '../Controllers/UserProvider.dart';
-import '../Screens/LogInScreen.dart';
+import '../Screens/LogInScreen2.dart';
 import '../MainScreen.dart';
 import '../Screens/OnBoardingScreen.dart';
 
@@ -70,14 +70,16 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   void _openLogin() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const LoginScreen2()),
     );
   }
 
   void _openOnboarding() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => OnBoardingscreen(userMode: widget.userMode)),
+      MaterialPageRoute(
+        builder: (_) => OnBoardingscreen(userMode: widget.userMode),
+      ),
     );
   }
 
@@ -94,42 +96,97 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
     return Scaffold(
       backgroundColor: colors.bgColor,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.school, size: 70, color: colors.primaryText),
-
-              const SizedBox(height: 18),
-
-              Text(
-                "IGIT Connects",
-                style: TextStyle(
-                  color: colors.primaryText,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: Stack(
+        children: [
+          /// Background Gradient
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [colors.bgColor, colors.cardColor],
               ),
-
-              const SizedBox(height: 8),
-
-              Text(
-                "Connecting Students & Alumni",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: colors.secondaryText),
-              ),
-
-              const SizedBox(height: 30),
-
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: const LinearProgressIndicator(minHeight: 8),
-              ),
-            ],
+            ),
           ),
-        ),
+
+          /// Content
+          SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  /// Logo Circle
+                  Container(
+                    height: 110,
+                    width: 110,
+                    decoration: BoxDecoration(
+                      color: colors.cardColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(.08),
+                          blurRadius: 30,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Image.asset(
+                          'assets/images/LinkPeer.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  /// Brand
+                  Text(
+                    "LinkPeer",
+                    style: TextStyle(
+                      color: colors.primaryText,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    "One Community. Endless Possibilities.",
+                    style: TextStyle(color: colors.secondaryText, fontSize: 14),
+                  ),
+
+                  const SizedBox(height: 48),
+
+                  SizedBox(
+                    width: 180,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: const LinearProgressIndicator(minHeight: 6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          /// Bottom Text
+          Positioned(
+            bottom: 32,
+            left: 0,
+            right: 0,
+            child: Text(
+              "Connecting Students • Alumni • Faculty",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: colors.secondaryText, fontSize: 12),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -46,7 +46,13 @@ class Googleauthcontroller {
     });
   }
 
-  static Future<UserCredential> signInWithGoogle() async {
+  /// Signs the user in with Google.
+  ///
+  /// Returns a [UserCredential] on success.
+  /// Returns **`null`** when the user cancels the account picker — no exception
+  /// is thrown in that case, so the VS Code debugger never pauses on cancel.
+  /// Throws for genuine errors (network failure, Firebase error, etc.).
+  static Future<UserCredential?> signInWithGoogle() async {
     try {
       // ── WEB ──────────────────────────────────────────────────────────────────
       // GoogleSignIn.authenticate() is not supported on Flutter Web.
@@ -74,38 +80,57 @@ class Googleauthcontroller {
           ..addScope('profile')
           ..setCustomParameters(params);
 
-        final UserCredential userCredential = await _auth.signInWithPopup(
-          googleProvider,
-        );
+        try {
+          final UserCredential userCredential = await _auth.signInWithPopup(
+            googleProvider,
+          );
 
-        final User? user = userCredential.user;
+          final User? user = userCredential.user;
 
-        if (user != null) {
-          // Remember this account so we can hint at it on the next sign-in.
-          await prefs.setString(_kLoginHintKey, user.email ?? '');
-          await _upsertUser(user);
+          if (user != null) {
+            // Remember this account so we can hint at it on the next sign-in.
+            await prefs.setString(_kLoginHintKey, user.email ?? '');
+            await _upsertUser(user);
 
-          return userCredential;
+            return userCredential;
+          }
+
+          throw FirebaseAuthException(
+            code: 'user-null',
+            message: 'User is null after sign in',
+          );
+        } on FirebaseAuthException catch (e) {
+          // The user closed the browser popup — return null so the caller
+          // knows it was a voluntary cancel, not a real failure.
+          if (e.code == 'popup-closed-by-user' ||
+              e.code == 'cancelled-popup-request') {
+            return null;
+          }
+          rethrow;
         }
-
-        throw FirebaseAuthException(
-          code: 'user-null',
-          message: 'User is null after sign in',
-        );
       }
 
-      // ANDROID
+      // ── ANDROID ──────────────────────────────────────────────────────────────
       await initializeGoogleAuth();
 
-      final GoogleSignInAccount gUser = await _googleSignIn.authenticate();
+      late final GoogleSignInAccount gUser;
+      try {
+        gUser = await _googleSignIn.authenticate();
+      } on GoogleSignInException catch (e) {
+        // The user dismissed the account picker — return null (not an error).
+        if (e.code == GoogleSignInExceptionCode.canceled) {
+          return null;
+        }
+        rethrow;
+      }
 
       // getting id token
       final idToken = gUser.authentication.idToken;
       final authorizationClient = gUser.authorizationClient;
 
       // authorize the user
-      GoogleSignInClientAuthorization? authorization = await authorizationClient
-          .authorizationForScopes(['email', 'profile']);
+      GoogleSignInClientAuthorization? authorization =
+          await authorizationClient.authorizationForScopes(['email', 'profile']);
 
       // getting access token
       final accessToken = authorization!.accessToken;
@@ -117,8 +142,8 @@ class Googleauthcontroller {
       );
 
       // sign in
-      final UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential);
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
       final User? user = userCredential.user;
 
@@ -133,7 +158,7 @@ class Googleauthcontroller {
         message: 'User is null after sign in',
       );
     } catch (e) {
-      print("Error: $e");
+      debugPrint('GoogleAuthController.signInWithGoogle error: $e');
       rethrow;
     }
   }
@@ -152,7 +177,7 @@ class Googleauthcontroller {
       }
       await _auth.signOut();
     } catch (e) {
-      print("Error signingout: $e");
+      debugPrint('GoogleAuthController.signOut error: $e');
       rethrow;
     }
   }
