@@ -1,6 +1,8 @@
 <div align="center">
 
-# IGIT Connects
+<img src="assets/images/LinkPeerFULL.png" alt="LinkPeer Logo" width="220" />
+
+# LinkPeer
 
 **The official campus social platform for Indira Gandhi Institute of Technology, Sarang, Odisha.**  
 A full-stack Flutter mobile application connecting students, alumni, and faculty through a shared community feed, career opportunities, and campus announcements.
@@ -21,7 +23,7 @@ A full-stack Flutter mobile application connecting students, alumni, and faculty
 
 ## Overview
 
-IGIT Connects is a production-ready mobile application built with Flutter. It serves as a private social network exclusively for the IGIT campus community, with support for three user roles — **Students**, **Alumni**, and **Faculty** — each with a tailored onboarding process and role-based permissions.
+LinkPeer is a production-ready mobile application built with Flutter. It serves as a private social network exclusively for the IGIT campus community, with support for three user roles — **Students**, **Alumni**, and **Faculty** — each with a tailored onboarding process and role-based permissions.
 
 The application is built on a **dual-backend architecture** (Firebase + Supabase), uses **Riverpod** for reactive state management across the entire widget tree, and ships with a fully custom **dark/light theme engine** that respects the device system setting on first launch and persists the user's manual preference across restarts.
 
@@ -29,9 +31,9 @@ The application is built on a **dual-backend architecture** (Firebase + Supabase
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────┐
-│                          IGIT Connects                               │
+│                          LinkPeer                                   │
 │                                                                      │
 │   ┌───────────┐    ┌────────────┐    ┌──────────────────────────┐   │
 │   │   Login   │───▶│ Onboarding │───▶│       Main Shell         │   │
@@ -41,14 +43,14 @@ The application is built on a **dual-backend architecture** (Firebase + Supabase
 │                                      └──────────────────────────┘   │
 │                                                                      │
 │   ┌──────────────────────────────────────────────────────────────┐  │
-│   │                    State Layer — Riverpod                     │  │
-│   │       themeProvider  ·  userProvider  ·  postsProvider        │  │
+│   │                    State Layer — Riverpod                    │  │
+│   │       themeProvider  ·  userProvider  ·  postsProvider       │  │
 │   └──────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 │   ┌───────────────────────┐      ┌───────────────────────────────┐  │
-│   │        Firebase        │      │           Supabase            │  │
-│   │  Auth  ·  Firestore    │      │   PostgreSQL  ·  Storage CDN  │  │
-│   │  (OAuth · User docs)   │      │   (Posts)    ·  (Files)       │  │
+│   │        Firebase       │      │           Supabase            │  │
+│   │  Auth  ·  Firestore   │      │   PostgreSQL  ·  Storage CDN  │  │
+│   │  (OAuth · User docs)  │      │   (Posts)    ·  (Files)       │  │
 │   └───────────────────────┘      └───────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -161,7 +163,7 @@ The theme engine goes beyond a simple `ThemeMode` toggle. It is a **context-awar
 
 ## Project Structure
 
-```
+```text
 lib/
 ├── main.dart                             # Bootstrap: Firebase, Supabase, theme, runApp
 ├── MainScreen.dart                       # Bottom nav shell — IndexedStack (4 tabs)
@@ -368,5 +370,13 @@ Released under the [MIT License](LICENSE). See `LICENSE` for details.
 <div align="center">
 
 Built for the IGIT campus community — Indira Gandhi Institute of Technology, Sarang, Odisha.
+
+</div>
+
+---
+
+<div align="center">
+
+Built with ❤️ by <a href="https://swynx.dev">Swynx.dev</a>
 
 </div>
