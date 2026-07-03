@@ -32,14 +32,24 @@ class ProfileScreen extends ConsumerWidget {
         ),
 
         data: (data) {
-          return CustomScrollView(
-            slivers: [
-              ProfileHeaderSliver(data: data, posts: posts, ref: ref),
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(userProvider);
+              ref.invalidate(postsProvider);
+              // Small delay to allow the providers to fetch new data before stopping the indicator
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            color: colors.primaryText,
+            backgroundColor: colors.cardColor,
+            child: CustomScrollView(
+              slivers: [
+                ProfileHeaderSliver(data: data, posts: posts, ref: ref),
 
-              ProfilePostsSection(data: data, posts: posts, ref: ref),
+                ProfilePostsSection(data: data, posts: posts, ref: ref),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 90)),
-            ],
+                const SliverToBoxAdapter(child: SizedBox(height: 90)),
+              ],
+            ),
           );
         },
       ),

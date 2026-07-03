@@ -11,7 +11,7 @@ class HashtagText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final regex = RegExp(r'#[A-Za-z0-9_]+|\\n|[^#\\n]+');
+    final regex = RegExp(r'#[A-Za-z0-9_]+|\n|[^\n#]+');
 
     final matches = regex.allMatches(text);
 

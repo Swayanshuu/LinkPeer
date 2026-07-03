@@ -19,51 +19,112 @@ class AuthGate extends ConsumerStatefulWidget {
   ConsumerState<AuthGate> createState() => _AuthGateState();
 }
 
-class _AuthGateState extends ConsumerState<AuthGate> {
+class _AuthGateState extends ConsumerState<AuthGate>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _progressAnimation;
+  double _progress = 0.0;
+  bool _initCompleted = false;
+  void Function()? _nextNavigation;
+
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    );
+
+    _progressAnimation =
+        Tween<double>(begin: 0.0, end: 0.99).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        )..addListener(() {
+          setState(() {
+            _progress = _progressAnimation.value;
+          });
+        });
+
+    _animationController.forward().then((_) {
+      _checkAndNavigate();
+    });
+
     _initApp();
   }
 
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   Future<void> _initApp() async {
-    await Future.delayed(const Duration(seconds: 3));
+    // Yield to the event loop so that initState() finishes before we make any ref calls
+    await Future.delayed(Duration.zero);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
 
-    final user = FirebaseAuth.instance.currentUser;
+      if (!mounted) return;
 
-    if (!mounted) return;
+      ref.invalidate(userProvider);
+      ref.invalidate(postsProvider);
 
-    ref.invalidate(userProvider);
-    ref.invalidate(postsProvider);
+      // Not logged in
+      if (user == null) {
+        debugPrint("AuthGate: No authenticated user found, redirecting to login.");
+        _nextNavigation = _openLogin;
+      } else {
+        final uid = user.uid;
+        final prefs = await SharedPreferences.getInstance();
 
-    // Not logged in
-    if (user == null) {
-      _openLogin();
-      return;
+        // Local quick check
+        final localCompleted = prefs.getBool('profile_completed_$uid') ?? false;
+
+        if (localCompleted) {
+          debugPrint("AuthGate: Local profile completed for uid: $uid, redirecting to main screen.");
+          _nextNavigation = _openMainScreen;
+        } else {
+          // DB fallback check
+          try {
+            debugPrint("AuthGate: Fetching user data from database for uid: $uid");
+            final userData = await ref.read(userProvider.future);
+            final isProfileCompleted = userData['profile_completed'] == true;
+
+            if (isProfileCompleted) {
+              await prefs.setBool('profile_completed_$uid', true);
+              debugPrint("AuthGate: DB profile completed, redirecting to main screen.");
+              _nextNavigation = _openMainScreen;
+            } else {
+              debugPrint("AuthGate: DB profile not completed, redirecting to onboarding.");
+              _nextNavigation = _openOnboarding;
+            }
+          } catch (dbError, stackTrace) {
+            debugPrint("AuthGate: DB check error: $dbError");
+            debugPrint("Stack trace: $stackTrace");
+            // If the user profile fetch fails but user is logged in, redirect to onboarding to complete profile
+            _nextNavigation = _openOnboarding;
+          }
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint("AuthGate: General error: $e");
+      debugPrint("Stack trace: $stackTrace");
+      _nextNavigation = _openLogin;
     }
 
-    final uid = user.uid;
+    _initCompleted = true;
+    _checkAndNavigate();
+  }
 
-    final prefs = await SharedPreferences.getInstance();
-
-    // Local quick check
-    final localCompleted = prefs.getBool('profile_completed_$uid') ?? false;
-
-    if (localCompleted) {
-      _openMainScreen();
-      return;
-    }
-
-    // DB fallback check
-    final userData = await ref.read(userProvider.future);
-
-    final isProfileCompleted = userData['profile_completed'] == true;
-
-    if (isProfileCompleted) {
-      await prefs.setBool('profile_completed_$uid', true);
-      _openMainScreen();
-    } else {
-      _openOnboarding();
+  void _checkAndNavigate() async {
+    if (_initCompleted && _animationController.isCompleted) {
+      // Hold at 99% briefly for user satisfaction
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted && _nextNavigation != null) {
+        _nextNavigation!();
+      }
     }
   }
 
@@ -88,6 +149,20 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       context,
       MaterialPageRoute(builder: (_) => const MainScreen()),
     );
+  }
+
+  String _getLoadingStatus() {
+    if (_progress < 0.3) {
+      return "Connecting to LinkPeer...";
+    } else if (_progress < 0.6) {
+      return "Synchronizing community feed...";
+    } else if (_progress < 0.85) {
+      return "Securing account credentials...";
+    } else if (_progress < 0.99) {
+      return "Finalizing layout...";
+    } else {
+      return "Ready!";
+    }
   }
 
   @override
@@ -124,7 +199,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 30,
                           spreadRadius: 2,
                         ),
@@ -163,11 +238,63 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
                   const SizedBox(height: 48),
 
+                  /// Modern Percentage Loading Bar using theme AppColors
                   SizedBox(
-                    width: 180,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: const LinearProgressIndicator(minHeight: 6),
+                    width: 240,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _getLoadingStatus(),
+                              style: TextStyle(
+                                color: colors.secondaryText,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              "${(_progress * 100).toInt()}%",
+                              style: TextStyle(
+                                color: colors.primaryText,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          height: 4,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: colors.borderColor,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: Stack(
+                            children: [
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 100),
+                                    width: constraints.maxWidth * _progress,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: colors.primaryText,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

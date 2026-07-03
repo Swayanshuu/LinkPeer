@@ -7,7 +7,7 @@ FutureProvider<List<Map<String,dynamic>>>(
       final data = await Supabase.instance.client
           .from('posts')
           .select(
-          'user_id ,title, content, link, post_type, user_name, user_photo, created_at, user_type, department, id,file_name, image_url, file_url, file_type'
+          '*, post_likes(user_id), saved_posts(user_id)'
       )
           .order('created_at', ascending: false);
 
