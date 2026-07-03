@@ -8,6 +8,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../Component/app_colors.dart';
 import '../../Component/HashtagText.dart';
 import '../../Controllers/PostProvider.dart';
+import '../../Component/ShareCard.dart';
+import '../../services/ShareService.dart';
+import '../LogInScreen2.dart';
 
 class FullPostScreen extends ConsumerStatefulWidget {
   final Map post;
@@ -22,6 +25,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
   bool _isLiked = false;
   int _likesCount = 0;
   bool _isSaved = false;
+  bool _isGeneratingLink = false;
 
   @override
   void initState() {
@@ -244,6 +248,51 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          if (_isGeneratingLink)
+            const Padding(
+              padding: EdgeInsets.only(right: 16.0),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.share_outlined),
+              onPressed: () async {
+                setState(() => _isGeneratingLink = true);
+                
+                final String imageUrl = (widget.post["image_url"] ?? "").toString();
+                final String title = (widget.post["title"] ?? "").toString();
+                final String content = (widget.post["content"] ?? "").toString();
+                
+                final shortUrl = await ShareService.generateShortLink(
+                  postId: widget.post['id'].toString(),
+                  title: title.isNotEmpty ? title : 'LinkPeer Post',
+                  imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+                );
+                
+                await ShareService.shareWidgetAsImage(
+                  widget: ShareCard(
+                    userName: widget.post["user_name"]?.toString() ?? "Anonymous",
+                    userRole: widget.post["user_type"]?.toString() ?? "User",
+                    userAvatar: widget.post["user_photo"]?.toString() ?? "",
+                    postContent: title.isNotEmpty ? title : (content.isNotEmpty ? content : "Check out this post!"),
+                  ),
+                  shareUrl: shortUrl,
+                  postTitle: title.isNotEmpty ? title : "LinkPeer Post",
+                );
+                
+                if (mounted) {
+                  setState(() => _isGeneratingLink = false);
+                }
+              },
+            ),
+        ],
       ),
       body: Stack(
         children: [
@@ -428,90 +477,138 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
             ),
           ),
 
-          // Bottom Action Bar
+          // Bottom Action Bar or Login Banner
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                color: colors.bgColor.withOpacity(0.95),
-                border: Border(
-                  top: BorderSide(color: colors.borderColor.withOpacity(0.5)),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildActionButton(
-                      icon: _isLiked ? Icons.favorite : Icons.favorite_border_rounded,
-                      color: _isLiked ? Colors.red : colors.secondaryText,
-                      label: _likesCount > 0 ? "$_likesCount" : "Like",
-                      onTap: _toggleLike,
-                      isActive: _isLiked,
+            child: FirebaseAuth.instance.currentUser == null
+                ? Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: colors.bgColor.withOpacity(0.95),
+                      border: Border(top: BorderSide(color: colors.borderColor.withOpacity(0.5))),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
                     ),
-                    _buildActionButton(
-                      icon: Icons.chat_bubble_outline_rounded,
-                      color: colors.secondaryText,
-                      label: "Comment",
-                      onTap: () {
-                        // Keep current screen, maybe focus a comment field later
-                      },
-                      isActive: false,
-                    ),
-                    _buildActionButton(
-                      icon: _isSaved ? Icons.bookmark : Icons.bookmark_border_rounded,
-                      color: _isSaved ? Colors.blue : colors.secondaryText,
-                      label: "Save",
-                      onTap: _toggleSave,
-                      isActive: _isSaved,
-                    ),
-                    _buildActionButton(
-                      icon: Icons.share_outlined,
-                      color: colors.secondaryText,
-                      label: "Share",
-                      onTap: () {
-                        final shareText = "${title.isNotEmpty ? "$title\n\n" : ""}$content\n\nShared via LinkPeer";
-                        Clipboard.setData(ClipboardData(text: shareText)).then((_) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: colors.cardColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: colors.borderColor),
-                                ),
-                                content: Row(
-                                  children: [
-                                    const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      "Copied to clipboard!",
-                                      style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
+                    child: SafeArea(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const LoginScreen2()),
+                            (route) => false,
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: colors.primaryText, // High contrast button color
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.lock_outline, color: colors.bgColor, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Login to see more",
+                                style: TextStyle(
+                                  color: colors.bgColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
                                 ),
                               ),
-                            );
-                          }
-                        });
-                      },
-                      isActive: false,
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  )
+                : Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: colors.bgColor.withOpacity(0.95),
+                      border: Border(
+                        top: BorderSide(color: colors.borderColor.withOpacity(0.5)),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: SafeArea(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildActionButton(
+                            icon: _isLiked ? Icons.favorite : Icons.favorite_border_rounded,
+                            color: _isLiked ? Colors.red : colors.secondaryText,
+                            label: _likesCount > 0 ? "$_likesCount" : "Like",
+                            onTap: _toggleLike,
+                            isActive: _isLiked,
+                          ),
+                          _buildActionButton(
+                            icon: Icons.chat_bubble_outline_rounded,
+                            color: colors.secondaryText,
+                            label: "Comment",
+                            onTap: () {
+                              // Keep current screen, maybe focus a comment field later
+                            },
+                            isActive: false,
+                          ),
+                          _buildActionButton(
+                            icon: _isSaved ? Icons.bookmark : Icons.bookmark_border_rounded,
+                            color: _isSaved ? Colors.blue : colors.secondaryText,
+                            label: "Save",
+                            onTap: _toggleSave,
+                            isActive: _isSaved,
+                          ),
+                          _buildActionButton(
+                            icon: Icons.share_outlined,
+                            color: colors.secondaryText,
+                            label: _isGeneratingLink ? "Wait..." : "Share",
+                            onTap: () async {
+                              if (_isGeneratingLink) return;
+                              setState(() => _isGeneratingLink = true);
+                              
+                              final String imageUrl = (widget.post["image_url"] ?? "").toString();
+                              
+                              final shortUrl = await ShareService.generateShortLink(
+                                postId: widget.post['id'].toString(),
+                                title: title.isNotEmpty ? title : 'LinkPeer Post',
+                                imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+                              );
+                              
+                              await ShareService.shareWidgetAsImage(
+                                widget: ShareCard(
+                                  userName: widget.post["user_name"]?.toString() ?? "Anonymous",
+                                  userRole: widget.post["user_type"]?.toString() ?? "User",
+                                  userAvatar: widget.post["user_photo"]?.toString() ?? "",
+                                  postContent: title.isNotEmpty ? title : (content.isNotEmpty ? content : "Check out this post!"),
+                                ),
+                                shareUrl: shortUrl,
+                                postTitle: title.isNotEmpty ? title : "LinkPeer Post",
+                              );
+                              
+                              if (mounted) {
+                                setState(() => _isGeneratingLink = false);
+                              }
+                            },
+                            isActive: false,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
           ),
         ],
       ),

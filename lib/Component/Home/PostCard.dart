@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:igit_connects/Component/HashtagText.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,6 +9,8 @@ import '../../Component/app_colors.dart';
 import '../../Controllers/UserProvider.dart';
 import '../../Screens/Post/EditPostScreen.dart';
 import '../../Screens/Post/FullPostScreen.dart';
+import '../../Component/ShareCard.dart';
+import '../../services/ShareService.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Map post;
@@ -793,40 +794,54 @@ class _PostCardState extends ConsumerState<PostCard> {
                   iconColor: colors.secondaryText,
                   textColor: colors.secondaryText,
                   label: "Share",
-                  onTap: () {
-                    final shareText =
-                        "${title.isNotEmpty ? "$title\n\n" : ""}$content\n\nShared via LinkPeer";
-                    Clipboard.setData(ClipboardData(text: shareText)).then((_) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: colors.cardColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: colors.borderColor),
+                  onTap: () async {
+                    if (!context.mounted) return;
+                    
+                    // Show loading indicator
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: colors.cardColor,
+                        content: Row(
+                          children: [
+                            const SizedBox(
+                              width: 20, 
+                              height: 20, 
+                              child: CircularProgressIndicator(strokeWidth: 2)
                             ),
-                            content: Row(
-                              children: [
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  "Copied to clipboard!",
-                                  style: TextStyle(
-                                    color: colors.primaryText,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 15),
+                            Text(
+                              "Generating share link...",
+                              style: TextStyle(color: colors.primaryText),
                             ),
-                          ),
-                        );
-                      }
-                    });
+                          ],
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                    
+                    final String imageUrl = widget.post["image_url"] ?? "";
+                    
+                    // Call API to get short URL
+                    final shortUrl = await ShareService.generateShortLink(
+                      postId: widget.post['id'].toString(),
+                      title: title.isNotEmpty ? title : 'LinkPeer Post',
+                      imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+                    );
+                    
+                    if (!context.mounted) return;
+                    
+                    // Share widget as professional image + short link
+                    await ShareService.shareWidgetAsImage(
+                      widget: ShareCard(
+                        userName: widget.post["user_name"] ?? "Anonymous",
+                        userRole: widget.post["user_type"] ?? "User",
+                        userAvatar: widget.post["user_photo"] ?? "",
+                        postContent: title.isNotEmpty ? title : (content.isNotEmpty ? content : "Check out this post!"),
+                      ),
+                      shareUrl: shortUrl,
+                      postTitle: title.isNotEmpty ? title : 'LinkPeer Post',
+                    );
                   },
                 ),
               ],

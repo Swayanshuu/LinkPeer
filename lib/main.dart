@@ -9,6 +9,10 @@ import 'package:igit_connects/firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart';
+import 'package:app_links/app_links.dart';
+import 'package:igit_connects/Screens/Post/FullPostScreen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,12 +58,79 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  final _appLinks = AppLinks();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(themeProvider.notifier).init(widget.initialTheme);
     });
+    _initDeepLinks();
+  }
+
+  Future<void> _initDeepLinks() async {
+    // 1. Handle deep link if app was closed (cold start)
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        _handleIncomingUri(initialUri);
+      }
+    } catch (e) {
+      debugPrint("Failed to get initial link: $e");
+    }
+
+    // 2. Handle deep link if app is already running in background
+    _appLinks.uriLinkStream.listen((uri) {
+      _handleIncomingUri(uri);
+    });
+  }
+
+  Future<void> _handleIncomingUri(Uri uri) async {
+    String? postId;
+
+    // Handle custom scheme: linkpeer://post/123
+    if (uri.scheme == 'linkpeer' && uri.host == 'post' && uri.pathSegments.isNotEmpty) {
+      postId = uri.pathSegments.first;
+    } 
+    // Handle verified App Link: https://go.swynx.dev/xyz
+    else if (uri.host == 'go.swynx.dev' && uri.pathSegments.isNotEmpty) {
+      final slug = uri.pathSegments.first;
+      // Skip API routes
+      if (slug != 'api') {
+        try {
+          final response = await http.get(Uri.parse('https://go.swynx.dev/api/links/$slug'));
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            final targetUrl = data['targetUrl'] as String?;
+            if (targetUrl != null && targetUrl.startsWith('linkpeer://post/')) {
+              postId = targetUrl.split('/').last;
+            }
+          }
+        } catch (e) {
+          debugPrint('Failed to resolve shortlink: $e');
+        }
+      }
+    }
+
+    if (postId != null) {
+      try {
+        final post = await Supabase.instance.client
+            .from('posts')
+            .select()
+            .eq('id', postId)
+            .single();
+            
+        _navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => FullPostScreen(post: post),
+          ),
+        );
+      } catch (e) {
+        debugPrint('Error loading deep linked post: $e');
+      }
+    }
   }
 
   static TextTheme _poppins(TextTheme base) =>
@@ -94,6 +165,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
 
       themeMode: themeMode,
