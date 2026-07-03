@@ -4,22 +4,24 @@ import 'package:flutter/services.dart';
 import 'package:igit_connects/Component/HashtagText.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../Component/app_colors.dart';
+import '../../Controllers/UserProvider.dart';
 import '../../Screens/Post/EditPostScreen.dart';
 import '../../Screens/Post/FullPostScreen.dart';
 
-class PostCard extends StatefulWidget {
+class PostCard extends ConsumerStatefulWidget {
   final Map post;
   final VoidCallback onRefresh;
 
   const PostCard({super.key, required this.post, required this.onRefresh});
 
   @override
-  State<PostCard> createState() => _PostCardState();
+  ConsumerState<PostCard> createState() => _PostCardState();
 }
 
-class _PostCardState extends State<PostCard> {
+class _PostCardState extends ConsumerState<PostCard> {
   bool _isLiked = false;
   int _likesCount = 0;
   bool _isSaved = false;
@@ -77,12 +79,10 @@ class _PostCardState extends State<PostCard> {
             .eq("post_id", postId)
             .eq("user_id", currentUserId);
       } else {
-        await Supabase.instance.client
-            .from("post_likes")
-            .insert({
-              "post_id": postId,
-              "user_id": currentUserId,
-            });
+        await Supabase.instance.client.from("post_likes").insert({
+          "post_id": postId,
+          "user_id": currentUserId,
+        });
       }
       widget.onRefresh();
     } catch (e) {
@@ -117,12 +117,10 @@ class _PostCardState extends State<PostCard> {
             .eq("post_id", postId)
             .eq("user_id", currentUserId);
       } else {
-        await Supabase.instance.client
-            .from("saved_posts")
-            .insert({
-              "post_id": postId,
-              "user_id": currentUserId,
-            });
+        await Supabase.instance.client.from("saved_posts").insert({
+          "post_id": postId,
+          "user_id": currentUserId,
+        });
       }
       widget.onRefresh();
     } catch (e) {
@@ -155,19 +153,23 @@ class _PostCardState extends State<PostCard> {
     if (createdAt.isEmpty) return "";
     try {
       String normalized = createdAt;
-      if (!normalized.endsWith("Z") && !RegExp(r'[+-]\d\d:?\d\d$').hasMatch(normalized)) {
+      if (!normalized.endsWith("Z") &&
+          !RegExp(r'[+-]\d\d:?\d\d$').hasMatch(normalized)) {
         normalized = "${normalized}Z";
       }
       final dateTime = DateTime.parse(normalized).toLocal();
       final year = dateTime.year;
       final month = dateTime.month.toString().padLeft(2, '0');
       final day = dateTime.day.toString().padLeft(2, '0');
-      
+
       final hourVal = dateTime.hour;
       final minute = dateTime.minute.toString().padLeft(2, '0');
       final amPm = hourVal >= 12 ? "PM" : "AM";
-      final hour = (hourVal % 12 == 0 ? 12 : hourVal % 12).toString().padLeft(2, '0');
-      
+      final hour = (hourVal % 12 == 0 ? 12 : hourVal % 12).toString().padLeft(
+        2,
+        '0',
+      );
+
       return "$year-$month-$day • $hour:$minute $amPm";
     } catch (_) {
       if (createdAt.length >= 16) {
@@ -287,8 +289,11 @@ class _PostCardState extends State<PostCard> {
   Widget _buildUserTypeBadge(String userType, AppColors colors) {
     Color color;
     switch (userType.toLowerCase()) {
+      case "admin":
+        color = const Color(0xFF2563EB); // Royal Blue
+        break;
       case "faculty":
-        color = const Color(0xFFEF4444); // Red
+        color = const Color(0xFF8B5CF6); // Purple
         break;
       case "alumni":
         color = const Color(0xFF10B981); // Emerald
@@ -322,13 +327,26 @@ class _PostCardState extends State<PostCard> {
     final colors = AppColors.of(context);
     final post = widget.post;
 
+    final userAsync = ref.watch(userProvider);
+    bool isAdmin = false;
+    userAsync.whenData((userData) {
+      if (userData['role']?.toString().toLowerCase() == 'admin' || 
+          userData['user_type']?.toString().toLowerCase() == 'admin') {
+        isAdmin = true;
+      }
+    });
+
     final currentUser = FirebaseAuth.instance.currentUser;
     final isOwner = currentUser != null && currentUser.uid == post["user_id"];
+    final isOwnerOrAdmin = isOwner || isAdmin;
 
     final userName = (post["user_name"] ?? "User").toString();
     final photo = (post["user_photo"] ?? "").toString();
-    final userType = (post["user_type"] ?? "student").toString();
+    final usersData = post["users"] as Map<String, dynamic>?;
+    final userRole = (usersData?["role"] ?? post["user_type"] ?? "student").toString();
     final department = (post["department"] ?? "").toString();
+    final branch = (usersData?["branch"] ?? post["branch"] ?? "").toString();
+    final designation = (usersData?["designation"] ?? post["designation"] ?? "").toString();
     final postType = (post["post_type"] ?? "normal").toString();
     final title = (post["title"] ?? "").toString();
     final content = (post["content"] ?? "").toString();
@@ -341,7 +359,17 @@ class _PostCardState extends State<PostCard> {
     final isLongPost = content.length > 250;
     final shortContent = isLongPost ? content.substring(0, 250) : content;
 
-    final userHeadline = department;
+    String userHeadline = department;
+    if (userRole.toLowerCase() == "student" ||
+        userRole.toLowerCase() == "alumni") {
+      userHeadline = branch.isNotEmpty ? branch : department;
+    } else if (userRole.toLowerCase() == "faculty") {
+      userHeadline = designation.isNotEmpty
+          ? designation
+          : (branch.isNotEmpty ? branch : department);
+    }
+
+    final isAuthorAdmin = userRole.toLowerCase() == "admin";
 
     return GestureDetector(
       onTap: () {
@@ -353,368 +381,459 @@ class _PostCardState extends State<PostCard> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.cardColor.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.borderColor.withValues(alpha: 0.35)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+        decoration: BoxDecoration(
+          color: isAuthorAdmin
+              ? const Color(0xFF2563EB).withValues(
+                  alpha: 0.03,
+                ) // Professional Royal Blue tint
+              : colors.cardColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isAuthorAdmin
+                ? const Color(0xFF2563EB).withValues(
+                    alpha: 0.4,
+                  ) // Subtle blue border
+                : colors.borderColor.withValues(alpha: 0.35),
+            width: isAuthorAdmin ? 1.5 : 1.0,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// CATEGORY UPPERCASE LABEL (e.g. JOB OPPORTUNITY)
-          _buildCategoryHeader(postType, colors),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.015),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// CATEGORY UPPERCASE LABEL (e.g. JOB OPPORTUNITY)
+            _buildCategoryHeader(postType, colors),
 
-          /// HEADER (AVATAR & NAME BLOCK)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: colors.borderColor,
-                backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
-                child: photo.isEmpty ? const Icon(Icons.person) : null,
+            /// HEADER (AVATAR & NAME BLOCK)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: colors.borderColor,
+                  backgroundImage: photo.isNotEmpty
+                      ? NetworkImage(photo)
+                      : null,
+                  child: photo.isEmpty ? const Icon(Icons.person) : null,
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              userName,
+                              style: TextStyle(
+                                color: colors.primaryText,
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _buildUserTypeBadge(userRole, colors),
+                        ],
+                      ),
+
+                      const SizedBox(height: 4),
+                      if (isAuthorAdmin)
+                        Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () =>
+                                  _safelyLaunchUrl("https://swynx.dev", colors),
+                              child: Text(
+                                "swynx.dev",
+                                style: TextStyle(
+                                  color: Colors.blueAccent,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.blueAccent.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Text(
+                              " • $date",
+                              style: TextStyle(
+                                color: colors.secondaryText.withValues(
+                                  alpha: 0.7,
+                                ),
+                                fontSize: 10.5,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              Icons.public,
+                              size: 11,
+                              color: colors.secondaryText.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ],
+                        )
+                      else ...[
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                userHeadline.isNotEmpty ? "$userHeadline - $date" : date,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: colors.secondaryText.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.public,
+                              size: 11,
+                              color: colors.secondaryText.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                if (isOwnerOrAdmin)
+                  PopupMenuButton<String>(
+                    icon: Icon(Icons.more_horiz, color: colors.secondaryText),
+                    color: colors.cardColor,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: colors.borderColor),
+                    ),
+                    onSelected: (value) async {
+                      if (value == "edit") {
+                        final updated = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditPostScreen(post: post),
+                          ),
+                        );
+
+                        if (updated == true) {
+                          widget.onRefresh();
+                        }
+                      }
+
+                      if (value == "delete") {
+                        await deletePost();
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: "edit",
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_outlined,
+                              size: 18,
+                              color: colors.primaryText,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Edit",
+                              style: TextStyle(color: colors.primaryText),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: "delete",
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              size: 18,
+                              color: Colors.red,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Delete",
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            /// TITLE
+            if (title.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontSize: 17.5,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.3,
+                  ),
+                ),
               ),
 
-              const SizedBox(width: 12),
+            /// CONTENT
+            HashtagText(text: shortContent, fontSize: 14.5),
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            if (isLongPost)
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => FullPostScreen(post: post),
+                    ),
+                  );
+                },
+                child: const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Text(
+                    "... see more",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+
+            /// FILE ATTACHMENT
+            if (fileUrl.isNotEmpty) ...[
+              const SizedBox(height: 12),
+
+              if (isImage(fileUrl))
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    fileUrl,
+                    width: double.infinity,
+                    height: 220,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              else
+                InkWell(
+                  onTap: () => _safelyLaunchUrl(fileUrl, colors),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colors.bgColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colors.borderColor),
+                    ),
+                    child: Row(
                       children: [
-                        Flexible(
+                        Icon(
+                          Icons.attach_file,
+                          color: colors.secondaryText,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
                           child: Text(
-                            userName,
+                            fileName.isEmpty ? "Open File" : fileName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: colors.primaryText,
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.2,
+                              fontSize: 13,
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        _buildUserTypeBadge(userType, colors),
-                      ],
-                    ),
-
-                    if (userHeadline.isNotEmpty) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        userHeadline,
-                        style: TextStyle(
-                          color: colors.secondaryText,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 3),
-
-                    Row(
-                      children: [
-                        Text(
-                          date,
-                          style: TextStyle(
-                            color: colors.secondaryText.withValues(alpha: 0.7),
-                            fontSize: 10.5,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
                         Icon(
-                          Icons.public,
-                          size: 11,
-                          color: colors.secondaryText.withValues(alpha: 0.5),
+                          Icons.open_in_new,
+                          color: colors.secondaryText,
+                          size: 14,
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-              if (isOwner)
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_horiz,
-                    color: colors.secondaryText,
                   ),
-                  color: colors.cardColor,
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: colors.borderColor),
-                  ),
-                  onSelected: (value) async {
-                    if (value == "edit") {
-                      final updated = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => EditPostScreen(post: post),
-                        ),
-                      );
-
-                      if (updated == true) {
-                        widget.onRefresh();
-                      }
-                    }
-
-                    if (value == "delete") {
-                      await deletePost();
-                    }
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: "edit",
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, size: 18, color: colors.primaryText),
-                          const SizedBox(width: 8),
-                          Text("Edit", style: TextStyle(color: colors.primaryText)),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: "delete",
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, size: 18, color: Colors.red),
-                          const SizedBox(width: 8),
-                          Text("Delete", style: const TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
             ],
-          ),
 
-          const SizedBox(height: 12),
-
-          /// TITLE
-          if (title.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: colors.primaryText,
-                  fontSize: 17.5,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.3,
-                ),
-              ),
-            ),
-
-          /// CONTENT
-          HashtagText(text: shortContent, fontSize: 14.5),
-
-          if (isLongPost)
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => FullPostScreen(post: post)),
-                );
-              },
-              child: const Padding(
-                padding: EdgeInsets.only(top: 6),
-                child: Text(
-                  "... see more",
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-
-          /// FILE ATTACHMENT
-          if (fileUrl.isNotEmpty) ...[
-            const SizedBox(height: 12),
-
-            if (isImage(fileUrl))
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  fileUrl,
-                  width: double.infinity,
-                  height: 220,
-                  fit: BoxFit.cover,
-                ),
-              )
-            else
-              InkWell(
-                onTap: () => _safelyLaunchUrl(fileUrl, colors),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colors.bgColor,
+            /// LINK ATTACHMENT (Bookmark Card Layout)
+            if (link.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: InkWell(
+                    onTap: () => _safelyLaunchUrl(link, colors),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colors.borderColor),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.attach_file, color: colors.secondaryText, size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          fileName.isEmpty ? "Open File" : fileName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: colors.primaryText, fontSize: 13),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.bgColor.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: colors.borderColor.withValues(alpha: 0.3),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.open_in_new, color: colors.secondaryText, size: 14),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-
-          /// LINK ATTACHMENT (Bookmark Card Layout)
-          if (link.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: InkWell(
-                  onTap: () => _safelyLaunchUrl(link, colors),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: colors.bgColor.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: colors.borderColor.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "Open Link",
-                          style: TextStyle(
-                            color: colors.primaryText,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Open Link",
+                            style: TextStyle(
+                              color: colors.primaryText,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.open_in_new_rounded,
-                          size: 14,
-                          color: colors.secondaryText,
-                        ),
-                      ],
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.open_in_new_rounded,
+                            size: 14,
+                            color: colors.secondaryText,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
+
+            /// LIKES COUNT ROW (Just above the divider)
+            if (_likesCount > 0) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(Icons.favorite, color: Colors.red, size: 14),
+                  const SizedBox(width: 6),
+                  Text(
+                    "$_likesCount ${_likesCount == 1 ? 'like' : 'likes'}",
+                    style: TextStyle(
+                      color: colors.secondaryText,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(height: 1, thickness: 0.5),
             ),
 
-          /// LIKES COUNT ROW (Just above the divider)
-          if (_likesCount > 0) ...[
-            const SizedBox(height: 10),
+            /// ACTION BAR (Like, Comment, Save, Share)
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                const Icon(Icons.favorite, color: Colors.red, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  "$_likesCount ${_likesCount == 1 ? 'like' : 'likes'}",
-                  style: TextStyle(
-                    color: colors.secondaryText,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                _ActionButton(
+                  icon: _isLiked
+                      ? Icons.favorite
+                      : Icons.favorite_border_rounded,
+                  iconColor: _isLiked ? Colors.red : colors.secondaryText,
+                  textColor: _isLiked ? Colors.red : colors.secondaryText,
+                  label: "Like",
+                  onTap: _toggleLike,
+                ),
+                _ActionButton(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  iconColor: colors.secondaryText,
+                  textColor: colors.secondaryText,
+                  label: "Comment",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FullPostScreen(post: post),
+                      ),
+                    );
+                  },
+                ),
+                _ActionButton(
+                  icon: _isSaved
+                      ? Icons.bookmark
+                      : Icons.bookmark_border_rounded,
+                  iconColor: _isSaved ? Colors.blue : colors.secondaryText,
+                  textColor: _isSaved ? Colors.blue : colors.secondaryText,
+                  label: "Save",
+                  onTap: _toggleSave,
+                ),
+                _ActionButton(
+                  icon: Icons.share_outlined,
+                  iconColor: colors.secondaryText,
+                  textColor: colors.secondaryText,
+                  label: "Share",
+                  onTap: () {
+                    final shareText =
+                        "${title.isNotEmpty ? "$title\n\n" : ""}$content\n\nShared via LinkPeer";
+                    Clipboard.setData(ClipboardData(text: shareText)).then((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: colors.cardColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: colors.borderColor),
+                            ),
+                            content: Row(
+                              children: [
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  "Copied to clipboard!",
+                                  style: TextStyle(
+                                    color: colors.primaryText,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                    });
+                  },
                 ),
               ],
             ),
           ],
-
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1, thickness: 0.5),
-          ),
-
-          /// ACTION BAR (Like, Comment, Save, Share)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _ActionButton(
-                icon: _isLiked ? Icons.favorite : Icons.favorite_border_rounded,
-                iconColor: _isLiked ? Colors.red : colors.secondaryText,
-                textColor: _isLiked ? Colors.red : colors.secondaryText,
-                label: "Like",
-                onTap: _toggleLike,
-              ),
-              _ActionButton(
-                icon: Icons.chat_bubble_outline_rounded,
-                iconColor: colors.secondaryText,
-                textColor: colors.secondaryText,
-                label: "Comment",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => FullPostScreen(post: post)),
-                  );
-                },
-              ),
-              _ActionButton(
-                icon: _isSaved ? Icons.bookmark : Icons.bookmark_border_rounded,
-                iconColor: _isSaved ? Colors.blue : colors.secondaryText,
-                textColor: _isSaved ? Colors.blue : colors.secondaryText,
-                label: "Save",
-                onTap: _toggleSave,
-              ),
-              _ActionButton(
-                icon: Icons.share_outlined,
-                iconColor: colors.secondaryText,
-                textColor: colors.secondaryText,
-                label: "Share",
-                onTap: () {
-                  final shareText = "${title.isNotEmpty ? "$title\n\n" : ""}$content\n\nShared via LinkPeer";
-                  Clipboard.setData(ClipboardData(text: shareText)).then((_) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: colors.cardColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: colors.borderColor),
-                          ),
-                          content: Row(
-                            children: [
-                              const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                              const SizedBox(width: 10),
-                              Text(
-                                "Copied to clipboard!",
-                                style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
-    ),
     );
   }
 }

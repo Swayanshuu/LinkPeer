@@ -67,6 +67,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         "user_photo": user["photo_url"],
         "user_type": user["user_type"],
         "department": user["department"],
+        "branch": user["branch"],
+        "designation": user["designation"],
         "post_type": postType,
         "title": title.text.trim(),
         "content": content.text.trim(),
