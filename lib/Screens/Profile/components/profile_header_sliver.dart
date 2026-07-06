@@ -127,7 +127,11 @@ class ProfileHeaderSliver extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.edit_outlined, size: 16, color: colors.primaryText),
+                                Icon(
+                                  Icons.edit_outlined,
+                                  size: 16,
+                                  color: colors.primaryText,
+                                ),
 
                                 const SizedBox(width: 8),
 

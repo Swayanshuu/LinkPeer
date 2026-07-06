@@ -6,7 +6,8 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ShareService {
-  static final ScreenshotController _screenshotController = ScreenshotController();
+  static final ScreenshotController _screenshotController =
+      ScreenshotController();
 
   /// Captures a widget as an image, saves it temporarily, and opens the native share sheet.
   static Future<void> shareWidgetAsImage({
@@ -19,7 +20,8 @@ class ShareService {
       final imageBytes = await _screenshotController.captureFromWidget(
         widget,
         delay: const Duration(milliseconds: 200),
-        context: null, // Ideally we pass context if needed, but this works for basic widgets
+        context:
+            null, // Ideally we pass context if needed, but this works for basic widgets
       );
 
       // 2. Save the image temporarily
@@ -51,20 +53,17 @@ class ShareService {
       final client = HttpClient();
       final request = await client.postUrl(Uri.parse(apiUrl));
       request.headers.set('Content-Type', 'application/json');
-      
-      final payload = {
-        'targetUrl': targetUrl,
-        'title': title,
-      };
+
+      final payload = {'targetUrl': targetUrl, 'title': title};
       if (imageUrl != null && imageUrl.isNotEmpty) {
         payload['imageUrl'] = imageUrl;
       }
-      
+
       request.add(utf8.encode(jsonEncode(payload)));
-      
+
       final response = await request.close();
       final responseBody = await response.transform(utf8.decoder).join();
-      
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(responseBody);
         return data['shortUrl'];

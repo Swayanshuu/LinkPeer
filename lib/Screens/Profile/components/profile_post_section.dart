@@ -45,7 +45,9 @@ class _ProfilePostsSectionState extends State<ProfilePostsSection> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: _activeTab == 0 ? colors.cardColor : Colors.transparent,
+                    color: _activeTab == 0
+                        ? colors.cardColor
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: _activeTab == 0
                         ? [
@@ -63,13 +65,17 @@ class _ProfilePostsSectionState extends State<ProfilePostsSection> {
                       Icon(
                         Icons.grid_on_rounded,
                         size: 16,
-                        color: _activeTab == 0 ? colors.primaryText : colors.secondaryText,
+                        color: _activeTab == 0
+                            ? colors.primaryText
+                            : colors.secondaryText,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         "My Posts",
                         style: TextStyle(
-                          color: _activeTab == 0 ? colors.primaryText : colors.secondaryText,
+                          color: _activeTab == 0
+                              ? colors.primaryText
+                              : colors.secondaryText,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -86,7 +92,9 @@ class _ProfilePostsSectionState extends State<ProfilePostsSection> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: _activeTab == 1 ? colors.cardColor : Colors.transparent,
+                    color: _activeTab == 1
+                        ? colors.cardColor
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: _activeTab == 1
                         ? [
@@ -104,13 +112,17 @@ class _ProfilePostsSectionState extends State<ProfilePostsSection> {
                       Icon(
                         Icons.bookmark_rounded,
                         size: 16,
-                        color: _activeTab == 1 ? colors.primaryText : colors.secondaryText,
+                        color: _activeTab == 1
+                            ? colors.primaryText
+                            : colors.secondaryText,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         "Saved",
                         style: TextStyle(
-                          color: _activeTab == 1 ? colors.primaryText : colors.secondaryText,
+                          color: _activeTab == 1
+                              ? colors.primaryText
+                              : colors.secondaryText,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -134,7 +146,9 @@ class _ProfilePostsSectionState extends State<ProfilePostsSection> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              _activeTab == 0 ? Icons.post_add_rounded : Icons.bookmark_border_rounded,
+              _activeTab == 0
+                  ? Icons.post_add_rounded
+                  : Icons.bookmark_border_rounded,
               size: 48,
               color: colors.secondaryText.withValues(alpha: 0.4),
             ),
@@ -173,7 +187,9 @@ class _ProfilePostsSectionState extends State<ProfilePostsSection> {
         ),
       ),
       data: (list) {
-        final myPosts = list.where((p) => p["user_id"] == widget.data["id"]).toList();
+        final myPosts = list
+            .where((p) => p["user_id"] == widget.data["id"])
+            .toList();
         final savedPosts = list.where((p) {
           final savedList = p["saved_posts"] as List? ?? [];
           return savedList.any((s) => s["user_id"] == widget.data["id"]);
@@ -184,21 +200,18 @@ class _ProfilePostsSectionState extends State<ProfilePostsSection> {
         return SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index == 0) return _buildTabSelector(colors);
-                if (activeList.isEmpty) return _buildEmptyState(colors);
+            delegate: SliverChildBuilderDelegate((context, index) {
+              if (index == 0) return _buildTabSelector(colors);
+              if (activeList.isEmpty) return _buildEmptyState(colors);
 
-                final postIndex = index - 1;
-                return PostCard(
-                  post: activeList[postIndex],
-                  onRefresh: () {
-                    widget.ref.invalidate(postsProvider);
-                  },
-                );
-              },
-              childCount: activeList.isEmpty ? 2 : activeList.length + 1,
-            ),
+              final postIndex = index - 1;
+              return PostCard(
+                post: activeList[postIndex],
+                onRefresh: () {
+                  widget.ref.invalidate(postsProvider);
+                },
+              );
+            }, childCount: activeList.isEmpty ? 2 : activeList.length + 1),
           ),
         );
       },

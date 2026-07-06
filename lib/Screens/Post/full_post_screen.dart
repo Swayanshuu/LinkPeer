@@ -72,12 +72,10 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
             .eq("post_id", postId)
             .eq("user_id", currentUserId);
       } else {
-        await Supabase.instance.client
-            .from("post_likes")
-            .insert({
-              "post_id": postId,
-              "user_id": currentUserId,
-            });
+        await Supabase.instance.client.from("post_likes").insert({
+          "post_id": postId,
+          "user_id": currentUserId,
+        });
       }
       ref.invalidate(postsProvider);
     } catch (e) {
@@ -112,12 +110,10 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
             .eq("post_id", postId)
             .eq("user_id", currentUserId);
       } else {
-        await Supabase.instance.client
-            .from("saved_posts")
-            .insert({
-              "post_id": postId,
-              "user_id": currentUserId,
-            });
+        await Supabase.instance.client.from("saved_posts").insert({
+          "post_id": postId,
+          "user_id": currentUserId,
+        });
       }
       ref.invalidate(postsProvider);
     } catch (e) {
@@ -140,19 +136,23 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     if (createdAt.isEmpty) return "";
     try {
       String normalized = createdAt;
-      if (!normalized.endsWith("Z") && !RegExp(r'[+-]\d\d:?\d\d$').hasMatch(normalized)) {
+      if (!normalized.endsWith("Z") &&
+          !RegExp(r'[+-]\d\d:?\d\d$').hasMatch(normalized)) {
         normalized = "${normalized}Z";
       }
       final dateTime = DateTime.parse(normalized).toLocal();
       final year = dateTime.year;
       final month = dateTime.month.toString().padLeft(2, '0');
       final day = dateTime.day.toString().padLeft(2, '0');
-      
+
       final hourVal = dateTime.hour;
       final minute = dateTime.minute.toString().padLeft(2, '0');
       final amPm = hourVal >= 12 ? "PM" : "AM";
-      final hour = (hourVal % 12 == 0 ? 12 : hourVal % 12).toString().padLeft(2, '0');
-      
+      final hour = (hourVal % 12 == 0 ? 12 : hourVal % 12).toString().padLeft(
+        2,
+        '0',
+      );
+
       return "$year-$month-$day • $hour:$minute $amPm";
     } catch (_) {
       if (createdAt.length >= 16) {
@@ -162,7 +162,11 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     }
   }
 
-  Future<void> _safelyLaunchUrl(BuildContext context, String urlString, AppColors colors) async {
+  Future<void> _safelyLaunchUrl(
+    BuildContext context,
+    String urlString,
+    AppColors colors,
+  ) async {
     try {
       final uri = Uri.parse(urlString);
       final launched = await launchUrl(
@@ -179,7 +183,11 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     }
   }
 
-  void _showInvalidUrlSnackBar(BuildContext context, String urlString, AppColors colors) {
+  void _showInvalidUrlSnackBar(
+    BuildContext context,
+    String urlString,
+    AppColors colors,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
@@ -265,28 +273,35 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
               icon: const Icon(Icons.share_outlined),
               onPressed: () async {
                 setState(() => _isGeneratingLink = true);
-                
-                final String imageUrl = (widget.post["image_url"] ?? "").toString();
+
+                final String imageUrl = (widget.post["image_url"] ?? "")
+                    .toString();
                 final String title = (widget.post["title"] ?? "").toString();
-                final String content = (widget.post["content"] ?? "").toString();
-                
+                final String content = (widget.post["content"] ?? "")
+                    .toString();
+
                 final shortUrl = await ShareService.generateShortLink(
                   postId: widget.post['id'].toString(),
                   title: title.isNotEmpty ? title : 'LinkPeer Post',
                   imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
                 );
-                
+
                 await ShareService.shareWidgetAsImage(
                   widget: ShareCard(
-                    userName: widget.post["user_name"]?.toString() ?? "Anonymous",
+                    userName:
+                        widget.post["user_name"]?.toString() ?? "Anonymous",
                     userRole: widget.post["user_type"]?.toString() ?? "User",
                     userAvatar: widget.post["user_photo"]?.toString() ?? "",
-                    postContent: title.isNotEmpty ? title : (content.isNotEmpty ? content : "Check out this post!"),
+                    postContent: title.isNotEmpty
+                        ? title
+                        : (content.isNotEmpty
+                              ? content
+                              : "Check out this post!"),
                   ),
                   shareUrl: shortUrl,
                   postTitle: title.isNotEmpty ? title : "LinkPeer Post",
                 );
-                
+
                 if (mounted) {
                   setState(() => _isGeneratingLink = false);
                 }
@@ -297,7 +312,12 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 110), // Extra padding for bottom bar
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              12,
+              16,
+              110,
+            ), // Extra padding for bottom bar
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -307,16 +327,24 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                   decoration: BoxDecoration(
                     color: colors.cardColor.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: colors.borderColor.withOpacity(0.4)),
+                    border: Border.all(
+                      color: colors.borderColor.withOpacity(0.4),
+                    ),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 26,
                         backgroundColor: colors.borderColor,
-                        backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
+                        backgroundImage: photo.isNotEmpty
+                            ? NetworkImage(photo)
+                            : null,
                         child: photo.isEmpty
-                            ? Icon(Icons.person, size: 28, color: colors.primaryText)
+                            ? Icon(
+                                Icons.person,
+                                size: 28,
+                                color: colors.primaryText,
+                              )
                             : null,
                       ),
                       const SizedBox(width: 14),
@@ -350,7 +378,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
 
                 // Title Section
@@ -398,21 +426,30 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.insert_drive_file, color: colors.secondaryText, size: 28),
+                            Icon(
+                              Icons.insert_drive_file,
+                              color: colors.secondaryText,
+                              size: 28,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                fileName.isEmpty ? "View File Attachment" : fileName,
+                                fileName.isEmpty
+                                    ? "View File Attachment"
+                                    : fileName,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  color: colors.primaryText, 
+                                  color: colors.primaryText,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                            Icon(Icons.download_rounded, color: colors.primaryText),
+                            Icon(
+                              Icons.download_rounded,
+                              color: colors.primaryText,
+                            ),
                           ],
                         ),
                       ),
@@ -440,7 +477,10 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                               color: colors.bgColor,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(Icons.link_rounded, color: colors.primaryText),
+                            child: Icon(
+                              Icons.link_rounded,
+                              color: colors.primaryText,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -484,10 +524,17 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
             right: 0,
             child: FirebaseAuth.instance.currentUser == null
                 ? Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: colors.bgColor.withOpacity(0.95),
-                      border: Border(top: BorderSide(color: colors.borderColor.withOpacity(0.5))),
+                      border: Border(
+                        top: BorderSide(
+                          color: colors.borderColor.withOpacity(0.5),
+                        ),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.05),
@@ -500,7 +547,9 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                       child: InkWell(
                         onTap: () {
                           Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (_) => const LoginScreen2()),
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen2(),
+                            ),
                             (route) => false,
                           );
                         },
@@ -508,13 +557,18 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
-                            color: colors.primaryText, // High contrast button color
+                            color: colors
+                                .primaryText, // High contrast button color
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.lock_outline, color: colors.bgColor, size: 20),
+                              Icon(
+                                Icons.lock_outline,
+                                color: colors.bgColor,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 "Login to see more",
@@ -531,11 +585,16 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                     ),
                   )
                 : Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: colors.bgColor.withOpacity(0.95),
                       border: Border(
-                        top: BorderSide(color: colors.borderColor.withOpacity(0.5)),
+                        top: BorderSide(
+                          color: colors.borderColor.withOpacity(0.5),
+                        ),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -550,7 +609,9 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _buildActionButton(
-                            icon: _isLiked ? Icons.favorite : Icons.favorite_border_rounded,
+                            icon: _isLiked
+                                ? Icons.favorite
+                                : Icons.favorite_border_rounded,
                             color: _isLiked ? Colors.red : colors.secondaryText,
                             label: _likesCount > 0 ? "$_likesCount" : "Like",
                             onTap: _toggleLike,
@@ -566,8 +627,12 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                             isActive: false,
                           ),
                           _buildActionButton(
-                            icon: _isSaved ? Icons.bookmark : Icons.bookmark_border_rounded,
-                            color: _isSaved ? Colors.blue : colors.secondaryText,
+                            icon: _isSaved
+                                ? Icons.bookmark
+                                : Icons.bookmark_border_rounded,
+                            color: _isSaved
+                                ? Colors.blue
+                                : colors.secondaryText,
                             label: "Save",
                             onTap: _toggleSave,
                             isActive: _isSaved,
@@ -579,26 +644,44 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                             onTap: () async {
                               if (_isGeneratingLink) return;
                               setState(() => _isGeneratingLink = true);
-                              
-                              final String imageUrl = (widget.post["image_url"] ?? "").toString();
-                              
-                              final shortUrl = await ShareService.generateShortLink(
-                                postId: widget.post['id'].toString(),
-                                title: title.isNotEmpty ? title : 'LinkPeer Post',
-                                imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
-                              );
-                              
+
+                              final String imageUrl =
+                                  (widget.post["image_url"] ?? "").toString();
+
+                              final shortUrl =
+                                  await ShareService.generateShortLink(
+                                    postId: widget.post['id'].toString(),
+                                    title: title.isNotEmpty
+                                        ? title
+                                        : 'LinkPeer Post',
+                                    imageUrl: imageUrl.isNotEmpty
+                                        ? imageUrl
+                                        : null,
+                                  );
+
                               await ShareService.shareWidgetAsImage(
                                 widget: ShareCard(
-                                  userName: widget.post["user_name"]?.toString() ?? "Anonymous",
-                                  userRole: widget.post["user_type"]?.toString() ?? "User",
-                                  userAvatar: widget.post["user_photo"]?.toString() ?? "",
-                                  postContent: title.isNotEmpty ? title : (content.isNotEmpty ? content : "Check out this post!"),
+                                  userName:
+                                      widget.post["user_name"]?.toString() ??
+                                      "Anonymous",
+                                  userRole:
+                                      widget.post["user_type"]?.toString() ??
+                                      "User",
+                                  userAvatar:
+                                      widget.post["user_photo"]?.toString() ??
+                                      "",
+                                  postContent: title.isNotEmpty
+                                      ? title
+                                      : (content.isNotEmpty
+                                            ? content
+                                            : "Check out this post!"),
                                 ),
                                 shareUrl: shortUrl,
-                                postTitle: title.isNotEmpty ? title : "LinkPeer Post",
+                                postTitle: title.isNotEmpty
+                                    ? title
+                                    : "LinkPeer Post",
                               );
-                              
+
                               if (mounted) {
                                 setState(() => _isGeneratingLink = false);
                               }

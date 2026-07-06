@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:igit_connects/core/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:igit_connects/shared_components/hashtag_text.dart';
-
-import 'package:igit_connects/core/app_colors.dart';
 
 class CreatePostPreviewSection extends StatelessWidget {
   final String name;
@@ -115,7 +114,11 @@ class CreatePostPreviewSection extends StatelessWidget {
     );
   }
 
-  Future<void> _safelyLaunchUrl(BuildContext context, String urlString, AppColors colors) async {
+  Future<void> _safelyLaunchUrl(
+    BuildContext context,
+    String urlString,
+    AppColors colors,
+  ) async {
     try {
       final uri = Uri.parse(urlString);
       final launched = await launchUrl(
@@ -132,7 +135,11 @@ class CreatePostPreviewSection extends StatelessWidget {
     }
   }
 
-  void _showInvalidUrlSnackBar(BuildContext context, String urlString, AppColors colors) {
+  void _showInvalidUrlSnackBar(
+    BuildContext context,
+    String urlString,
+    AppColors colors,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
@@ -193,7 +200,9 @@ class CreatePostPreviewSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: colors.cardColor.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colors.borderColor.withValues(alpha: 0.35)),
+            border: Border.all(
+              color: colors.borderColor.withValues(alpha: 0.35),
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.015),
@@ -215,7 +224,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                   CircleAvatar(
                     radius: 22,
                     backgroundColor: colors.borderColor,
-                    backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
+                    backgroundImage: photo.isNotEmpty
+                        ? NetworkImage(photo)
+                        : null,
                     child: photo.isEmpty ? const Icon(Icons.person) : null,
                   ),
 
@@ -262,7 +273,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                             Text(
                               "Just now",
                               style: TextStyle(
-                                color: colors.secondaryText.withValues(alpha: 0.7),
+                                color: colors.secondaryText.withValues(
+                                  alpha: 0.7,
+                                ),
                                 fontSize: 10.5,
                               ),
                             ),
@@ -270,7 +283,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                             Icon(
                               Icons.public,
                               size: 11,
-                              color: colors.secondaryText.withValues(alpha: 0.5),
+                              color: colors.secondaryText.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                           ],
                         ),
@@ -301,7 +316,10 @@ class CreatePostPreviewSection extends StatelessWidget {
               content.isEmpty
                   ? Text(
                       "Your post content...",
-                      style: TextStyle(color: colors.secondaryText, fontSize: 14.5),
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 14.5,
+                      ),
                     )
                   : HashtagText(text: content, fontSize: 14.5),
 
@@ -315,11 +333,16 @@ class CreatePostPreviewSection extends StatelessWidget {
                       onTap: () => _safelyLaunchUrl(context, link, colors),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: colors.bgColor.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: colors.borderColor.withValues(alpha: 0.3)),
+                          border: Border.all(
+                            color: colors.borderColor.withValues(alpha: 0.3),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,

@@ -8,11 +8,7 @@ class ProfileStatBox extends StatelessWidget {
   final String title;
   final String value;
 
-  const ProfileStatBox({
-    super.key,
-    required this.title,
-    required this.value,
-  });
+  const ProfileStatBox({super.key, required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +29,7 @@ class ProfileStatBox extends StatelessWidget {
 
         Text(
           title,
-          style: TextStyle(
-            color: colors.secondaryText,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: colors.secondaryText, fontSize: 12),
         ),
       ],
     );

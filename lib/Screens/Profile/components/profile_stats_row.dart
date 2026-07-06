@@ -9,71 +9,34 @@ class ProfileStatsRow extends StatelessWidget {
   final Map data;
   final AsyncValue posts;
 
-  const ProfileStatsRow({
-    super.key,
-    required this.data,
-    required this.posts,
-  });
+  const ProfileStatsRow({super.key, required this.data, required this.posts});
 
   @override
-  Widget build(
-      BuildContext context) {
+  Widget build(BuildContext context) {
+    final type = (data["user_type"] ?? "student").toString();
 
-    final type =
-    (data["user_type"] ??
-        "student")
-        .toString();
+    final branch = (data["branch"] ?? "").toString();
 
-    final branch =
-    (data["branch"] ??
-        "")
-        .toString();
+    final dept = (data["department"] ?? "").toString();
 
-    final dept =
-    (data["department"] ??
-        "")
-        .toString();
-
-    final count =
-    posts.maybeWhen(
-      data: (list) => list
-          .where(
-            (p) =>
-        p["user_id"] ==
-            data["id"],
-      )
-          .length
-          .toString(),
+    final count = posts.maybeWhen(
+      data: (list) =>
+          list.where((p) => p["user_id"] == data["id"]).length.toString(),
       orElse: () => "0",
     );
 
     return Row(
-      mainAxisAlignment:
-      MainAxisAlignment
-          .spaceAround,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
 
       children: [
-        ProfileStatBox(
-          title: "Posts",
-          value: count,
-        ),
+        ProfileStatBox(title: "Posts", value: count),
+
+        ProfileStatBox(title: "Type", value: type.toUpperCase()),
 
         ProfileStatBox(
-          title: "Type",
-          value:
-          type.toUpperCase(),
-        ),
+          title: type == "faculty" ? "Dept" : "Branch",
 
-        ProfileStatBox(
-          title: type ==
-              "faculty"
-              ? "Dept"
-              : "Branch",
-
-          value: type ==
-              "faculty"
-              ? dept
-              : branch,
+          value: type == "faculty" ? dept : branch,
         ),
       ],
     );

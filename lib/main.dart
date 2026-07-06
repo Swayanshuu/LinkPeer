@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'package:igit_connects/core/auth_gate.dart';
 import 'package:igit_connects/core/theme_provider.dart';
 import 'package:igit_connects/firebase_options.dart';
@@ -10,7 +11,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart';
 import 'package:app_links/app_links.dart';
-import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -40,7 +40,9 @@ Future<void> main() async {
   );
 
   debugPrint("Supabase Initialized");
-  if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS)) {
     await MobileAds.instance.initialize();
   }
   debugPrint("AdMob Initialized");
@@ -91,16 +93,20 @@ class _MyAppState extends ConsumerState<MyApp> {
     String? postId;
 
     // Handle custom scheme: linkpeer://post/123
-    if (uri.scheme == 'linkpeer' && uri.host == 'post' && uri.pathSegments.isNotEmpty) {
+    if (uri.scheme == 'linkpeer' &&
+        uri.host == 'post' &&
+        uri.pathSegments.isNotEmpty) {
       postId = uri.pathSegments.first;
-    } 
+    }
     // Handle verified App Link: https://go.swynx.dev/xyz
     else if (uri.host == 'go.swynx.dev' && uri.pathSegments.isNotEmpty) {
       final slug = uri.pathSegments.first;
       // Skip API routes
       if (slug != 'api') {
         try {
-          final response = await http.get(Uri.parse('https://go.swynx.dev/api/links/$slug'));
+          final response = await http.get(
+            Uri.parse('https://go.swynx.dev/api/links/$slug'),
+          );
           if (response.statusCode == 200) {
             final data = jsonDecode(response.body);
             final targetUrl = data['targetUrl'] as String?;
@@ -121,11 +127,9 @@ class _MyAppState extends ConsumerState<MyApp> {
             .select()
             .eq('id', postId)
             .single();
-            
+
         _navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (_) => FullPostScreen(post: post),
-          ),
+          MaterialPageRoute(builder: (_) => FullPostScreen(post: post)),
         );
       } catch (e) {
         debugPrint('Error loading deep linked post: $e');

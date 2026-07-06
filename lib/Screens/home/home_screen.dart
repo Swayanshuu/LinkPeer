@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:igit_connects/Screens/Post/full_post_screen.dart';
 import 'package:igit_connects/shared_components/banner_ad_widget.dart';
-import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'package:igit_connects/utils/ad_position.dart';
 import 'package:igit_connects/shared_components/app_drawer.dart';
 
@@ -99,7 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           data: (me) => RefreshIndicator(
             onRefresh: () async {
-              return await ref.refresh(postsProvider.future);
+              ref.refresh(postsProvider);
             },
             color: isDark ? Colors.black : Colors.white,
             backgroundColor: colors.primaryText,

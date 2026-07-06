@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 class GridLinePainter extends CustomPainter {
   final Color color;
 
-  const GridLinePainter({this.color = const Color(0x0DFFFFFF)}); // default: white 5%
+  const GridLinePainter({
+    this.color = const Color(0x0DFFFFFF),
+  }); // default: white 5%
 
   @override
   void paint(Canvas canvas, Size size) {

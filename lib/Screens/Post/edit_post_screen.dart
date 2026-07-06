@@ -140,10 +140,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         backgroundColor: colors.bgColor,
         elevation: 0,
         iconTheme: IconThemeData(color: colors.primaryText),
-        title: Text(
-          "Edit Post",
-          style: TextStyle(color: colors.primaryText),
-        ),
+        title: Text("Edit Post", style: TextStyle(color: colors.primaryText)),
       ),
 
       body: SafeArea(
