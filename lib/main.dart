@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:igit_connects/Controllers/AuthGate.dart';
-import 'package:igit_connects/Controllers/ThemeProvider.dart';
+import 'package:igit_connects/core/auth_gate.dart';
+import 'package:igit_connects/core/theme_provider.dart';
 import 'package:igit_connects/firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart';
 import 'package:app_links/app_links.dart';
-import 'package:igit_connects/Screens/Post/FullPostScreen.dart';
+import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 

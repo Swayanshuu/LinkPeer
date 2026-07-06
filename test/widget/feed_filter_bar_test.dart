@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:igit_connects/Component/Home/FeedFilterBar.dart';
+import 'package:igit_connects/screens/home/components/feed_filter_bar.dart';
 
 Widget _wrap({
   required String selected,

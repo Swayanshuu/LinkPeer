@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:igit_connects/Controllers/ThemeProvider.dart';
+import 'package:igit_connects/core/theme_provider.dart';
 
 void main() {
   // Reset SharedPreferences to a clean state before every test.

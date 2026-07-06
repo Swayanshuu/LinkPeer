@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:igit_connects/Component/HashtagText.dart';
+import 'package:igit_connects/shared_components/hashtag_text.dart';
 
 // ---------------------------------------------------------------------------
 // Helper: wraps the widget in a minimal Material/Theme environment.
