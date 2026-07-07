@@ -6,6 +6,7 @@ import 'package:igit_connects/shared_components/hashtag_text.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/user_provider.dart';
@@ -201,27 +202,26 @@ class _PostCardState extends ConsumerState<PostCard> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: colors.cardColor,
+        backgroundColor: Colors.red.shade600,
         margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Colors.redAccent, width: 0.8),
+          borderRadius: BorderRadius.circular(12),
         ),
         content: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 14),
-            const SizedBox(width: 6),
+            const Icon(Icons.error_outline, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
             Flexible(
               child: Text(
                 "Invalid URL: $urlString",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: colors.primaryText,
-                  fontSize: 11.5,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -288,36 +288,42 @@ class _PostCardState extends ConsumerState<PostCard> {
   }
 
   Widget _buildUserTypeBadge(String userType, AppColors colors) {
-    Color color;
+    Color bgColor;
+    Color textColor;
+
     switch (userType.toLowerCase()) {
+      case "alumni":
+        bgColor = colors.badgeAlumniBg;
+        textColor = colors.badgeAlumniText;
+        break;
       case "admin":
-        color = const Color(0xFF2563EB); // Royal Blue
+        bgColor = colors.badgeAdminBg;
+        textColor = colors.badgeAdminText;
         break;
       case "faculty":
-        color = const Color(0xFF8B5CF6); // Purple
+        bgColor = colors.badgeFacultyBg;
+        textColor = colors.badgeFacultyText;
         break;
-      case "alumni":
-        color = const Color(0xFF10B981); // Emerald
-        break;
+      case "student":
       default:
-        color = const Color(0xFF6366F1); // Indigo
+        bgColor = colors.badgeStudentBg;
+        textColor = colors.badgeStudentText;
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 0.8),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         userType.toUpperCase(),
         style: TextStyle(
-          color: color,
-          fontSize: 8.5,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.3,
+          color: textColor,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -357,7 +363,7 @@ class _PostCardState extends ConsumerState<PostCard> {
     final fileName = (post["file_name"] ?? "").toString();
     final fileUrl = (post["file_url"] ?? "").toString();
     final createdAt = (post["created_at"] ?? "").toString();
-    
+
     final commentsList = post["post_comments"] as List? ?? [];
     final commentsCount = commentsList.length;
 
@@ -385,20 +391,22 @@ class _PostCardState extends ConsumerState<PostCard> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         decoration: BoxDecoration(
-          color: isAuthorAdmin 
-              ? colors.primaryText.withValues(alpha: 0.04) // Highlight tint
+          color: postType.toLowerCase() == "announcement"
+              ? colors.announcementBg
+              : isAuthorAdmin
+              ? colors.adminPostBg
               : colors.cardColor,
-          border: Border(
-            left: isAuthorAdmin
-                ? const BorderSide(color: Colors.blue, width: 3.5) // Distinct left accent
-                : BorderSide.none,
-            bottom: BorderSide(
-              color: colors.borderColor.withValues(alpha: 0.5),
-              width: 1.0,
-            ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: postType.toLowerCase() == "announcement"
+                ? colors.announcementBorder
+                : isAuthorAdmin
+                ? colors.adminPostBorder
+                : colors.borderColor.withValues(alpha: 0.5),
+            width: 1.0,
           ),
         ),
         child: Column(
@@ -426,19 +434,32 @@ class _PostCardState extends ConsumerState<PostCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Flexible(
-                            child: Text(
-                              userName,
-                              style: TextStyle(
-                                color: colors.primaryText,
-                                fontSize: 13.5, // smaller text
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                          ),
+                          isAuthorAdmin
+                              ? Shimmer.fromColors(
+                                  baseColor: colors.primaryText,
+                                  highlightColor: Colors.blueAccent,
+                                  child: Text(
+                                    userName,
+                                    style: TextStyle(
+                                      color: colors.primaryText,
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  userName,
+                                  style: TextStyle(
+                                    color: colors.primaryText,
+                                    fontSize: 13.5, // smaller text
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
                           const SizedBox(width: 8),
                           _buildUserTypeBadge(userRole, colors),
                         ],
@@ -446,20 +467,28 @@ class _PostCardState extends ConsumerState<PostCard> {
 
                       const SizedBox(height: 4),
                       if (isAuthorAdmin)
-                        Row(
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             GestureDetector(
                               onTap: () =>
                                   _safelyLaunchUrl("https://swynx.dev", colors),
-                              child: Text(
-                                "swynx.dev",
-                                style: TextStyle(
-                                  color: Colors.blueAccent,
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: Colors.blueAccent.withValues(
-                                    alpha: 0.5,
+                              child: Shimmer.fromColors(
+                                baseColor: Colors.blueAccent,
+                                highlightColor:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.blue.shade900,
+                                child: Text(
+                                  "swynx.dev",
+                                  style: TextStyle(
+                                    color: Colors.blueAccent,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: Colors.blueAccent
+                                        .withValues(alpha: 0.5),
                                   ),
                                 ),
                               ),
@@ -536,7 +565,54 @@ class _PostCardState extends ConsumerState<PostCard> {
                       }
 
                       if (value == "delete") {
-                        await deletePost();
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              backgroundColor: colors.cardColor,
+                              title: Text(
+                                "Delete Post",
+                                style: TextStyle(
+                                  color: colors.primaryText,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              content: Text(
+                                "Are you sure you want to delete this post? This action cannot be undone.",
+                                style: TextStyle(color: colors.secondaryText),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: Text(
+                                    "Cancel",
+                                    style: TextStyle(
+                                      color: colors.secondaryText,
+                                    ),
+                                  ),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
+                                  child: const Text(
+                                    "Delete",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirm == true) {
+                          await deletePost();
+                        }
                       }
                     },
                     itemBuilder: (_) => [
@@ -693,10 +769,12 @@ class _PostCardState extends ConsumerState<PostCard> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: colors.bgColor.withValues(alpha: 0.5),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.blueAccent.withValues(alpha: 0.2)
+                            : Colors.blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: colors.borderColor.withValues(alpha: 0.3),
+                          color: Colors.blueAccent.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -705,7 +783,11 @@ class _PostCardState extends ConsumerState<PostCard> {
                           Text(
                             "Open Link",
                             style: TextStyle(
-                              color: colors.primaryText,
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.blue.shade300
+                                  : Colors.blue.shade700,
                               fontSize: 12.5,
                               fontWeight: FontWeight.bold,
                             ),
@@ -714,7 +796,10 @@ class _PostCardState extends ConsumerState<PostCard> {
                           Icon(
                             Icons.open_in_new_rounded,
                             size: 14,
-                            color: colors.secondaryText,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? Colors.blue.shade300
+                                : Colors.blue.shade700,
                           ),
                         ],
                       ),

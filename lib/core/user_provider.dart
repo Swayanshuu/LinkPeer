@@ -17,7 +17,7 @@ final userProvider = FutureProvider<Map<String, dynamic>>((ref) async {
     final data = await Supabase.instance.client
         .from('users')
         .select(
-          'name, photo_url, user_type, id, profile_completed, department, email, role, created_at, last_login, branch, college, stream, graduating_year, designation, phone',
+          'name, photo_url, user_type, id, profile_completed, department, email, role, created_at, last_login, branch, college, stream, graduating_year, designation, phone, github, link2, description, is_verified',
         )
         .eq('id', uid)
         .single();

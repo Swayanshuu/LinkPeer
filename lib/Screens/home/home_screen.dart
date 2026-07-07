@@ -78,14 +78,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: colors.bgColor,
       drawer: const AppDrawer(),
       floatingActionButton: showFab
-          ? FloatingActionButton(
-              onPressed: scrollToTop,
-
-              backgroundColor: colors.primaryText,
-
-              foregroundColor: isDark ? Colors.black : Colors.white,
-
-              child: const Icon(Icons.keyboard_arrow_up_rounded, size: 30),
+          ? Padding(
+              padding: const EdgeInsets.only(
+                bottom: 100.0,
+              ), // Push above the parent's BottomAppBar
+              child: FloatingActionButton(
+                onPressed: scrollToTop,
+                backgroundColor: colors.primaryAccent,
+                foregroundColor: colors.onPrimaryAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 4,
+                child: const Icon(Icons.keyboard_arrow_up_rounded, size: 30),
+              ),
             )
           : null,
 
@@ -119,30 +125,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 20),
-                      sliver: SliverToBoxAdapter(
-                        child: HomeHeader(me: me),
-                      ),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+                      sliver: SliverToBoxAdapter(child: HomeHeader(me: me)),
                     ),
                     SliverPersistentHeader(
                       pinned: true,
                       delegate: _StickyFilterDelegate(
                         backgroundColor: colors.bgColor,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          child: FeedFilterBar(
-                            selected: selected,
-                            onChanged: (value) {
-                              setState(() {
-                                selected = value;
-                              });
-                            },
-                          ),
+                        child: FeedFilterBar(
+                          selected: selected,
+                          onChanged: (value) {
+                            setState(() {
+                              selected = value;
+                            });
+                          },
                         ),
                       ),
                     ),
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(14, 20, 14, 14),
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 14),
                       sliver: SliverToBoxAdapter(
                         child: Text(
                           "Latest Posts",
@@ -178,7 +179,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             : list
                                   .where(
                                     (p) =>
-                                        p["post_type"].toString().toLowerCase() ==
+                                        p["post_type"]
+                                            .toString()
+                                            .toLowerCase() ==
                                         selected,
                                   )
                                   .toList();
@@ -186,7 +189,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         if (filtered.isEmpty) {
                           return SliverToBoxAdapter(
                             child: Padding(
-                              padding: const EdgeInsets.only(top: 30, bottom: 100),
+                              padding: const EdgeInsets.only(
+                                top: 30,
+                                bottom: 100,
+                              ),
                               child: Center(
                                 child: Text(
                                   "No posts found",
@@ -197,7 +203,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           );
                         }
 
-                        final adPositions = generateAdPositions(filtered.length);
+                        final adPositions = generateAdPositions(
+                          filtered.length,
+                        );
 
                         final feedItems = [];
 
@@ -210,7 +218,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         }
 
                         return SliverPadding(
-                          padding: const EdgeInsets.only(left: 14, right: 14, bottom: 100),
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 100,
+                          ),
                           sliver: SliverList.builder(
                             itemCount: feedItems.length,
                             itemBuilder: (context, index) {
@@ -260,13 +272,14 @@ class _StickyFilterDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
   final Color backgroundColor;
 
-  _StickyFilterDelegate({
-    required this.child,
-    required this.backgroundColor,
-  });
+  _StickyFilterDelegate({required this.child, required this.backgroundColor});
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: backgroundColor,
       alignment: Alignment.center,
@@ -275,10 +288,10 @@ class _StickyFilterDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 46.0; // Height of the FeedFilterBar
+  double get maxExtent => 52.0; // Height of the FeedFilterBar
 
   @override
-  double get minExtent => 46.0;
+  double get minExtent => 52.0;
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {

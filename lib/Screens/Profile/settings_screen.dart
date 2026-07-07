@@ -87,7 +87,7 @@ class SettingsScreen extends ConsumerWidget {
                     .read(themeProvider.notifier)
                     .setMode(isDark ? ThemeMode.dark : ThemeMode.light);
               },
-              activeColor: colors.bgColor,
+              activeThumbColor: colors.bgColor,
               activeTrackColor: colors.primaryText,
             ),
             shape: RoundedRectangleBorder(

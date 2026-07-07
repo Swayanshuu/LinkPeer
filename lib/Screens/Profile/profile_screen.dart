@@ -1,4 +1,4 @@
-// Screens/Profile/ProfileScreen.dart
+﻿// Screens/Profile/ProfileScreen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,21 +29,55 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
         data: (data) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(userProvider);
-              ref.invalidate(postsProvider);
-              // Small delay to allow the providers to fetch new data before stopping the indicator
-              await Future.delayed(const Duration(milliseconds: 500));
-            },
-            color: colors.primaryText,
-            backgroundColor: colors.cardColor,
-            child: CustomScrollView(
-              slivers: [
-                ProfileHeaderSliver(data: data, posts: posts, ref: ref),
-                ProfilePostsSection(data: data, posts: posts, ref: ref),
-                const SliverToBoxAdapter(child: SizedBox(height: 90)),
-              ],
+          return DefaultTabController(
+            length: 2,
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(userProvider);
+                ref.invalidate(postsProvider);
+                await Future.delayed(const Duration(milliseconds: 500));
+              },
+              color: colors.primaryText,
+              backgroundColor: colors.cardColor,
+              child: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) {
+                  return [
+                    ProfileHeaderSliver(
+                      data: data, 
+                      posts: posts, 
+                      ref: ref,
+                      bottom: _SolidTabBar(
+                        TabBar(
+                          indicatorColor: colors.primaryAccent,
+                          labelColor: colors.primaryAccent,
+                          unselectedLabelColor: colors.secondaryText,
+                          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          dividerColor: colors.borderColor.withValues(alpha: 0.5),
+                          tabs: const [
+                            Tab(icon: Icon(Icons.list_alt_rounded, size: 20), text: "Posts"),
+                            Tab(icon: Icon(Icons.show_chart_rounded, size: 20), text: "Activity"),
+                          ],
+                        ),
+                        colors.bgColor,
+                      ),
+                    ),
+                  ];
+                },
+                body: TabBarView(
+                  children: [
+                    CustomScrollView(
+                      key: const PageStorageKey<String>('posts_tab'),
+                      slivers: [
+                        ProfilePostsSection(data: data, posts: posts, ref: ref),
+                        const SliverToBoxAdapter(child: SizedBox(height: 90)),
+                      ],
+                    ),
+                    Center(child: Text("Activity - Coming Soon", style: TextStyle(color: colors.secondaryText))),
+                  ],
+                ),
+              ),
             ),
           );
         },
@@ -51,3 +85,22 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 }
+
+class _SolidTabBar extends StatelessWidget implements PreferredSizeWidget {
+  final TabBar tabBar;
+  final Color color;
+
+  const _SolidTabBar(this.tabBar, this.color);
+
+  @override
+  Size get preferredSize => tabBar.preferredSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color,
+      child: tabBar,
+    );
+  }
+}
+

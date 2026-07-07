@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 
 class PolicySection extends StatelessWidget {
@@ -23,7 +23,7 @@ class PolicySection extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.bgColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.borderColor.withOpacity(.3)),
+        border: Border.all(color: colors.borderColor.withValues(alpha: .3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +33,7 @@ class PolicySection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: colors.primaryText.withOpacity(.08),
+                  color: colors.primaryText.withValues(alpha: .08),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: colors.primaryText, size: 18),
@@ -93,3 +93,4 @@ class PolicySection extends StatelessWidget {
     );
   }
 }
+

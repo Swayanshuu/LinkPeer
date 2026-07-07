@@ -7,9 +7,9 @@ import 'package:igit_connects/screens/auth/faculty_verification_screen.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/main_screen.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Main Screen
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class OnboardingUserDetailsScreen extends StatefulWidget {
   final String userMode;
@@ -23,13 +23,13 @@ class OnboardingUserDetailsScreen extends StatefulWidget {
 
 class _OnboardingUserDetailsScreenState
     extends State<OnboardingUserDetailsScreen> {
-  // ── Form key (class-level — never inside build) ───────────────────────────
+  // â”€â”€ Form key (class-level â€” never inside build) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   final _formKey = GlobalKey<FormState>();
 
-  // ── Year picker controller ─────────────────────────────────────────────────
+  // â”€â”€ Year picker controller â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   final graduationYearController = TextEditingController();
 
-  // ── Static data ───────────────────────────────────────────────────────────
+  // â”€â”€ Static data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   final departments = [
     "CSE",
     "ECE",
@@ -56,13 +56,13 @@ class _OnboardingUserDetailsScreenState
 
   final streams = ["BTech", "MTech", "MCA"];
 
-  /// Dynamic year range: 1990 → current year + 4.
+  /// Dynamic year range: 1990 â†’ current year + 4.
   List<int> get years {
     final currentYear = DateTime.now().year;
     return List.generate((currentYear + 4) - 1990 + 1, (i) => 1990 + i);
   }
 
-  // ── State ─────────────────────────────────────────────────────────────────
+  // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   String college = "IGIT";
   String userType = "";
 
@@ -81,7 +81,7 @@ class _OnboardingUserDetailsScreenState
   bool _saving = false;
   int _currentStep = 0;
 
-  // ── Completion ratio (drives the truthful progress bar) ───────────────────
+  // â”€â”€ Completion ratio (drives the truthful progress bar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   double get _completionRatio {
     if (widget.userMode == "faculty") {
       final filled = [
@@ -101,7 +101,7 @@ class _OnboardingUserDetailsScreenState
     }
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   @override
   void initState() {
     super.initState();
@@ -114,7 +114,7 @@ class _OnboardingUserDetailsScreenState
     super.dispose();
   }
 
-  // ── Graduation year picker (themed to AppColors) ──────────────────────────
+  // â”€â”€ Graduation year picker (themed to AppColors) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> pickGraduationYear() async {
     final now = DateTime.now();
     final colors = AppColors.of(context);
@@ -167,7 +167,7 @@ class _OnboardingUserDetailsScreenState
     }
   }
 
-  // ── Role detection based on graduation year ───────────────────────────────
+  // â”€â”€ Role detection based on graduation year â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void detectRole() {
     if (graduatingYear == null) return;
     final currentYear = DateTime.now().year;
@@ -176,7 +176,7 @@ class _OnboardingUserDetailsScreenState
     });
   }
 
-  // ── Save to Supabase ──────────────────────────────────────────────────────
+  // â”€â”€ Save to Supabase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> save() async {
     if (!_formKey.currentState!.validate()) {
       _showSnackBar(
@@ -250,7 +250,7 @@ class _OnboardingUserDetailsScreenState
     }
   }
 
-  // ── Snack bar helper ──────────────────────────────────────────────────────
+  // â”€â”€ Snack bar helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _showSnackBar({
     required IconData icon,
     required String message,
@@ -286,7 +286,7 @@ class _OnboardingUserDetailsScreenState
       );
   }
 
-  // ── Input decoration ──────────────────────────────────────────────────────
+  // â”€â”€ Input decoration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   InputDecoration _inputDeco(
     String label,
     AppColors colors, {
@@ -322,7 +322,7 @@ class _OnboardingUserDetailsScreenState
     );
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
@@ -370,7 +370,7 @@ class _OnboardingUserDetailsScreenState
               child: Column(
                 children: [
                   DropdownButtonFormField<String>(
-                    value: branch,
+                    initialValue: branch,
                     dropdownColor: colors.cardColor,
                     style: TextStyle(color: colors.primaryText, fontSize: 15),
                     decoration: _inputDeco("Branch", colors, icon: Icons.account_tree_outlined),
@@ -380,7 +380,7 @@ class _OnboardingUserDetailsScreenState
                   ),
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
-                    value: stream,
+                    initialValue: stream,
                     dropdownColor: colors.cardColor,
                     style: TextStyle(color: colors.primaryText, fontSize: 15),
                     decoration: _inputDeco("Stream", colors, icon: Icons.layers_outlined),
@@ -434,7 +434,7 @@ class _OnboardingUserDetailsScreenState
               child: Column(
                 children: [
                   DropdownButtonFormField<String>(
-                    value: department,
+                    initialValue: department,
                     dropdownColor: colors.cardColor,
                     style: TextStyle(color: colors.primaryText, fontSize: 15),
                     decoration: _inputDeco("Department", colors, icon: Icons.corporate_fare_outlined),
@@ -630,9 +630,9 @@ class _OnboardingUserDetailsScreenState
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // 1. Hero Header Card
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _HeroCard extends StatelessWidget {
   final bool isFaculty;
@@ -655,7 +655,7 @@ class _HeroCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
-          colors: [colors.primaryText.withOpacity(0.12), colors.cardColor],
+          colors: [colors.primaryText.withValues(alpha: 0.12), colors.cardColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -669,7 +669,7 @@ class _HeroCard extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: colors.primaryText.withOpacity(0.10),
+              color: colors.primaryText.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
@@ -706,7 +706,7 @@ class _HeroCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Progress bar — reflects real field completion
+          // Progress bar â€” reflects real field completion
           Row(
             children: [
               Expanded(
@@ -750,9 +750,9 @@ class _HeroCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // 2. Generic Section Card
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SectionCard extends StatelessWidget {
   final String title;
@@ -803,9 +803,9 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // 3. Read-only info tile
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _InfoTile extends StatelessWidget {
   final IconData icon;
@@ -866,9 +866,9 @@ class _InfoTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // 4. Faculty Verification Card
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _FacultyVerificationCard extends StatelessWidget {
   final AppColors colors;
@@ -906,8 +906,8 @@ class _FacultyVerificationCard extends StatelessWidget {
                 height: 38,
                 decoration: BoxDecoration(
                   color: isProofUploaded
-                      ? green.withOpacity(0.12)
-                      : blue.withOpacity(0.10),
+                      ? green.withValues(alpha: 0.12)
+                      : blue.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -1013,9 +1013,9 @@ class _FacultyVerificationCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // 5. Community Benefits Card
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _BenefitsCard extends StatelessWidget {
   final AppColors colors;
@@ -1094,9 +1094,9 @@ class _BenefitsCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // 6. Continue Button
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _ContinueButton extends StatelessWidget {
   final bool saving;
@@ -1115,53 +1115,38 @@ class _ContinueButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 58,
-      child: ElevatedButton(
+      height: 56,
+      child: FilledButton.icon(
         onPressed: saving ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colors.primaryText,
-          foregroundColor: isDark ? Colors.black : Colors.white,
+        style: FilledButton.styleFrom(
+          backgroundColor: colors.primaryAccent,
+          foregroundColor: colors.onPrimaryAccent,
           disabledBackgroundColor: colors.borderColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
         ),
-        child: saving
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: isDark ? Colors.black : Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Text(
-                    "Saving Profile…",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                      color: isDark ? Colors.black : Colors.white,
-                    ),
-                  ),
-                ],
+        icon: saving
+            ? SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: colors.onPrimaryAccent,
+                ),
               )
-            : const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Continue to LinkPeer",
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                  ),
-                  SizedBox(width: 10),
-                  Icon(Icons.arrow_forward_rounded, size: 20),
-                ],
-              ),
+            : Icon(Icons.arrow_forward_rounded, size: 20, color: colors.onPrimaryAccent),
+        label: Text(
+          saving ? "Saving Profile..." : "Continue to LinkPeer",
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: colors.onPrimaryAccent,
+          ),
+        ),
       ),
     );
   }
 }
+

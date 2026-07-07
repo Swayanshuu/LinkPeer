@@ -68,6 +68,7 @@ The application is built on a **dual-backend architecture** (Firebase + Supabase
 | User Profiles        | Role-based profile pages with post history and community stats                               |
 | Smart Onboarding     | Role-specific setup; students auto-upgrade to Alumni status based on graduating year         |
 | Faculty Verification | Photo-proof submission reviewed by admins within 48 hours                                    |
+| Premium UI Design    | Beautiful and modern card-based layouts, dynamic headers, and refined component spacing      |
 | Dark / Light Theme   | Full dual-theme with OS sync on first launch and persistent user preference                  |
 | Admin Panel          | Hidden App Manager route accessible only to users with `role == "admin"`                     |
 | File Attachments     | Images rendered inline; documents open externally via Supabase CDN                           |

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 
 class CreatePostTopSection extends StatelessWidget {
@@ -11,50 +11,78 @@ class CreatePostTopSection extends StatelessWidget {
     required this.onChanged,
   });
 
-  Color typeColor(String type) {
+  IconData _getIconForType(String type) {
     switch (type) {
       case "job":
-        return const Color(0xff1E7D45);
+        return Icons.work_outline_rounded;
       case "announcement":
-        return const Color(0xffA8641A);
+        return Icons.campaign_outlined;
       case "internship":
-        return const Color(0xff2457C5);
+        return Icons.school_outlined;
+      case "normal":
       default:
-        return Colors.grey;
+        return Icons.people_outline_rounded;
     }
   }
 
-  Widget chip(String type, AppColors colors) {
+  Color _getColorForType(String type, AppColors colors) {
+    switch (type) {
+      case "job":
+        return colors.categoryJob;
+      case "announcement":
+        return colors.categoryAnnouncement;
+      case "internship":
+        return colors.categoryInternship;
+      case "normal":
+      default:
+        return colors.primaryAccent;
+    }
+  }
+
+  String _getLabelForType(String type) {
+    if (type == "normal") return "General";
+    return type[0].toUpperCase() + type.substring(1);
+  }
+
+  Widget _buildChip(String type, AppColors colors) {
     final selected = postType == type;
+    final typeColor = _getColorForType(type, colors);
+    final icon = _getIconForType(type);
+    final label = _getLabelForType(type);
 
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
-
+      padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
         onTap: () => onChanged(type),
-
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: selected ? typeColor(type) : colors.bgColor,
-
-            borderRadius: BorderRadius.circular(16),
-
+            color: selected ? typeColor.withValues(alpha: 0.08) : colors.bgColor,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: selected ? typeColor(type) : colors.borderColor,
+              color: selected ? typeColor : colors.borderColor.withValues(alpha: 0.6),
+              width: selected ? 1.5 : 1.0,
             ),
           ),
-
-          child: Text(
-            type.toUpperCase(),
-            style: TextStyle(
-              color: selected ? Colors.white : colors.primaryText,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: selected ? typeColor : typeColor.withValues(alpha: 0.8),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? typeColor : colors.primaryText,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -67,53 +95,44 @@ class CreatePostTopSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-
-      padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        color: colors.cardColor,
-
-        borderRadius: BorderRadius.circular(22),
-
-        border: Border.all(color: colors.borderColor),
-      ),
-
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           Text(
-            "Create Post",
+            "Post Category",
             style: TextStyle(
               color: colors.primaryText,
-              fontSize: 28,
+              fontSize: 17,
               fontWeight: FontWeight.bold,
+              letterSpacing: -0.4,
             ),
           ),
-
-          const SizedBox(height: 6),
-
-          Text(
-            "Share updates with your campus network",
-            style: TextStyle(color: colors.secondaryText, fontSize: 13),
-          ),
-
-          const SizedBox(height: 16),
+          
+          const SizedBox(height: 20),
 
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-
             child: Row(
               children: [
-                chip("normal", colors),
-                chip("job", colors),
-                chip("announcement", colors),
-                chip("internship", colors),
+                _buildChip("normal", colors),
+                _buildChip("job", colors),
+                _buildChip("internship", colors),
+                _buildChip("announcement", colors),
               ],
             ),
+          ),
+          
+          const SizedBox(height: 16),
+
+          Text(
+            "Choose a category that best fits your post.",
+            style: TextStyle(color: colors.secondaryText, fontSize: 13),
           ),
         ],
       ),
     );
   }
 }
+
+

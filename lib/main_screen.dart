@@ -8,6 +8,7 @@ import 'package:igit_connects/screens/home/home_screen.dart';
 import 'package:igit_connects/screens/search/search_screen.dart';
 import 'package:igit_connects/screens/post/create_post_screen.dart';
 import 'package:igit_connects/screens/profile/profile_screen.dart';
+import 'package:igit_connects/screens/bookmarks/bookmarks_screen.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/shared_components/app_drawer.dart';
 
@@ -25,6 +26,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     HomeScreen(),
     Searchscreen(),
     CreatePostScreen(),
+    BookmarksScreen(),
     ProfileScreen(),
   ];
 
@@ -117,6 +119,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       backgroundColor: colors.bgColor,
+      extendBody: true, // This makes the notch gap transparent (shows content behind)
       resizeToAvoidBottomInset:
           false, // Prevents nav bar from moving above keyboard
       body: LayoutBuilder(
@@ -133,82 +136,57 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         children: screens,
                       ),
                     ),
-                    const SizedBox(width: 350, child: CreatePostScreen()),
+                    if (currentIndex != 2) const SizedBox(width: 350, child: CreatePostScreen()),
                   ],
                 )
               : IndexedStack(index: currentIndex, children: screens);
 
-          return Stack(
-            children: [
-              content,
-
-              // Floating Navigation Bar
-              Positioned(
-                bottom: 50,
-                left: isDesktop ? 280 + 20 : 20,
-                right: isDesktop ? 350 + 20 : 20,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.cardColor.withValues(
-                        alpha: 0.92,
-                      ), // A little transparent
-                      borderRadius: BorderRadius.circular(35),
-                      border: Border.all(
-                        color: colors.borderColor.withValues(alpha: 0.6),
-                        width: 1.0,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(
-                            alpha: 0.08,
-                          ), // Removed glow, subtle professional shadow
-                          blurRadius: 15,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildNavItem(
-                          Icons.home_filled,
-                          Icons.home_outlined,
-                          0,
-                          "Home",
-                          colors,
-                        ),
-                        const SizedBox(width: 30),
-                        _buildNavItem(
-                          Icons.search,
-                          Icons.search_outlined,
-                          1,
-                          "Search",
-                          colors,
-                        ),
-                        const SizedBox(width: 30),
-                        _buildNavItem(
-                          Icons.add_box,
-                          Icons.add_box_outlined,
-                          2,
-                          "Post",
-                          colors,
-                        ),
-                        const SizedBox(width: 30),
-                        _buildProfileNavItem(photoUrl, 3, "Profile", colors),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
+          return content;
         },
+      ),
+      floatingActionButton: _buildFab(colors),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _buildBottomNav(colors, photoUrl),
+    );
+  }
+
+  Widget _buildFab(AppColors colors) {
+    return Container(
+      margin: const EdgeInsets.only(top: 30), // Lowers the FAB slightly
+      child: FloatingActionButton(
+        onPressed: () {
+          setState(() => currentIndex = 2);
+        },
+        backgroundColor: colors.primaryAccent,
+        elevation: 4,
+        shape: const CircleBorder(),
+        child: Icon(Icons.add, color: colors.onPrimaryAccent, size: 28),
+      ),
+    );
+  }
+
+  Widget _buildBottomNav(AppColors colors, String? photoUrl) {
+    return BottomAppBar(
+      color: colors.cardColor,
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 8,
+      elevation: 10,
+      padding: EdgeInsets.zero,
+      child: Container(
+        height: 60,
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: colors.borderColor.withValues(alpha: 0.5), width: 1)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(Icons.home_filled, Icons.home_outlined, 0, "Home", colors),
+            _buildNavItem(Icons.search, Icons.search_outlined, 1, "Explore", colors),
+            const SizedBox(width: 48), // Space for FAB
+            _buildNavItem(Icons.bookmark, Icons.bookmark_outline, 3, "Bookmarks", colors),
+            _buildProfileNavItem(photoUrl, 4, "Profile", colors),
+          ],
+        ),
       ),
     );
   }
@@ -221,16 +199,32 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     AppColors colors,
   ) {
     final isSelected = currentIndex == index;
+    final activeColor = const Color(0xFF3B82F6);
+    
     return GestureDetector(
       onTap: () => setState(() => currentIndex = index),
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(4),
-        child: Icon(
-          isSelected ? activeIcon : inactiveIcon,
-          color: isSelected ? colors.primaryText : colors.secondaryText,
-          size: 28,
+      child: SizedBox(
+        width: 60,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isSelected ? activeIcon : inactiveIcon,
+              color: isSelected ? activeColor : colors.secondaryText,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? activeColor : colors.secondaryText,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -243,29 +237,47 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     AppColors colors,
   ) {
     final isSelected = currentIndex == index;
+    final activeColor = const Color(0xFF3B82F6);
+    
     return GestureDetector(
       onTap: () => setState(() => currentIndex = index),
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(4),
-        decoration: isSelected
-            ? BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: colors.primaryText, width: 2),
-              )
-            : null,
-        child: photoUrl != null && photoUrl.isNotEmpty
-            ? CircleAvatar(
-                radius: isSelected ? 11 : 13,
-                backgroundImage: NetworkImage(photoUrl),
-                backgroundColor: colors.borderColor,
-              )
-            : Icon(
-                isSelected ? Icons.person : Icons.person_outline,
-                color: isSelected ? colors.primaryText : colors.secondaryText,
-                size: 28,
+      child: SizedBox(
+        width: 60,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              decoration: isSelected
+                  ? BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: activeColor, width: 2),
+                    )
+                  : null,
+              child: photoUrl != null && photoUrl.isNotEmpty
+                  ? CircleAvatar(
+                      radius: isSelected ? 10 : 12,
+                      backgroundImage: NetworkImage(photoUrl),
+                      backgroundColor: colors.borderColor,
+                    )
+                  : Icon(
+                      isSelected ? Icons.person : Icons.person_outline,
+                      color: isSelected ? activeColor : colors.secondaryText,
+                      size: 24,
+                    ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? activeColor : colors.secondaryText,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
+            ),
+          ],
+        ),
       ),
     );
   }

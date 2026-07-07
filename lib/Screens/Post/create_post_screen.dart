@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -109,119 +109,335 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     return Scaffold(
       backgroundColor: colors.bgColor,
 
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90), // Elevate above bottom nav bar
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Spacer(),
-
-          FloatingActionButton.extended(
-            onPressed: posting ? null : createPost,
-
-            backgroundColor: colors.primaryText,
-
-            foregroundColor: Theme.of(context).brightness == Brightness.dark
-                ? Colors.black
-                : Colors.white,
-
-            elevation: 10,
-
-            icon: posting
-                ? SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.black
-                          : Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.send_rounded),
-
-            label: Text(
-              posting ? "Posting..." : "Post",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+      // Top App Bar matching mockup
+      appBar: AppBar(
+        backgroundColor: colors.bgColor,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          "Create Post",
+          style: TextStyle(
+            color: colors.primaryText,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.4,
+          ),
+        ),
+        centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: FilledButton.icon(
+              onPressed: posting ? null : createPost,
+              style: FilledButton.styleFrom(
+                backgroundColor: colors.primaryAccent,
+                foregroundColor: colors.onPrimaryAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              icon: posting
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colors.onPrimaryAccent,
+                      ),
+                    )
+                  : const Icon(Icons.send_rounded, size: 16),
+              label: Text(
+                posting ? "Posting..." : "Post",
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
             ),
           ),
         ],
       ),
-    ),
 
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-
-          child: user.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-
-            error: (e, s) => Center(
-              child: Text("Error", style: TextStyle(color: colors.primaryText)),
+      // Bottom Bar matching mockup
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom + 12,
+          top: 12,
+          left: 16,
+          right: 16,
+        ),
+        decoration: BoxDecoration(
+          color: colors.cardColor,
+          border: Border(
+            top: BorderSide(color: colors.borderColor.withValues(alpha: 0.5)),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Draft saved status
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: colors.successColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.check, color: colors.successColor, size: 14),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Draft saved",
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  "Just now",
+                  style: TextStyle(color: colors.secondaryText, fontSize: 11),
+                ),
+              ],
             ),
 
-            data: (data) {
-              final name = (data["name"] ?? "User").toString();
+            const Spacer(),
 
-              final photo = (data["photo_url"] ?? "").toString();
+            // Preview Button
+            OutlinedButton.icon(
+              onPressed: () {
+                final colors = AppColors.of(context);
+                final data = ref.read(userProvider).value;
+                final name = (data?["name"] ?? "User").toString();
+                final photo = (data?["photo_url"] ?? "").toString();
+                final userType = (data?["user_type"] ?? "student")
+                    .toString()
+                    .toLowerCase();
+                final department = (data?["department"] ?? "").toString();
 
-              final userType = (data["user_type"] ?? "student")
-                  .toString()
-                  .toLowerCase();
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: colors.bgColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                  ),
+                  builder: (context) => Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: SafeArea(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: AnimatedBuilder(
+                          animation: Listenable.merge([title, content, link]),
+                          builder: (context, _) => CreatePostPreviewSection(
+                            name: name,
+                            photo: photo,
+                            userType: userType,
+                            department: department,
+                            postType: postType,
+                            title: title.text,
+                            content: content.text,
+                            link: link.text,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.primaryText,
+                side: BorderSide(color: colors.borderColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              icon: const Icon(Icons.remove_red_eye_outlined, size: 16),
+              label: const Text(
+                "Preview",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
 
-              final department = (data["department"] ?? "").toString();
+      body: user.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(
+          child: Text(
+            "Error loading user profile",
+            style: TextStyle(color: colors.primaryText),
+          ),
+        ),
+        data: (data) {
+          final name = (data["name"] ?? "User").toString();
+          final photo = (data["photo_url"] ?? "").toString();
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 110),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User Profile Header Row (Mockup: Avatar, Name, Public dropdown, Shield chip)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Top section
-                    CreatePostTopSection(
-                      postType: postType,
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: colors.borderColor,
+                      backgroundImage: photo.isNotEmpty
+                          ? NetworkImage(photo)
+                          : null,
+                      child: photo.isEmpty ? const Icon(Icons.person) : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: TextStyle(
+                            color: colors.primaryText,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
 
-                      onChanged: (value) {
-                        setState(() {
-                          postType = value;
-                        });
+                    // Be kind chip
+                    GestureDetector(
+                      onTap: () {
+                        final colors = AppColors.of(context);
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: colors.cardColor,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                          ),
+                          builder: (context) => Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Community Guidelines",
+                                  style: TextStyle(
+                                    color: colors.primaryText,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  "â€¢ Be respectful to all members.\nâ€¢ Do not share spam or irrelevant content.\nâ€¢ Ensure opportunities posted are genuine.\nâ€¢ Keep discussions professional and constructive.",
+                                  style: TextStyle(
+                                    color: colors.secondaryText,
+                                    fontSize: 14,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: colors.primaryAccent,
+                                    ),
+                                    child: Text(
+                                      "I understand",
+                                      style: TextStyle(
+                                        color: colors.onPrimaryAccent,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
                       },
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    CreatePostInputCard(
-                      title: title,
-                      content: content,
-                      link: link,
-                    ),
-
-                    const SizedBox(height: 22),
-
-                    // Preview — AnimatedBuilder listens to all three
-                    // controllers without calling setState on every keystroke,
-                    // so the TextField composition buffer is never interrupted.
-                    AnimatedBuilder(
-                      animation: Listenable.merge([title, content, link]),
-                      builder: (context, _) => CreatePostPreviewSection(
-                        name: name,
-                        photo: photo,
-                        userType: userType,
-                        department: department,
-                        postType: postType,
-                        title: title.text,
-                        content: content.text,
-                        link: link.text,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: colors.borderColor.withValues(alpha: 0.6),
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.shield_outlined,
+                              color: colors.secondaryText,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Be kind and follow our",
+                                  style: TextStyle(
+                                    color: colors.secondaryText,
+                                    fontSize: 9.5,
+                                  ),
+                                ),
+                                Text(
+                                  "community guidelines",
+                                  style: TextStyle(
+                                    color: colors.primaryAccent,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
-              );
-            },
-          ),
-        ),
+
+                const SizedBox(height: 28),
+
+                // Main Input Area
+                CreatePostInputCard(title: title, content: content, link: link),
+
+                const SizedBox(height: 32),
+
+                // Post Category Selector
+                CreatePostTopSection(
+                  postType: postType,
+                  onChanged: (value) {
+                    setState(() {
+                      postType = value;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 24),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
+

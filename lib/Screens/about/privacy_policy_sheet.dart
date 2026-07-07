@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/shared_components/policy_section.dart';
 
@@ -87,7 +87,7 @@ class PrivacyPolicySheet extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 36,
-                            backgroundColor: colors.primaryText.withOpacity(.08),
+                            backgroundColor: colors.primaryText.withValues(alpha: .08),
                             child: Padding(
                               padding: const EdgeInsets.all(10),
                               child: Image.asset(
@@ -186,8 +186,8 @@ class PrivacyPolicySheet extends StatelessWidget {
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(18),
-                        color: Colors.blue.withOpacity(.08),
-                        border: Border.all(color: Colors.blue.withOpacity(.20)),
+                        color: Colors.blue.withValues(alpha: .08),
+                        border: Border.all(color: Colors.blue.withValues(alpha: .20)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,7 +248,7 @@ class PrivacyPolicySheet extends StatelessWidget {
 
                     Center(
                       child: Text(
-                        "Last Updated • July 2026",
+                        "Last Updated â€¢ July 2026",
                         style: TextStyle(
                           color: colors.secondaryText,
                           fontSize: 11,
@@ -265,3 +265,4 @@ class PrivacyPolicySheet extends StatelessWidget {
     );
   }
 }
+

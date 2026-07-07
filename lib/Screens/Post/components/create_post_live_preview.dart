@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:igit_connects/shared_components/hashtag_text.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CreatePostPreviewSection extends StatelessWidget {
   final String name;
@@ -82,33 +83,42 @@ class CreatePostPreviewSection extends StatelessWidget {
   }
 
   Widget _buildUserTypeBadge(String userType, AppColors colors) {
-    Color color;
+    Color bgColor;
+    Color textColor;
+
     switch (userType.toLowerCase()) {
-      case "faculty":
-        color = const Color(0xFFEF4444); // Red
-        break;
       case "alumni":
-        color = const Color(0xFF10B981); // Emerald
+        bgColor = colors.badgeAlumniBg;
+        textColor = colors.badgeAlumniText;
         break;
+      case "admin":
+        bgColor = colors.badgeAdminBg;
+        textColor = colors.badgeAdminText;
+        break;
+      case "faculty":
+        bgColor = colors.badgeFacultyBg;
+        textColor = colors.badgeFacultyText;
+        break;
+      case "student":
       default:
-        color = const Color(0xFF6366F1); // Indigo
+        bgColor = colors.badgeStudentBg;
+        textColor = colors.badgeStudentText;
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 0.8),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         userType.toUpperCase(),
         style: TextStyle(
-          color: color,
-          fontSize: 8.5,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.3,
+          color: textColor,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -198,17 +208,19 @@ class CreatePostPreviewSection extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
-            color: (userType.toLowerCase() == "admin")
-                ? colors.primaryText.withValues(alpha: 0.04)
-                : colors.cardColor,
-            border: Border(
-              left: (userType.toLowerCase() == "admin")
-                  ? const BorderSide(color: Colors.blue, width: 3.5)
-                  : BorderSide.none,
-              bottom: BorderSide(
-                color: colors.borderColor.withValues(alpha: 0.5),
-                width: 1.0,
-              ),
+            color: postType.toLowerCase() == "announcement"
+                ? colors.announcementBg
+                : (userType.toLowerCase() == "admin")
+                    ? colors.adminPostBg
+                    : colors.cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: postType.toLowerCase() == "announcement"
+                  ? colors.announcementBorder
+                  : (userType.toLowerCase() == "admin")
+                      ? colors.adminPostBorder
+                      : colors.borderColor.withValues(alpha: 0.5),
+              width: 1.0,
             ),
           ),
           child: Column(
@@ -236,19 +248,32 @@ class CreatePostPreviewSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Flexible(
-                              child: Text(
-                                name.isEmpty ? "User" : name,
-                                style: TextStyle(
-                                  color: colors.primaryText,
-                                  fontSize: 13.5, // smaller text
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                            ),
+                            (userType.toLowerCase() == "admin")
+                                ? Shimmer.fromColors(
+                                    baseColor: colors.primaryText,
+                                    highlightColor: Colors.blueAccent,
+                                    child: Text(
+                                      name.isEmpty ? "User" : name,
+                                      style: TextStyle(
+                                        color: colors.primaryText,
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    name.isEmpty ? "User" : name,
+                                    style: TextStyle(
+                                      color: colors.primaryText,
+                                      fontSize: 13.5, // smaller text
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
                             const SizedBox(width: 8),
                             _buildUserTypeBadge(userType, colors),
                           ],
@@ -334,10 +359,12 @@ class CreatePostPreviewSection extends StatelessWidget {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: colors.bgColor.withValues(alpha: 0.5),
+                          color: Theme.of(context).brightness == Brightness.dark 
+                              ? Colors.blueAccent.withValues(alpha: 0.2)
+                              : Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: colors.borderColor.withValues(alpha: 0.3),
+                            color: Colors.blueAccent.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -346,7 +373,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                             Text(
                               "Open Link",
                               style: TextStyle(
-                                color: colors.primaryText,
+                                color: Theme.of(context).brightness == Brightness.dark 
+                                    ? Colors.blue.shade300
+                                    : Colors.blue.shade700,
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -355,7 +384,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                             Icon(
                               Icons.open_in_new_rounded,
                               size: 14,
-                              color: colors.secondaryText,
+                              color: Theme.of(context).brightness == Brightness.dark 
+                                  ? Colors.blue.shade300
+                                  : Colors.blue.shade700,
                             ),
                           ],
                         ),

@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/shared_components/hashtag_text.dart';
@@ -153,10 +153,10 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
         '0',
       );
 
-      return "$year-$month-$day • $hour:$minute $amPm";
+      return "$year-$month-$day, $hour:$minute $amPm";
     } catch (_) {
       if (createdAt.length >= 16) {
-        return "${createdAt.substring(0, 10)} • ${createdAt.substring(11, 16)}";
+        return "${createdAt.substring(0, 10)}, ${createdAt.substring(11, 16)}";
       }
       return createdAt.isNotEmpty ? createdAt.substring(0, 10) : "";
     }
@@ -191,27 +191,24 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: colors.cardColor,
+        backgroundColor: Colors.red.shade600,
         margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Colors.redAccent, width: 0.8),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 14),
-            const SizedBox(width: 6),
+            const Icon(Icons.error_outline, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
             Flexible(
               child: Text(
                 "Invalid URL: $urlString",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: colors.primaryText,
-                  fontSize: 11.5,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -229,7 +226,10 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
 
     final name = (post["user_name"] ?? "User").toString();
     final photo = (post["user_photo"] ?? "").toString();
-    final userType = (post["user_type"] ?? "student").toString();
+    final usersData = post["users"] as Map<String, dynamic>?;
+    final userType = (usersData?["role"] ?? post["user_type"] ?? "student")
+        .toString();
+    final isAuthorAdmin = userType.toLowerCase() == "admin";
     final department = (post["department"] ?? "").toString();
     final title = (post["title"] ?? "").toString();
     final content = (post["content"] ?? "").toString();
@@ -240,6 +240,27 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     final date = _formatTimestamp(createdAt);
 
     return Scaffold(
+      floatingActionButton: link.isNotEmpty
+          ? Padding(
+              padding: EdgeInsets.only(
+                bottom: FirebaseAuth.instance.currentUser == null ? 80.0 : 60.0,
+              ),
+              child: FloatingActionButton.extended(
+                onPressed: () => _safelyLaunchUrl(context, link, colors),
+                backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? colors.primaryAccent
+                    : colors.primaryAccent,
+                icon: const Icon(Icons.link_rounded, color: Colors.white),
+                label: const Text(
+                  "Open Link",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            )
+          : null,
       backgroundColor: colors.bgColor,
       appBar: AppBar(
         elevation: 0,
@@ -324,18 +345,16 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: (userType.toLowerCase() == "admin")
-                        ? colors.primaryText.withValues(alpha: 0.04)
-                        : colors.cardColor.withOpacity(0.5),
+                    color: isAuthorAdmin
+                        ? colors.adminPostBg
+                        : colors.cardColor.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(20),
-                    border: (userType.toLowerCase() == "admin")
-                        ? Border(
-                            left: const BorderSide(color: Colors.blue, width: 3.5),
-                            top: BorderSide(color: colors.borderColor.withOpacity(0.4)),
-                            right: BorderSide(color: colors.borderColor.withOpacity(0.4)),
-                            bottom: BorderSide(color: colors.borderColor.withOpacity(0.4)),
-                          )
-                        : Border.all(color: colors.borderColor.withOpacity(0.4)),
+                    border: Border.all(
+                      color: isAuthorAdmin
+                          ? colors.adminPostBorder
+                          : colors.borderColor.withValues(alpha: 0.4),
+                      width: 1.0,
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -358,26 +377,117 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              name,
-                              style: TextStyle(
-                                color: colors.primaryText,
-                                fontSize: 14.5, // smaller text
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -0.3,
-                              ),
+                            Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                isAuthorAdmin
+                                    ? Shimmer.fromColors(
+                                        baseColor: colors.primaryText,
+                                        highlightColor: Colors.blueAccent,
+                                        child: Text(
+                                          name,
+                                          style: TextStyle(
+                                            color: colors.primaryText,
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: -0.3,
+                                          ),
+                                        ),
+                                      )
+                                    : Text(
+                                        name,
+                                        style: TextStyle(
+                                          color: colors.primaryText,
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: -0.3,
+                                        ),
+                                      ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isAuthorAdmin
+                                        ? colors.badgeAdminBg
+                                        : userType.toLowerCase() == "alumni"
+                                        ? colors.badgeAlumniBg
+                                        : userType.toLowerCase() == "faculty"
+                                        ? colors.badgeFacultyBg
+                                        : colors.badgeStudentBg,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    userType.toUpperCase(),
+                                    style: TextStyle(
+                                      color: isAuthorAdmin
+                                          ? colors.badgeAdminText
+                                          : userType.toLowerCase() == "alumni"
+                                          ? colors.badgeAlumniText
+                                          : userType.toLowerCase() == "faculty"
+                                          ? colors.badgeFacultyText
+                                          : colors.badgeStudentText,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              userType == "faculty" && department.isNotEmpty
-                                  ? "$department • $date"
-                                  : "$userType • $date",
-                              style: TextStyle(
-                                color: colors.secondaryText,
-                                fontSize: 12, // smaller text
-                                fontWeight: FontWeight.w500,
+                            if (isAuthorAdmin)
+                              Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => _safelyLaunchUrl(
+                                      context,
+                                      "https://swynx.dev",
+                                      colors,
+                                    ),
+                                    child: Shimmer.fromColors(
+                                      baseColor: Colors.blueAccent,
+                                      highlightColor:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.blue.shade900,
+                                      child: Text(
+                                        "swynx.dev",
+                                        style: TextStyle(
+                                          color: Colors.blueAccent,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: Colors.blueAccent
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    " • $date",
+                                    style: TextStyle(
+                                      color: colors.secondaryText,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              Text(
+                                userType == "faculty" && department.isNotEmpty
+                                    ? "$department • $date"
+                                    : "$date",
+                                style: TextStyle(
+                                  color: colors.secondaryText,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -464,61 +574,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                 ],
 
                 // Link Section
-                if (link.isNotEmpty)
-                  InkWell(
-                    onTap: () => _safelyLaunchUrl(context, link, colors),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: colors.cardColor.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: colors.borderColor),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: colors.bgColor,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.link_rounded,
-                              color: colors.primaryText,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "External Link",
-                                  style: TextStyle(
-                                    color: colors.primaryText,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  link,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Colors.blue.shade400,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(Icons.arrow_forward_ios, size: 14),
-                        ],
-                      ),
-                    ),
-                  ),
+                // Link Section moved to FAB
               ],
             ),
           ),
@@ -535,15 +591,15 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                       horizontal: 16,
                     ),
                     decoration: BoxDecoration(
-                      color: colors.bgColor.withOpacity(0.95),
+                      color: colors.bgColor.withValues(alpha: 0.95),
                       border: Border(
                         top: BorderSide(
-                          color: colors.borderColor.withOpacity(0.5),
+                          color: colors.borderColor.withValues(alpha: 0.5),
                         ),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, -5),
                         ),
@@ -596,15 +652,15 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                       horizontal: 16,
                     ),
                     decoration: BoxDecoration(
-                      color: colors.bgColor.withOpacity(0.95),
+                      color: colors.bgColor.withValues(alpha: 0.95),
                       border: Border(
                         top: BorderSide(
-                          color: colors.borderColor.withOpacity(0.5),
+                          color: colors.borderColor.withValues(alpha: 0.5),
                         ),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, -5),
                         ),
@@ -612,7 +668,8 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                     ),
                     child: SafeArea(
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start, // Left align
+                        mainAxisAlignment:
+                            MainAxisAlignment.start, // Left align
                         children: [
                           _buildActionButton(
                             icon: _isLiked
@@ -717,7 +774,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? color.withOpacity(0.1) : Colors.transparent,
+          color: isActive ? color.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(

@@ -1,9 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
-import 'package:igit_connects/shared_components/hashtag_text.dart';
+import 'package:igit_connects/screens/post/components/create_post_input_card.dart';
+import 'package:igit_connects/screens/post/components/create_post_live_preview.dart';
+import 'package:igit_connects/screens/post/components/create_post_top_section.dart';
+import 'package:igit_connects/core/user_provider.dart';
 
 class EditPostScreen extends ConsumerStatefulWidget {
   final Map post;
@@ -20,32 +23,15 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   late TextEditingController link;
 
   bool loading = false;
-
   late String postType;
 
   @override
   void initState() {
     super.initState();
-
     title = TextEditingController(text: widget.post["title"].toString());
-
     content = TextEditingController(text: widget.post["content"].toString());
-
     link = TextEditingController(text: widget.post["link"].toString());
-
     postType = widget.post["post_type"].toString();
-
-    title.addListener(() {
-      setState(() {});
-    });
-
-    content.addListener(() {
-      setState(() {});
-    });
-
-    link.addListener(() {
-      setState(() {});
-    });
   }
 
   @override
@@ -54,19 +40,6 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     content.dispose();
     link.dispose();
     super.dispose();
-  }
-
-  Color typeColor() {
-    switch (postType) {
-      case "job":
-        return Colors.green;
-      case "announcement":
-        return Colors.orange;
-      case "internship":
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
   }
 
   Future<void> savePost() async {
@@ -99,217 +72,343 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     }
   }
 
-  Widget chip(String type, AppColors colors) {
-    final selected = postType == type;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          postType = type;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? typeColor() : colors.cardColor,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: colors.borderColor),
-        ),
-        child: Text(
-          type.toUpperCase(),
-          style: TextStyle(
-            color: selected ? Colors.white : colors.primaryText,
-            fontWeight: FontWeight.bold,
-            fontSize: 11,
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = ref.watch(userProvider);
 
     return Scaffold(
       backgroundColor: colors.bgColor,
 
+      // Top App Bar matching create post screen
       appBar: AppBar(
         backgroundColor: colors.bgColor,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: colors.primaryText),
-        title: Text("Edit Post", style: TextStyle(color: colors.primaryText)),
-      ),
-
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: title,
-                style: TextStyle(color: colors.primaryText),
-                decoration: InputDecoration(
-                  hintText: "Title",
-                  hintStyle: TextStyle(color: colors.secondaryText),
-                  filled: true,
-                  fillColor: colors.cardColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              TextField(
-                controller: content,
-                maxLines: 6,
-                style: TextStyle(color: colors.primaryText),
-                decoration: InputDecoration(
-                  hintText: "Write here...",
-                  hintStyle: TextStyle(color: colors.secondaryText),
-                  filled: true,
-                  fillColor: colors.cardColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              TextField(
-                controller: link,
-                style: TextStyle(color: colors.primaryText),
-                decoration: InputDecoration(
-                  hintText: "Link",
-                  hintStyle: TextStyle(color: colors.secondaryText),
-                  filled: true,
-                  fillColor: colors.cardColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    chip("normal", colors),
-                    chip("job", colors),
-                    chip("announcement", colors),
-                    chip("internship", colors),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              Text(
-                "Preview",
-                style: TextStyle(
-                  color: colors.primaryText,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: colors.cardColor,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: colors.borderColor),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: typeColor(),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        postType.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    if (title.text.isNotEmpty)
-                      Text(
-                        title.text,
-                        style: TextStyle(
-                          color: colors.primaryText,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                    if (title.text.isNotEmpty) const SizedBox(height: 12),
-
-                    HashtagText(text: content.text, fontSize: 16),
-                  ],
-                ),
-              ),
-            ],
+        title: Text(
+          "Edit Post",
+          style: TextStyle(
+            color: colors.primaryText,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.4,
           ),
         ),
-      ),
-
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            height: 54,
-            child: ElevatedButton(
+        centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: FilledButton.icon(
               onPressed: loading ? null : savePost,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primaryText,
-                foregroundColor: isDark ? Colors.black : Colors.white,
+              style: FilledButton.styleFrom(
+                backgroundColor: colors.primaryAccent,
+                foregroundColor: colors.onPrimaryAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              child: loading
+              icon: loading
                   ? SizedBox(
-                      height: 20,
-                      width: 20,
+                      width: 16,
+                      height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: isDark ? Colors.black : Colors.white,
+                        color: colors.onPrimaryAccent,
                       ),
                     )
-                  : const Text(
-                      "Save Changes",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                  : const Icon(Icons.save_rounded, size: 16),
+              label: Text(
+                loading ? "Saving..." : "Save",
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
             ),
           ),
+        ],
+      ),
+
+      // Bottom Bar matching create post screen
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom + 12,
+          top: 12,
+          left: 16,
+          right: 16,
         ),
+        decoration: BoxDecoration(
+          color: colors.cardColor,
+          border: Border(
+            top: BorderSide(color: colors.borderColor.withValues(alpha: 0.5)),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Draft saved status
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: colors.successColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.check, color: colors.successColor, size: 14),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Edits saved",
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  "Just now",
+                  style: TextStyle(color: colors.secondaryText, fontSize: 11),
+                ),
+              ],
+            ),
+
+            const Spacer(),
+
+            // Preview Button
+            OutlinedButton.icon(
+              onPressed: () {
+                final colors = AppColors.of(context);
+                final data = ref.read(userProvider).value;
+                final name = (data?["name"] ?? "User").toString();
+                final photo = (data?["photo_url"] ?? "").toString();
+                final userType = (data?["user_type"] ?? "student")
+                    .toString()
+                    .toLowerCase();
+                final department = (data?["department"] ?? "").toString();
+
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: colors.bgColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                  ),
+                  builder: (context) => Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: SafeArea(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: AnimatedBuilder(
+                          animation: Listenable.merge([title, content, link]),
+                          builder: (context, _) => CreatePostPreviewSection(
+                            name: name,
+                            photo: photo,
+                            userType: userType,
+                            department: department,
+                            postType: postType,
+                            title: title.text,
+                            content: content.text,
+                            link: link.text,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.primaryText,
+                side: BorderSide(color: colors.borderColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              icon: const Icon(Icons.remove_red_eye_outlined, size: 16),
+              label: const Text(
+                "Preview",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      body: user.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(
+          child: Text(
+            "Error loading user profile",
+            style: TextStyle(color: colors.primaryText),
+          ),
+        ),
+        data: (data) {
+          final name = (data["name"] ?? "User").toString();
+          final photo = (data["photo_url"] ?? "").toString();
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User Profile Header Row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: colors.borderColor,
+                      backgroundImage: photo.isNotEmpty
+                          ? NetworkImage(photo)
+                          : null,
+                      child: photo.isEmpty ? const Icon(Icons.person) : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: TextStyle(
+                            color: colors.primaryText,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+
+                    // Be kind chip
+                    GestureDetector(
+                      onTap: () {
+                        final colors = AppColors.of(context);
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: colors.cardColor,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                          ),
+                          builder: (context) => Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Community Guidelines",
+                                  style: TextStyle(
+                                    color: colors.primaryText,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  "â€¢ Be respectful to all members.\nâ€¢ Do not share spam or irrelevant content.\nâ€¢ Ensure opportunities posted are genuine.\nâ€¢ Keep discussions professional and constructive.",
+                                  style: TextStyle(
+                                    color: colors.secondaryText,
+                                    fontSize: 14,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: colors.primaryAccent,
+                                    ),
+                                    child: Text(
+                                      "I understand",
+                                      style: TextStyle(
+                                        color: colors.onPrimaryAccent,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: colors.borderColor.withValues(alpha: 0.6),
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.shield_outlined,
+                              color: colors.secondaryText,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Be kind and follow our",
+                                  style: TextStyle(
+                                    color: colors.secondaryText,
+                                    fontSize: 9.5,
+                                  ),
+                                ),
+                                Text(
+                                  "community guidelines",
+                                  style: TextStyle(
+                                    color: colors.primaryAccent,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 28),
+
+                // Main Input Area
+                CreatePostInputCard(title: title, content: content, link: link),
+
+                const SizedBox(height: 32),
+
+                // Post Category Selector
+                CreatePostTopSection(
+                  postType: postType,
+                  onChanged: (value) {
+                    setState(() {
+                      postType = value;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 24),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
+

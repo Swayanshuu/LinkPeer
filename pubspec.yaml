@@ -57,6 +57,8 @@ dependencies:
   app_links: ^7.0.0
   http: ^1.6.0
   internet_connection_checker_plus: ^3.1.1
+  shimmer_text: ^0.0.2
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +75,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+  path: any
 flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 
 class StorageBackend {
   final supabase = Supabase.instance.client;
@@ -28,7 +29,7 @@ class StorageBackend {
 
     await supabase.storage.from('images').remove([path]);
 
-    print("Image Removed Successfully");
+    debugPrint("Image Removed Successfully");
   }
 
   Future<String> uploadImage(XFile image) async {
@@ -37,7 +38,7 @@ class StorageBackend {
 
     // upload
     String response = await supabase.storage.from('images').upload(path, file);
-    print("Image Uploaded: $response");
+    debugPrint("Image Uploaded: $response");
 
     // public url
     String imageUrl = supabase.storage.from('images').getPublicUrl(path);
@@ -46,7 +47,7 @@ class StorageBackend {
         .from('images')
         .createSignedUrl(path, 10);
 
-    print(signedUrl);
+    debugPrint(signedUrl);
 
     return imageUrl;
   }

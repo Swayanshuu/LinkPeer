@@ -22,8 +22,11 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
             defaultTargetPlatform == TargetPlatform.iOS);
 
     if (isMobile) {
-      // It is important to use an Ad Unit ID (with a '/') here, not an App ID (with a '~').
-      final adUnitId = dotenv.env['ADUNITID'] ?? 'ca-app-pub-3940256099942544/6300978111';
+      final adUnitId = kDebugMode
+          ? (defaultTargetPlatform == TargetPlatform.android
+              ? 'ca-app-pub-3940256099942544/6300978111'
+              : 'ca-app-pub-3940256099942544/2934735716')
+          : (dotenv.env['ADUNITID'] ?? 'ca-app-pub-3940256099942544/6300978111');
 
       _bannerAd = BannerAd(
         size: AdSize.banner,

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'package:igit_connects/core/auth_gate.dart';
 import 'package:igit_connects/core/theme_provider.dart';
+import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -155,6 +156,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         surface: const Color(0xff141413),
         surfaceContainer: const Color(0xff1E1E1C),
       ),
+      extensions: [AppColors.darkTheme],
     );
   }
 
@@ -167,6 +169,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         surface: const Color(0xffF5F5F3),
         surfaceContainer: const Color(0xffFFFFFF),
       ),
+      extensions: [AppColors.lightTheme],
     );
   }
 
