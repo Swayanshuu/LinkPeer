@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
@@ -22,9 +22,12 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
             defaultTargetPlatform == TargetPlatform.iOS);
 
     if (isMobile) {
+      // It is important to use an Ad Unit ID (with a '/') here, not an App ID (with a '~').
+      final adUnitId = dotenv.env['ADUNITID'] ?? 'ca-app-pub-3940256099942544/6300978111';
+
       _bannerAd = BannerAd(
         size: AdSize.banner,
-        adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+        adUnitId: adUnitId,
         request: const AdRequest(),
         listener: BannerAdListener(
           onAdLoaded: (ad) {
