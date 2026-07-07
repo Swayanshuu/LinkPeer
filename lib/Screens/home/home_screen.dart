@@ -99,7 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           data: (me) => RefreshIndicator(
             onRefresh: () async {
-              ref.refresh(postsProvider);
+              return ref.refresh(postsProvider.future);
             },
             color: isDark ? Colors.black : Colors.white,
             backgroundColor: colors.primaryText,
@@ -110,136 +110,178 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             edgeOffset: 8,
 
-            child: SingleChildScrollView(
-              controller: scrollController,
-
-              physics: const AlwaysScrollableScrollPhysics(),
-
-              padding: const EdgeInsets.all(14),
-
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-                  HomeHeader(me: me),
-
-                  const SizedBox(height: 20),
-
-                  FeedFilterBar(
-                    selected: selected,
-
-                    onChanged: (value) {
-                      setState(() {
-                        selected = value;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Text(
-                    "Latest Posts",
-                    style: TextStyle(
-                      color: colors.primaryText,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: CustomScrollView(
+                  controller: scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 20),
+                      sliver: SliverToBoxAdapter(
+                        child: HomeHeader(me: me),
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  posts.when(
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-
-                    error: (e, s) => Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: Text(
-                        "Error loading posts",
-                        style: TextStyle(color: colors.primaryText),
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _StickyFilterDelegate(
+                        backgroundColor: colors.bgColor,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: FeedFilterBar(
+                            selected: selected,
+                            onChanged: (value) {
+                              setState(() {
+                                selected = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(14, 20, 14, 14),
+                      sliver: SliverToBoxAdapter(
+                        child: Text(
+                          "Latest Posts",
+                          style: TextStyle(
+                            color: colors.primaryText,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
 
-                    data: (list) {
-                      final filtered = selected == "all"
-                          ? list
-                          : list
-                                .where(
-                                  (p) =>
-                                      p["post_type"].toString().toLowerCase() ==
-                                      selected,
-                                )
-                                .toList();
+                    posts.when(
+                      loading: () => const SliverToBoxAdapter(
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
 
-                      if (filtered.isEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 30),
+                      error: (e, s) => SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 20),
                           child: Center(
                             child: Text(
-                              "No posts found",
-                              style: TextStyle(color: colors.secondaryText),
+                              "Error loading posts",
+                              style: TextStyle(color: colors.primaryText),
                             ),
                           ),
-                        );
-                      }
+                        ),
+                      ),
 
-                      final adPositions = generateAdPositions(filtered.length);
+                      data: (list) {
+                        final filtered = selected == "all"
+                            ? list
+                            : list
+                                  .where(
+                                    (p) =>
+                                        p["post_type"].toString().toLowerCase() ==
+                                        selected,
+                                  )
+                                  .toList();
 
-                      final feedItems = [];
-
-                      for (int i = 0; i < filtered.length; i++) {
-                        feedItems.add(filtered[i]);
-
-                        if (adPositions.contains(i + 1)) {
-                          feedItems.add("__AD__");
+                        if (filtered.isEmpty) {
+                          return SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 30, bottom: 100),
+                              child: Center(
+                                child: Text(
+                                  "No posts found",
+                                  style: TextStyle(color: colors.secondaryText),
+                                ),
+                              ),
+                            ),
+                          );
                         }
-                      }
 
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        final adPositions = generateAdPositions(filtered.length);
 
-                        itemCount: feedItems.length,
+                        final feedItems = [];
 
-                        itemBuilder: (context, index) {
-                          final item = feedItems[index];
+                        for (int i = 0; i < filtered.length; i++) {
+                          feedItems.add(filtered[i]);
 
-                          if (item == "__AD__") {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                              child: BannerAdWidget(),
-                            );
+                          if (adPositions.contains(i + 1)) {
+                            feedItems.add("__AD__");
                           }
+                        }
 
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      FullPostScreen(post: item),
+                        return SliverPadding(
+                          padding: const EdgeInsets.only(left: 14, right: 14, bottom: 100),
+                          sliver: SliverList.builder(
+                            itemCount: feedItems.length,
+                            itemBuilder: (context, index) {
+                              final item = feedItems[index];
+
+                              if (item == "__AD__") {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  child: BannerAdWidget(),
+                                );
+                              }
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          FullPostScreen(post: item),
+                                    ),
+                                  );
+                                },
+                                child: PostCard(
+                                  post: item,
+                                  onRefresh: () {
+                                    ref.invalidate(postsProvider);
+                                  },
                                 ),
                               );
                             },
-                            child: PostCard(
-                              post: item,
-                              onRefresh: () {
-                                ref.invalidate(postsProvider);
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 100),
-                ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+class _StickyFilterDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final Color backgroundColor;
+
+  _StickyFilterDelegate({
+    required this.child,
+    required this.backgroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: backgroundColor,
+      alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  @override
+  double get maxExtent => 46.0; // Height of the FeedFilterBar
+
+  @override
+  double get minExtent => 46.0;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true;
   }
 }

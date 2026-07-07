@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import 'package:igit_connects/screens/onboarding/components/onboarding_template.dart';
-import 'package:igit_connects/screens/onboarding/components/onboarding_user_details_screen.dart';
+import 'package:igit_connects/Screens/onboarding/components/onboarding_template.dart';
+import 'package:igit_connects/Screens/onboarding/components/onboarding_user_details_screen.dart';
 
 class OnBoardingscreen extends StatefulWidget {
   final String userMode;
@@ -20,6 +20,24 @@ class _OnBoardingscreenState extends State<OnBoardingscreen> {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+    if (isDesktop) {
+      return Scaffold(
+        backgroundColor: colors.bgColor,
+        body: Row(
+          children: [
+            Expanded(
+              child: const ExactOnboardingUI(hideNextButton: true),
+            ),
+            Container(width: 1, color: colors.borderColor),
+            Expanded(
+              child: OnboardingUserDetailsScreen(userMode: widget.userMode),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
 
@@ -27,9 +45,20 @@ class _OnBoardingscreenState extends State<OnBoardingscreen> {
         children: [
           PageView(
             controller: controller,
+            physics: isDesktop 
+                ? const NeverScrollableScrollPhysics() 
+                : null,
 
             children: [
-              const ExactOnboardingUI(),
+              ExactOnboardingUI(
+                onNext: () {
+                  controller.animateToPage(
+                    1,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+              ),
 
               OnboardingUserDetailsScreen(userMode: widget.userMode),
             ],

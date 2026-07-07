@@ -321,15 +321,21 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Profile Section
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: colors.cardColor.withOpacity(0.5),
+                    color: (userType.toLowerCase() == "admin")
+                        ? colors.primaryText.withValues(alpha: 0.04)
+                        : colors.cardColor.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: colors.borderColor.withOpacity(0.4),
-                    ),
+                    border: (userType.toLowerCase() == "admin")
+                        ? Border(
+                            left: const BorderSide(color: Colors.blue, width: 3.5),
+                            top: BorderSide(color: colors.borderColor.withOpacity(0.4)),
+                            right: BorderSide(color: colors.borderColor.withOpacity(0.4)),
+                            bottom: BorderSide(color: colors.borderColor.withOpacity(0.4)),
+                          )
+                        : Border.all(color: colors.borderColor.withOpacity(0.4)),
                   ),
                   child: Row(
                     children: [
@@ -356,7 +362,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                               name,
                               style: TextStyle(
                                 color: colors.primaryText,
-                                fontSize: 17,
+                                fontSize: 14.5, // smaller text
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: -0.3,
                               ),
@@ -368,7 +374,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                                   : "$userType • $date",
                               style: TextStyle(
                                 color: colors.secondaryText,
-                                fontSize: 13,
+                                fontSize: 12, // smaller text
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -389,7 +395,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                       title,
                       style: TextStyle(
                         color: colors.primaryText,
-                        fontSize: 24,
+                        fontSize: 20, // smaller title
                         height: 1.3,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
@@ -398,7 +404,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                   ),
 
                 // Content Section
-                HashtagText(text: content, fontSize: 16),
+                HashtagText(text: content, fontSize: 14),
 
                 const SizedBox(height: 24),
 
@@ -606,21 +612,21 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                     ),
                     child: SafeArea(
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisAlignment: MainAxisAlignment.start, // Left align
                         children: [
                           _buildActionButton(
                             icon: _isLiked
                                 ? Icons.favorite
                                 : Icons.favorite_border_rounded,
                             color: _isLiked ? Colors.red : colors.secondaryText,
-                            label: _likesCount > 0 ? "$_likesCount" : "Like",
+                            label: _likesCount > 0 ? "$_likesCount" : "",
                             onTap: _toggleLike,
                             isActive: _isLiked,
                           ),
                           _buildActionButton(
                             icon: Icons.chat_bubble_outline_rounded,
                             color: colors.secondaryText,
-                            label: "Comment",
+                            label: "",
                             onTap: () {
                               // Keep current screen, maybe focus a comment field later
                             },
@@ -633,14 +639,14 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                             color: _isSaved
                                 ? Colors.blue
                                 : colors.secondaryText,
-                            label: "Save",
+                            label: "",
                             onTap: _toggleSave,
                             isActive: _isSaved,
                           ),
                           _buildActionButton(
                             icon: Icons.share_outlined,
                             color: colors.secondaryText,
-                            label: _isGeneratingLink ? "Wait..." : "Share",
+                            label: _isGeneratingLink ? "..." : "",
                             onTap: () async {
                               if (_isGeneratingLink) return;
                               setState(() => _isGeneratingLink = true);
@@ -709,23 +715,26 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? color.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 22, color: color),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 14,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+            Icon(icon, size: 18, color: color),
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

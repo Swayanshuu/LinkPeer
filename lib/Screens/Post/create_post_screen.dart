@@ -109,10 +109,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     return Scaffold(
       backgroundColor: colors.bgColor,
 
-      floatingActionButton: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Spacer(),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90), // Elevate above bottom nav bar
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Spacer(),
 
           FloatingActionButton.extended(
             onPressed: posting ? null : createPost,
@@ -123,7 +125,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 ? Colors.black
                 : Colors.white,
 
-            elevation: 0,
+            elevation: 10,
 
             icon: posting
                 ? SizedBox(
@@ -145,6 +147,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           ),
         ],
       ),
+    ),
 
       body: SafeArea(
         child: Padding(

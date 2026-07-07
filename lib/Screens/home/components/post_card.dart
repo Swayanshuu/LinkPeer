@@ -357,6 +357,9 @@ class _PostCardState extends ConsumerState<PostCard> {
     final fileName = (post["file_name"] ?? "").toString();
     final fileUrl = (post["file_url"] ?? "").toString();
     final createdAt = (post["created_at"] ?? "").toString();
+    
+    final commentsList = post["post_comments"] as List? ?? [];
+    final commentsCount = commentsList.length;
 
     final date = _formatTimestamp(createdAt);
     final isLongPost = content.length > 250;
@@ -382,30 +385,21 @@ class _PostCardState extends ConsumerState<PostCard> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: isAuthorAdmin
-              ? const Color(0xFF2563EB).withValues(
-                  alpha: 0.03,
-                ) // Professional Royal Blue tint
-              : colors.cardColor.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isAuthorAdmin
-                ? const Color(0xFF2563EB).withValues(
-                    alpha: 0.4,
-                  ) // Subtle blue border
-                : colors.borderColor.withValues(alpha: 0.35),
-            width: isAuthorAdmin ? 1.5 : 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.015),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+          color: isAuthorAdmin 
+              ? colors.primaryText.withValues(alpha: 0.04) // Highlight tint
+              : colors.cardColor,
+          border: Border(
+            left: isAuthorAdmin
+                ? const BorderSide(color: Colors.blue, width: 3.5) // Distinct left accent
+                : BorderSide.none,
+            bottom: BorderSide(
+              color: colors.borderColor.withValues(alpha: 0.5),
+              width: 1.0,
             ),
-          ],
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,7 +433,7 @@ class _PostCardState extends ConsumerState<PostCard> {
                               userName,
                               style: TextStyle(
                                 color: colors.primaryText,
-                                fontSize: 15.5,
+                                fontSize: 13.5, // smaller text
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: -0.2,
                               ),
@@ -495,15 +489,13 @@ class _PostCardState extends ConsumerState<PostCard> {
                             Flexible(
                               child: Text(
                                 userHeadline.isNotEmpty
-                                    ? "$userHeadline - $date"
+                                    ? "$userHeadline • $date"
                                     : date,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  color: colors.secondaryText.withValues(
-                                    alpha: 0.7,
-                                  ),
-                                  fontSize: 10.5,
+                                  color: colors.secondaryText,
+                                  fontSize: 11, // smaller text
                                 ),
                               ),
                             ),
@@ -511,9 +503,7 @@ class _PostCardState extends ConsumerState<PostCard> {
                             Icon(
                               Icons.public,
                               size: 11,
-                              color: colors.secondaryText.withValues(
-                                alpha: 0.5,
-                              ),
+                              color: colors.secondaryText,
                             ),
                           ],
                         ),
@@ -599,15 +589,15 @@ class _PostCardState extends ConsumerState<PostCard> {
                   title,
                   style: TextStyle(
                     color: colors.primaryText,
-                    fontSize: 17.5,
+                    fontSize: 14, // smaller text
                     fontWeight: FontWeight.bold,
-                    letterSpacing: -0.3,
+                    height: 1.3,
                   ),
                 ),
               ),
 
             /// CONTENT
-            HashtagText(text: shortContent, fontSize: 14.5),
+            HashtagText(text: shortContent, fontSize: 13),
 
             if (isLongPost)
               GestureDetector(
@@ -733,33 +723,11 @@ class _PostCardState extends ConsumerState<PostCard> {
                 ),
               ),
 
-            /// LIKES COUNT ROW (Just above the divider)
-            if (_likesCount > 0) ...[
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(Icons.favorite, color: Colors.red, size: 14),
-                  const SizedBox(width: 6),
-                  Text(
-                    "$_likesCount ${_likesCount == 1 ? 'like' : 'likes'}",
-                    style: TextStyle(
-                      color: colors.secondaryText,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Divider(height: 1, thickness: 0.5),
-            ),
+            const SizedBox(height: 8),
 
             /// ACTION BAR (Like, Comment, Save, Share)
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.start, // Left align
               children: [
                 _ActionButton(
                   icon: _isLiked
@@ -767,14 +735,14 @@ class _PostCardState extends ConsumerState<PostCard> {
                       : Icons.favorite_border_rounded,
                   iconColor: _isLiked ? Colors.red : colors.secondaryText,
                   textColor: _isLiked ? Colors.red : colors.secondaryText,
-                  label: "Like",
+                  label: _likesCount > 0 ? "$_likesCount" : "",
                   onTap: _toggleLike,
                 ),
                 _ActionButton(
                   icon: Icons.chat_bubble_outline_rounded,
                   iconColor: colors.secondaryText,
                   textColor: colors.secondaryText,
-                  label: "Comment",
+                  label: commentsCount > 0 ? "$commentsCount" : "",
                   onTap: () {
                     Navigator.push(
                       context,
@@ -790,14 +758,14 @@ class _PostCardState extends ConsumerState<PostCard> {
                       : Icons.bookmark_border_rounded,
                   iconColor: _isSaved ? Colors.blue : colors.secondaryText,
                   textColor: _isSaved ? Colors.blue : colors.secondaryText,
-                  label: "Save",
+                  label: "",
                   onTap: _toggleSave,
                 ),
                 _ActionButton(
                   icon: Icons.share_outlined,
                   iconColor: colors.secondaryText,
                   textColor: colors.secondaryText,
-                  label: "Share",
+                  label: "",
                   onTap: () async {
                     if (!context.mounted) return;
 
@@ -880,22 +848,24 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(4),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 18, color: iconColor),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

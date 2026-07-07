@@ -65,39 +65,34 @@ class _LoginScreen2State extends State<LoginScreen2> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
 
-    return Scaffold(
-      backgroundColor: colors.bgColor,
-      body: Column(
-        children: [
-          /// Illustration
-          Expanded(
-            flex: 6,
-            child: Container(
-              width: double.infinity,
-              color: Colors.white,
-              child: Image.asset(
-                "assets/images/loginscreen.png",
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+    Widget buildIllustration() {
+      return Container(
+        width: double.infinity,
+        color: Colors.white,
+        child: Image.asset(
+          "assets/images/loginscreen.png",
+          fit: BoxFit.cover,
+        ),
+      );
+    }
 
-          /// Bottom Section
-          Expanded(
-            flex: 5,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-              decoration: BoxDecoration(
-                color: colors.cardColor,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(32),
-                ),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+    Widget buildLoginForm(bool isDesktop) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+        decoration: BoxDecoration(
+          color: colors.cardColor,
+          borderRadius: isDesktop
+              ? BorderRadius.zero
+              : const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 450),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                     // Logo + brand row
                     Row(
                       children: [
@@ -310,12 +305,34 @@ class _LoginScreen2State extends State<LoginScreen2> {
                         ),
                       ),
                     ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: colors.bgColor,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth > 800;
+          if (isDesktop) {
+            return Row(
+              children: [
+                Expanded(flex: 6, child: buildIllustration()),
+                Expanded(flex: 5, child: buildLoginForm(true)),
+              ],
+            );
+          }
+          return Column(
+            children: [
+              Expanded(flex: 6, child: buildIllustration()),
+              Expanded(flex: 5, child: buildLoginForm(false)),
+            ],
+          );
+        },
       ),
     );
   }

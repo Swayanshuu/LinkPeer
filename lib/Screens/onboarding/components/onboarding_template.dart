@@ -5,247 +5,251 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:igit_connects/core/app_colors.dart';
 
 class ExactOnboardingUI extends StatelessWidget {
-  const ExactOnboardingUI({super.key});
+  final VoidCallback? onNext;
+  final bool hideNextButton;
+
+  const ExactOnboardingUI({
+    super.key,
+    this.onNext,
+    this.hideNextButton = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
+    final isDesktop = MediaQuery.of(context).size.width > 800;
 
-    return Scaffold(
-      backgroundColor: colors.bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 18),
+    Widget content = Column(
+      children: [
+        const SizedBox(height: 18),
 
-            /// TOP CARD — natural height (no fixed size), content never overflows
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: colors.cardColor,
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: colors.borderColor),
+        /// TOP CARD — natural height (no fixed size), content never overflows
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: colors.cardColor,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: colors.borderColor),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: colors.bgColor,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.hub_rounded,
+                        color: colors.primaryText,
+                        size: 20,
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Text(
+                        "Built for the next generation",
+                        style: TextStyle(
+                          color: colors.secondaryText,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+
+                const SizedBox(height: 28),
+
+                AnimatedTextKit(
+                  repeatForever: true,
+                  animatedTexts: [
+                    TypewriterAnimatedText(
+                      speed: const Duration(milliseconds: 100),
+                      "Networking",
+                      textStyle: TextStyle(
+                        fontSize: 42,
+                        fontWeight: FontWeight.w800,
+                        color: colors.primaryText,
+                      ),
+                    ),
+                    TypewriterAnimatedText(
+                      speed: const Duration(milliseconds: 100),
+                      "Growth",
+                      textStyle: TextStyle(
+                        fontSize: 42,
+                        fontWeight: FontWeight.w800,
+                        color: colors.primaryText,
+                      ),
+                    ),
+                    TypewriterAnimatedText(
+                      speed: const Duration(milliseconds: 100),
+                      "Opportunities",
+                      textStyle: TextStyle(
+                        fontSize: 42,
+                        fontWeight: FontWeight.w800,
+                        color: colors.primaryText,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _Tag("Alumni"),
+                    _Tag("Careers"),
+                    _Tag("Campus"),
+                    _Tag("Faculty"),
+                    _Tag("Growth"),
+                    _Tag("Community"),
+                  ],
+                ),
+
+                // Replaced Spacer() with a fixed gap — Spacer inside a
+                // fixed-height (or naturally-sized) container can overflow
+                // when siblings already consume the available height.
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Icon(
+                      Icons.people_alt_outlined,
+                      size: 16,
+                      color: colors.secondaryText,
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    Text(
+                      "Students • Alumni • Faculty",
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        /// BOTTOM CARD — Expanded so it fills remaining space, inner content
+        /// scrolls on small screens instead of overflowing
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 3),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.0, 0.08, 1.0],
+                  colors: [
+                    colors.borderColor,
+                    colors.cardColor,
+                    colors.bgColor,
+                  ],
+                ),
+              ),
+              // SingleChildScrollView lets content scroll on short phones
+              // instead of throwing a RenderFlex overflow error
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: colors.bgColor,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(
-                            Icons.hub_rounded,
-                            color: colors.primaryText,
-                            size: 20,
-                          ),
-                        ),
+                    Text(
+                      "One community,\nendless possibilities",
+                      style: TextStyle(
+                        color: colors.primaryText,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                      ),
+                    ),
 
-                        const SizedBox(width: 12),
+                    const SizedBox(height: 16),
 
-                        Expanded(
-                          child: Text(
-                            "Built for the next generation",
-                            style: TextStyle(
-                              color: colors.secondaryText,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      "Connect with students, alumni and faculty.\nDiscover opportunities and grow together.",
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 16,
+                        height: 1.5,
+                      ),
                     ),
 
                     const SizedBox(height: 28),
 
-                    AnimatedTextKit(
-                      repeatForever: true,
-                      animatedTexts: [
-                        TypewriterAnimatedText(
-                          speed: const Duration(milliseconds: 100),
-                          "Networking",
-                          textStyle: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w800,
-                            color: colors.primaryText,
-                          ),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        _FeatureChip(
+                          icon: Icons.people_outline,
+                          text: "Network",
                         ),
-                        TypewriterAnimatedText(
-                          speed: const Duration(milliseconds: 100),
-                          "Growth",
-                          textStyle: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w800,
-                            color: colors.primaryText,
-                          ),
+                        _FeatureChip(icon: Icons.work_outline, text: "Jobs"),
+                        _FeatureChip(
+                          icon: Icons.school_outlined,
+                          text: "Campus",
                         ),
-                        TypewriterAnimatedText(
-                          speed: const Duration(milliseconds: 100),
-                          "Opportunities",
-                          textStyle: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w800,
-                            color: colors.primaryText,
-                          ),
+                        _FeatureChip(
+                          icon: Icons.emoji_events_outlined,
+                          text: "Achievements",
+                        ),
+                        _FeatureChip(
+                          icon: Icons.notifications_outlined,
+                          text: "Updates",
+                        ),
+                        _FeatureChip(
+                          icon: Icons.person_outline,
+                          text: "Profile",
                         ),
                       ],
                     ),
 
                     const SizedBox(height: 24),
 
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _Tag("Alumni"),
-                        _Tag("Careers"),
-                        _Tag("Campus"),
-                        _Tag("Faculty"),
-                        _Tag("Growth"),
-                        _Tag("Community"),
-                      ],
-                    ),
-
-                    // Replaced Spacer() with a fixed gap — Spacer inside a
-                    // fixed-height (or naturally-sized) container can overflow
-                    // when siblings already consume the available height.
-                    const SizedBox(height: 20),
-
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.people_alt_outlined,
-                          size: 16,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colors.cardColor,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: colors.borderColor),
+                      ),
+                      child: Text(
+                        "Designed to help every student build connections, discover opportunities, and grow beyond campus.",
+                        style: TextStyle(
                           color: colors.secondaryText,
+                          fontSize: 14,
+                          height: 1.6,
                         ),
-
-                        const SizedBox(width: 8),
-
-                        Text(
-                          "Students • Alumni • Faculty",
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 18),
-
-            /// BOTTOM CARD — Expanded so it fills remaining space, inner content
-            /// scrolls on small screens instead of overflowing
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(32),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: const [0.0, 0.08, 1.0],
-                      colors: [
-                        colors.borderColor,
-                        colors.cardColor,
-                        colors.bgColor,
-                      ],
-                    ),
-                  ),
-                  // SingleChildScrollView lets content scroll on short phones
-                  // instead of throwing a RenderFlex overflow error
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "One community,\nendless possibilities",
-                          style: TextStyle(
-                            color: colors.primaryText,
-                            fontSize: 30,
-                            fontWeight: FontWeight.w800,
-                            height: 1.1,
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        Text(
-                          "Connect with students, alumni and faculty.\nDiscover opportunities and grow together.",
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 16,
-                            height: 1.5,
-                          ),
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            _FeatureChip(
-                              icon: Icons.people_outline,
-                              text: "Network",
-                            ),
-                            _FeatureChip(
-                              icon: Icons.work_outline,
-                              text: "Jobs",
-                            ),
-                            _FeatureChip(
-                              icon: Icons.school_outlined,
-                              text: "Campus",
-                            ),
-                            _FeatureChip(
-                              icon: Icons.emoji_events_outlined,
-                              text: "Achievements",
-                            ),
-                            _FeatureChip(
-                              icon: Icons.notifications_outlined,
-                              text: "Updates",
-                            ),
-                            _FeatureChip(
-                              icon: Icons.person_outline,
-                              text: "Profile",
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: colors.cardColor,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: colors.borderColor),
-                          ),
-                          child: Text(
-                            "Designed to help every student build connections, discover opportunities, and grow beyond campus.",
-                            style: TextStyle(
-                              color: colors.secondaryText,
-                              fontSize: 14,
-                              height: 1.6,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        Center(
+                    SizedBox(height: 40),
+                    if (!hideNextButton)
+                      Center(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(30),
+                          onTap: isDesktop ? onNext : null,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 22,
@@ -260,15 +264,17 @@ class ExactOnboardingUI extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  Icons.swipe_rounded,
+                                  isDesktop
+                                      ? Icons.arrow_forward_rounded
+                                      : Icons.swipe_rounded,
                                   size: 18,
                                   color: colors.secondaryText,
                                 ),
 
-                                const SizedBox(width: 8),
-
                                 Text(
-                                  "Swipe to continue",
+                                  isDesktop
+                                      ? "Click to continue"
+                                      : "Swipe to continue",
                                   style: TextStyle(
                                     color: colors.primaryText,
                                     fontWeight: FontWeight.w600,
@@ -278,54 +284,67 @@ class ExactOnboardingUI extends StatelessWidget {
                             ),
                           ),
                         ),
+                      ),
 
-                        const SizedBox(height: 20),
+                    if (!hideNextButton) const SizedBox(height: 20),
 
-                        Center(
-                          child: RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                color: colors.secondaryText,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              children: [
-                                const TextSpan(text: "Powered by "),
-                                WidgetSpan(
-                                  alignment: PlaceholderAlignment.middle,
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      final uri = Uri.parse("https://swynx.dev");
-                                      await launchUrl(
-                                        uri,
-                                        mode: LaunchMode.externalApplication,
-                                      );
-                                    },
-                                    child: Text(
-                                      "swynx.dev",
-                                      style: TextStyle(
-                                        color: const Color(0xFF6366F1),
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
+                    Center(
+                      child: RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: colors.secondaryText,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          children: [
+                            const TextSpan(text: "Powered by "),
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final uri = Uri.parse("https://swynx.dev");
+                                  await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  );
+                                },
+                                child: Text(
+                                  "swynx.dev",
+                                  style: TextStyle(
+                                    color: const Color(0xFF6366F1),
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-
-                        const SizedBox(height: 16),
-                      ],
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
+    );
+
+    if (isDesktop) {
+      content = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: content,
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: colors.bgColor,
+      body: SafeArea(child: content),
     );
   }
 }

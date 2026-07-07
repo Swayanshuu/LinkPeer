@@ -9,6 +9,7 @@ import 'package:igit_connects/screens/search/search_screen.dart';
 import 'package:igit_connects/screens/post/create_post_screen.dart';
 import 'package:igit_connects/screens/profile/profile_screen.dart';
 import 'package:igit_connects/core/app_colors.dart';
+import 'package:igit_connects/shared_components/app_drawer.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -33,14 +34,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _internetSubscription = InternetConnection().onStatusChange.listen((status) {
+    _internetSubscription = InternetConnection().onStatusChange.listen((
+      status,
+    ) {
       if (status == InternetStatus.disconnected) {
         setState(() => _isDisconnected = true);
         _showNoInternetPopup();
       } else if (status == InternetStatus.connected && _isDisconnected) {
         setState(() => _isDisconnected = false);
         _showBackOnlinePopup();
-        
+
         // Automatically fetch the latest data when internet is restored
         ref.invalidate(userProvider);
         ref.invalidate(postsProvider);
@@ -55,7 +58,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   void _showNoInternetPopup() {
-    final colors = AppColors.of(context);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -63,7 +65,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           children: [
             const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 20),
             const SizedBox(width: 12),
-            const Text("No internet connection", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+            const Text(
+              "No internet connection",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
         backgroundColor: Colors.redAccent,
@@ -76,7 +84,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   void _showBackOnlinePopup() {
-    final colors = AppColors.of(context);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -84,7 +91,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           children: [
             const Icon(Icons.wifi_rounded, color: Colors.white, size: 20),
             const SizedBox(width: 12),
-            const Text("Back online", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+            const Text(
+              "Back online",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
         backgroundColor: Colors.green,
@@ -104,57 +117,155 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       backgroundColor: colors.bgColor,
+      resizeToAvoidBottomInset:
+          false, // Prevents nav bar from moving above keyboard
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth > 1024;
 
-      body: IndexedStack(index: currentIndex, children: screens),
+          Widget content = isDesktop
+              ? Row(
+                  children: [
+                    const SizedBox(width: 280, child: AppDrawer()),
+                    Expanded(
+                      child: IndexedStack(
+                        index: currentIndex,
+                        children: screens,
+                      ),
+                    ),
+                    const SizedBox(width: 350, child: CreatePostScreen()),
+                  ],
+                )
+              : IndexedStack(index: currentIndex, children: screens);
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (value) {
-          setState(() {
-            currentIndex = value;
-          });
-        },
-        backgroundColor: colors.cardColor,
-        selectedItemColor: colors.primaryText,
-        unselectedItemColor: colors.secondaryText,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
-            label: "Home",
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: "Search",
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.add_box_outlined),
-            label: "Post",
-          ),
-          BottomNavigationBarItem(
-            icon: photoUrl != null && photoUrl.isNotEmpty
-                ? CircleAvatar(
-                    radius: 12,
-                    backgroundImage: NetworkImage(photoUrl),
-                    backgroundColor: colors.borderColor,
-                  )
-                : const Icon(Icons.person_outline),
-            activeIcon: photoUrl != null && photoUrl.isNotEmpty
-                ? Container(
+          return Stack(
+            children: [
+              content,
+
+              // Floating Navigation Bar
+              Positioned(
+                bottom: 50,
+                left: isDesktop ? 280 + 20 : 20,
+                right: isDesktop ? 350 + 20 : 20,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: colors.primaryText, width: 2),
+                      color: colors.cardColor.withValues(
+                        alpha: 0.92,
+                      ), // A little transparent
+                      borderRadius: BorderRadius.circular(35),
+                      border: Border.all(
+                        color: colors.borderColor.withValues(alpha: 0.6),
+                        width: 1.0,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: 0.08,
+                          ), // Removed glow, subtle professional shadow
+                          blurRadius: 15,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: CircleAvatar(
-                      radius: 11,
-                      backgroundImage: NetworkImage(photoUrl),
-                      backgroundColor: colors.borderColor,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildNavItem(
+                          Icons.home_filled,
+                          Icons.home_outlined,
+                          0,
+                          "Home",
+                          colors,
+                        ),
+                        const SizedBox(width: 30),
+                        _buildNavItem(
+                          Icons.search,
+                          Icons.search_outlined,
+                          1,
+                          "Search",
+                          colors,
+                        ),
+                        const SizedBox(width: 30),
+                        _buildNavItem(
+                          Icons.add_box,
+                          Icons.add_box_outlined,
+                          2,
+                          "Post",
+                          colors,
+                        ),
+                        const SizedBox(width: 30),
+                        _buildProfileNavItem(photoUrl, 3, "Profile", colors),
+                      ],
                     ),
-                  )
-                : const Icon(Icons.person),
-            label: "Profile",
-          ),
-        ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildNavItem(
+    IconData activeIcon,
+    IconData inactiveIcon,
+    int index,
+    String label,
+    AppColors colors,
+  ) {
+    final isSelected = currentIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => currentIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(4),
+        child: Icon(
+          isSelected ? activeIcon : inactiveIcon,
+          color: isSelected ? colors.primaryText : colors.secondaryText,
+          size: 28,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileNavItem(
+    String? photoUrl,
+    int index,
+    String label,
+    AppColors colors,
+  ) {
+    final isSelected = currentIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => currentIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(4),
+        decoration: isSelected
+            ? BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: colors.primaryText, width: 2),
+              )
+            : null,
+        child: photoUrl != null && photoUrl.isNotEmpty
+            ? CircleAvatar(
+                radius: isSelected ? 11 : 13,
+                backgroundImage: NetworkImage(photoUrl),
+                backgroundColor: colors.borderColor,
+              )
+            : Icon(
+                isSelected ? Icons.person : Icons.person_outline,
+                color: isSelected ? colors.primaryText : colors.secondaryText,
+                size: 28,
+              ),
       ),
     );
   }

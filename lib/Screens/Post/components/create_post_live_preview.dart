@@ -196,20 +196,20 @@ class CreatePostPreviewSection extends StatelessWidget {
 
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
-            color: colors.cardColor.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: colors.borderColor.withValues(alpha: 0.35),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.015),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
+            color: (userType.toLowerCase() == "admin")
+                ? colors.primaryText.withValues(alpha: 0.04)
+                : colors.cardColor,
+            border: Border(
+              left: (userType.toLowerCase() == "admin")
+                  ? const BorderSide(color: Colors.blue, width: 3.5)
+                  : BorderSide.none,
+              bottom: BorderSide(
+                color: colors.borderColor.withValues(alpha: 0.5),
+                width: 1.0,
               ),
-            ],
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,7 +243,7 @@ class CreatePostPreviewSection extends StatelessWidget {
                                 name.isEmpty ? "User" : name,
                                 style: TextStyle(
                                   color: colors.primaryText,
-                                  fontSize: 15.5,
+                                  fontSize: 13.5, // smaller text
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: -0.2,
                                 ),
@@ -273,19 +273,15 @@ class CreatePostPreviewSection extends StatelessWidget {
                             Text(
                               "Just now",
                               style: TextStyle(
-                                color: colors.secondaryText.withValues(
-                                  alpha: 0.7,
-                                ),
-                                fontSize: 10.5,
+                                color: colors.secondaryText,
+                                fontSize: 11, // smaller text
                               ),
                             ),
                             const SizedBox(width: 4),
                             Icon(
                               Icons.public,
                               size: 11,
-                              color: colors.secondaryText.withValues(
-                                alpha: 0.5,
-                              ),
+                              color: colors.secondaryText,
                             ),
                           ],
                         ),
@@ -305,9 +301,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                     title,
                     style: TextStyle(
                       color: colors.primaryText,
-                      fontSize: 17.5,
+                      fontSize: 14, // smaller text
                       fontWeight: FontWeight.bold,
-                      letterSpacing: -0.3,
+                      height: 1.3,
                     ),
                   ),
                 ),
@@ -318,10 +314,10 @@ class CreatePostPreviewSection extends StatelessWidget {
                       "Your post content...",
                       style: TextStyle(
                         color: colors.secondaryText,
-                        fontSize: 14.5,
+                        fontSize: 13, // smaller text
                       ),
                     )
-                  : HashtagText(text: content, fontSize: 14.5),
+                  : HashtagText(text: content, fontSize: 13),
 
               /// LINK ATTACHMENT (Bookmark Card Layout)
               if (link.isNotEmpty)
@@ -368,29 +364,26 @@ class CreatePostPreviewSection extends StatelessWidget {
                   ),
                 ),
 
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(height: 1, thickness: 0.5),
-              ),
+              const SizedBox(height: 8),
 
               /// DUMMY ACTION BAR
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.start, // Left align
                 children: [
                   _DummyActionButton(
                     icon: Icons.favorite_border_rounded,
                     color: colors.secondaryText,
-                    label: "Like",
+                    label: "",
                   ),
                   _DummyActionButton(
                     icon: Icons.chat_bubble_outline_rounded,
                     color: colors.secondaryText,
-                    label: "Comment",
+                    label: "",
                   ),
                   _DummyActionButton(
                     icon: Icons.share_outlined,
                     color: colors.secondaryText,
-                    label: "Share",
+                    label: "",
                   ),
                 ],
               ),
@@ -416,20 +409,22 @@ class _DummyActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 18, color: color),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+          if (label.isNotEmpty) ...[
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

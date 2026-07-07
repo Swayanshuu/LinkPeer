@@ -79,6 +79,7 @@ class _OnboardingUserDetailsScreenState
   bool isProofUploaded = false;
 
   bool _saving = false;
+  int _currentStep = 0;
 
   // ── Completion ratio (drives the truthful progress bar) ───────────────────
   double get _completionRatio {
@@ -328,278 +329,287 @@ class _OnboardingUserDetailsScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFaculty = widget.userMode == "faculty";
 
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
+    final heroCard = _HeroCard(
+      isFaculty: isFaculty,
+      colors: colors,
+      completionRatio: _completionRatio,
+    );
+
+    final overviewSection = <Widget>[
+      _SectionCard(
+        title: "Profile Overview",
+        colors: colors,
+        child: Column(
+          children: [
+            _InfoTile(
+              icon: Icons.person_outline_rounded,
+              label: "User Type",
+              value: _displayUserType(userType),
+              colors: colors,
+            ),
+            Divider(height: 1, color: colors.borderColor),
+            _InfoTile(
+              icon: Icons.school_outlined,
+              label: "College",
+              value: college,
+              colors: colors,
+            ),
+          ],
+        ),
+      ),
+    ];
+
+    final academicSection = !isFaculty
+        ? <Widget>[
+            _SectionCard(
+              title: "Academic Information",
+              subtitle: "Tell us about your academic background",
+              colors: colors,
+              child: Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: branch,
+                    dropdownColor: colors.cardColor,
+                    style: TextStyle(color: colors.primaryText, fontSize: 15),
+                    decoration: _inputDeco("Branch", colors, icon: Icons.account_tree_outlined),
+                    validator: (v) => v == null ? "Please select your branch" : null,
+                    items: branches.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    onChanged: (v) => setState(() => branch = v),
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<String>(
+                    value: stream,
+                    dropdownColor: colors.cardColor,
+                    style: TextStyle(color: colors.primaryText, fontSize: 15),
+                    decoration: _inputDeco("Stream", colors, icon: Icons.layers_outlined),
+                    validator: (v) => v == null ? "Please select your stream" : null,
+                    items: streams.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    onChanged: (v) => setState(() => stream = v),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: graduationYearController,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: colors.primaryText, fontSize: 15),
+                    decoration: _inputDeco(
+                      "Graduation Year",
+                      colors,
+                      icon: Icons.calendar_today_outlined,
+                      suffix: IconButton(
+                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: colors.secondaryText),
+                        onPressed: pickGraduationYear,
+                        tooltip: "Pick year",
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) return "Please enter graduation year";
+                      final year = int.tryParse(value);
+                      if (year == null) return "Enter a valid year";
+                      final cy = DateTime.now().year;
+                      if (year < 1990 || year > cy + 4) return "Year must be between 1990 and ${cy + 4}";
+                      return null;
+                    },
+                    onChanged: (value) {
+                      final year = int.tryParse(value);
+                      if (year != null) {
+                        graduatingYear = year;
+                        detectRole();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            )
+          ]
+        : <Widget>[];
+
+    final professionalSection = isFaculty
+        ? <Widget>[
+            _SectionCard(
+              title: "Professional Information",
+              subtitle: "Your faculty details for the community",
+              colors: colors,
+              child: Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: department,
+                    dropdownColor: colors.cardColor,
+                    style: TextStyle(color: colors.primaryText, fontSize: 15),
+                    decoration: _inputDeco("Department", colors, icon: Icons.corporate_fare_outlined),
+                    validator: (v) => v == null ? "Please select department" : null,
+                    items: departments.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    onChanged: (v) => setState(() => department = v),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    style: TextStyle(color: colors.primaryText, fontSize: 15),
+                    decoration: _inputDeco("Designation", colors, icon: Icons.badge_outlined),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? "Designation is required" : null,
+                    onChanged: (v) => setState(() => designation = v),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    keyboardType: TextInputType.phone,
+                    style: TextStyle(color: colors.primaryText, fontSize: 15),
+                    decoration: _inputDeco("Phone Number", colors, icon: Icons.phone_outlined),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return "Phone number is required";
+                      if (v.trim().length < 10) return "Enter a valid phone number";
+                      return null;
+                    },
+                    onChanged: (v) => setState(() => phone = v),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _FacultyVerificationCard(
+              colors: colors,
+              isDark: isDark,
+              isProofUploaded: isProofUploaded,
+              onUpload: () async {
+                final result = await Navigator.push<String>(
+                  context,
+                  MaterialPageRoute(builder: (_) => const FacultyVerificationScreen()),
+                );
+                if (result != null) {
+                  setState(() {
+                    isProofUploaded = true;
+                    facultyProof = result;
+                  });
+                }
+              },
+            ),
+          ]
+        : <Widget>[];
+
+    final submitSection = <Widget>[
+      _ContinueButton(
+        saving: _saving,
+        colors: colors,
+        isDark: isDark,
+        onPressed: save,
+      ),
+      const SizedBox(height: 16),
+      Center(
+        child: Text(
+          "Your data is stored securely and privately.",
+          style: TextStyle(color: colors.secondaryText, fontSize: 12),
+        ),
+      ),
+    ];
+
+    Widget formContent;
+    if (isDesktop) {
+      formContent = Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: heroCard,
+          ),
+          Expanded(
+            child: Stepper(
+              currentStep: _currentStep,
+              type: StepperType.vertical,
+              physics: const ClampingScrollPhysics(),
+              onStepTapped: (step) => setState(() => _currentStep = step),
+              onStepContinue: () {
+                if (_currentStep < 2) {
+                  setState(() => _currentStep += 1);
+                } else {
+                  save();
+                }
+              },
+              onStepCancel: () {
+                if (_currentStep > 0) {
+                  setState(() => _currentStep -= 1);
+                }
+              },
+              controlsBuilder: (context, details) {
+                final isLastStep = _currentStep == 2;
+                return Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Row(
+                    children: [
+                      if (!isLastStep)
+                        ElevatedButton(
+                          onPressed: details.onStepContinue,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primaryText,
+                            foregroundColor: colors.bgColor,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          child: const Text("Next"),
+                        ),
+                      if (isLastStep)
+                        Expanded(child: Column(children: submitSection)),
+                      if (!isLastStep && _currentStep > 0) ...[
+                        const SizedBox(width: 12),
+                        TextButton(
+                          onPressed: details.onStepCancel,
+                          style: TextButton.styleFrom(foregroundColor: colors.secondaryText),
+                          child: const Text("Back"),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+              steps: [
+                Step(
+                  title: Text("Overview", style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.bold)),
+                  content: Column(children: overviewSection),
+                  isActive: _currentStep >= 0,
+                  state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+                ),
+                Step(
+                  title: Text("Details", style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.bold)),
+                  content: Column(children: isFaculty ? professionalSection : academicSection),
+                  isActive: _currentStep >= 1,
+                  state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+                ),
+                Step(
+                  title: Text("Benefits & Submit", style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.bold)),
+                  content: _BenefitsCard(colors: colors),
+                  isActive: _currentStep >= 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      formContent = ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+        children: [
+          heroCard,
+          const SizedBox(height: 20),
+          ...overviewSection,
+          const SizedBox(height: 16),
+          if (!isFaculty) ...academicSection,
+          if (isFaculty) ...professionalSection,
+          if (isFaculty) const SizedBox(height: 16),
+          if (!isFaculty) const SizedBox(height: 16),
+          _BenefitsCard(colors: colors),
+          const SizedBox(height: 24),
+          ...submitSection,
+        ],
+      );
+    }
+
     return Scaffold(
       backgroundColor: colors.bgColor,
       body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
-            children: [
-              // ── 1. Hero Header ────────────────────────────────────────
-              _HeroCard(
-                isFaculty: isFaculty,
-                colors: colors,
-                completionRatio: _completionRatio,
-              ),
-
-              const SizedBox(height: 20),
-
-              // ── 2. Profile Overview ───────────────────────────────────
-              _SectionCard(
-                title: "Profile Overview",
-                colors: colors,
-                child: Column(
-                  children: [
-                    _InfoTile(
-                      icon: Icons.person_outline_rounded,
-                      label: "User Type",
-                      value: _displayUserType(userType),
-                      colors: colors,
-                    ),
-                    Divider(height: 1, color: colors.borderColor),
-                    _InfoTile(
-                      icon: Icons.school_outlined,
-                      label: "College",
-                      value: college,
-                      colors: colors,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // ── 3a. Academic Info (Student / Alumni) ──────────────────
-              if (!isFaculty) ...[
-                _SectionCard(
-                  title: "Academic Information",
-                  subtitle: "Tell us about your academic background",
-                  colors: colors,
-                  child: Column(
-                    children: [
-                      // Branch
-                      DropdownButtonFormField<String>(
-                        value: branch,
-                        dropdownColor: colors.cardColor,
-                        style: TextStyle(
-                          color: colors.primaryText,
-                          fontSize: 15,
-                        ),
-                        decoration: _inputDeco(
-                          "Branch",
-                          colors,
-                          icon: Icons.account_tree_outlined,
-                        ),
-                        validator: (v) =>
-                            v == null ? "Please select your branch" : null,
-                        items: branches
-                            .map(
-                              (e) => DropdownMenuItem(value: e, child: Text(e)),
-                            )
-                            .toList(),
-                        onChanged: (v) => setState(() => branch = v),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Stream
-                      DropdownButtonFormField<String>(
-                        value: stream,
-                        dropdownColor: colors.cardColor,
-                        style: TextStyle(
-                          color: colors.primaryText,
-                          fontSize: 15,
-                        ),
-                        decoration: _inputDeco(
-                          "Stream",
-                          colors,
-                          icon: Icons.layers_outlined,
-                        ),
-                        validator: (v) =>
-                            v == null ? "Please select your stream" : null,
-                        items: streams
-                            .map(
-                              (e) => DropdownMenuItem(value: e, child: Text(e)),
-                            )
-                            .toList(),
-                        onChanged: (v) => setState(() => stream = v),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Graduation year — text field + calendar icon picker
-                      TextFormField(
-                        controller: graduationYearController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(
-                          color: colors.primaryText,
-                          fontSize: 15,
-                        ),
-                        decoration: _inputDeco(
-                          "Graduation Year",
-                          colors,
-                          icon: Icons.calendar_today_outlined,
-                          suffix: IconButton(
-                            icon: Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: colors.secondaryText,
-                            ),
-                            onPressed: pickGraduationYear,
-                            tooltip: "Pick year",
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return "Please enter graduation year";
-                          }
-                          final year = int.tryParse(value);
-                          if (year == null) return "Enter a valid year";
-                          final cy = DateTime.now().year;
-                          if (year < 1990 || year > cy + 4) {
-                            return "Year must be between 1990 and ${cy + 4}";
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          final year = int.tryParse(value);
-                          if (year != null) {
-                            graduatingYear = year;
-                            detectRole();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-              ],
-
-              // ── 3b. Professional Info (Faculty) ──────────────────────
-              if (isFaculty) ...[
-                _SectionCard(
-                  title: "Professional Information",
-                  subtitle: "Your faculty details for the community",
-                  colors: colors,
-                  child: Column(
-                    children: [
-                      DropdownButtonFormField<String>(
-                        value: department,
-                        dropdownColor: colors.cardColor,
-                        style: TextStyle(
-                          color: colors.primaryText,
-                          fontSize: 15,
-                        ),
-                        decoration: _inputDeco(
-                          "Department",
-                          colors,
-                          icon: Icons.corporate_fare_outlined,
-                        ),
-                        validator: (v) =>
-                            v == null ? "Please select department" : null,
-                        items: departments
-                            .map(
-                              (e) => DropdownMenuItem(value: e, child: Text(e)),
-                            )
-                            .toList(),
-                        onChanged: (v) => setState(() => department = v),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      TextFormField(
-                        style: TextStyle(
-                          color: colors.primaryText,
-                          fontSize: 15,
-                        ),
-                        decoration: _inputDeco(
-                          "Designation",
-                          colors,
-                          icon: Icons.badge_outlined,
-                        ),
-                        validator: (v) => (v == null || v.trim().isEmpty)
-                            ? "Designation is required"
-                            : null,
-                        onChanged: (v) => setState(() => designation = v),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      TextFormField(
-                        keyboardType: TextInputType.phone,
-                        style: TextStyle(
-                          color: colors.primaryText,
-                          fontSize: 15,
-                        ),
-                        decoration: _inputDeco(
-                          "Phone Number",
-                          colors,
-                          icon: Icons.phone_outlined,
-                        ),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return "Phone number is required";
-                          }
-                          if (v.trim().length < 10) {
-                            return "Enter a valid phone number";
-                          }
-                          return null;
-                        },
-                        onChanged: (v) => setState(() => phone = v),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // ── 4. Faculty Verification ───────────────────────────
-                _FacultyVerificationCard(
-                  colors: colors,
-                  isDark: isDark,
-                  isProofUploaded: isProofUploaded,
-                  onUpload: () async {
-                    final result = await Navigator.push<String>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const FacultyVerificationScreen(),
-                      ),
-                    );
-                    if (result != null) {
-                      setState(() {
-                        isProofUploaded = true;
-                        facultyProof = result;
-                      });
-                    }
-                  },
-                ),
-
-                const SizedBox(height: 16),
-              ],
-
-              // ── 5. Community Benefits ─────────────────────────────────
-              _BenefitsCard(colors: colors),
-
-              const SizedBox(height: 24),
-
-              // ── 6. Continue Button ────────────────────────────────────
-              _ContinueButton(
-                saving: _saving,
-                colors: colors,
-                isDark: isDark,
-                onPressed: save,
-              ),
-
-              const SizedBox(height: 16),
-
-              Center(
-                child: Text(
-                  "Your data is stored securely and privately.",
-                  style: TextStyle(color: colors.secondaryText, fontSize: 12),
-                ),
-              ),
-            ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Form(
+              key: _formKey,
+              child: formContent,
+            ),
           ),
         ),
       ),

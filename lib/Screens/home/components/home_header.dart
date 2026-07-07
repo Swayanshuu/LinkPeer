@@ -84,16 +84,17 @@ class HomeHeader extends ConsumerWidget {
             ),
           ),
 
-          GestureDetector(
-            onTap: () {
-              Scaffold.of(context).openDrawer();
-            },
+          if (MediaQuery.of(context).size.width <= 1024)
+            GestureDetector(
+              onTap: () {
+                Scaffold.of(context).openDrawer();
+              },
 
-            child: CircleAvatar(
-              radius: 24,
-              backgroundImage: NetworkImage(me["photo_url"]),
+              child: CircleAvatar(
+                radius: 24,
+                backgroundImage: NetworkImage(me["photo_url"]),
+              ),
             ),
-          ),
         ],
       ),
     );
