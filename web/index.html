@@ -31,6 +31,22 @@
 
   <title>igit_connects</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Auto-redirect mobile browsers to the native app -->
+  <script>
+    var isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if (isAndroid) {
+      // Force Android Chrome/Browser to launch the app via intent
+      var intentUrl = "intent://linkpeer.swynx.dev" + window.location.pathname + window.location.search + window.location.hash + "#Intent;scheme=https;package=com.igitconnect.igit_connects;end;";
+      window.location.replace(intentUrl);
+    } else if (isIOS) {
+      // Force iOS Safari to launch the app via custom scheme
+      var iosUrl = "linkpeer://post" + window.location.pathname.replace('/post', '') + window.location.search + window.location.hash;
+      window.location.replace(iosUrl);
+    }
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

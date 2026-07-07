@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.igitconnect.igit_connects",
+      "sha256_cert_fingerprints": [
+        "79:B5:DF:CF:15:94:5E:24:B8:B5:51:81:52:6B:E5:02:35:29:6A:83:54:62:3F:B7:8A:8D:6C:2D:9B:B2:F9:8A"
+      ]
+    }
+  }
+]
