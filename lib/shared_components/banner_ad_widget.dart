@@ -17,16 +17,18 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   void initState() {
     super.initState();
 
-    final isMobile = !kIsWeb &&
+    final isMobile =
+        !kIsWeb &&
         (defaultTargetPlatform == TargetPlatform.android ||
             defaultTargetPlatform == TargetPlatform.iOS);
 
     if (isMobile) {
       final adUnitId = kDebugMode
           ? (defaultTargetPlatform == TargetPlatform.android
-              ? 'ca-app-pub-3940256099942544/6300978111'
-              : 'ca-app-pub-3940256099942544/2934735716')
-          : (dotenv.env['ADUNITID'] ?? 'ca-app-pub-3940256099942544/6300978111');
+                ? 'ca-app-pub-3940256099942544/6300978111'
+                : 'ca-app-pub-3940256099942544/2934735716')
+          : (dotenv.env['ADUNITID'] ??
+                'ca-app-pub-3940256099942544/6300978111');
 
       _bannerAd = BannerAd(
         size: AdSize.banner,

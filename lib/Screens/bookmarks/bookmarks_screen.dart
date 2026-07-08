@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/post_provider.dart';
@@ -92,7 +92,10 @@ class BookmarksScreen extends ConsumerWidget {
                 color: colors.primaryText,
                 backgroundColor: colors.cardColor,
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   itemCount: savedPosts.length,
                   itemBuilder: (context, index) {
                     return Padding(
@@ -112,4 +115,3 @@ class BookmarksScreen extends ConsumerWidget {
     );
   }
 }
-

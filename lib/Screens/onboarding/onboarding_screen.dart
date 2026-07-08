@@ -26,9 +26,7 @@ class _OnBoardingscreenState extends State<OnBoardingscreen> {
         backgroundColor: colors.bgColor,
         body: Row(
           children: [
-            Expanded(
-              child: const ExactOnboardingUI(hideNextButton: true),
-            ),
+            Expanded(child: const ExactOnboardingUI(hideNextButton: true)),
             Container(width: 1, color: colors.borderColor),
             Expanded(
               child: OnboardingUserDetailsScreen(userMode: widget.userMode),
@@ -45,9 +43,7 @@ class _OnBoardingscreenState extends State<OnBoardingscreen> {
         children: [
           PageView(
             controller: controller,
-            physics: isDesktop 
-                ? const NeverScrollableScrollPhysics() 
-                : null,
+            physics: isDesktop ? const NeverScrollableScrollPhysics() : null,
 
             children: [
               ExactOnboardingUI(

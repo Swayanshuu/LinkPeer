@@ -14,6 +14,9 @@ class CreatePostPreviewSection extends StatelessWidget {
   final String title;
   final String content;
   final String link;
+  final List<dynamic> images; // Can be Uint8List for local preview
+  final List<String>? existingImages;
+  final bool isVerified;
 
   const CreatePostPreviewSection({
     super.key,
@@ -25,6 +28,9 @@ class CreatePostPreviewSection extends StatelessWidget {
     required this.title,
     required this.content,
     required this.link,
+    required this.images,
+    this.existingImages,
+    required this.isVerified,
   });
 
   Color _getCategoryColor(String postType) {
@@ -211,15 +217,15 @@ class CreatePostPreviewSection extends StatelessWidget {
             color: postType.toLowerCase() == "announcement"
                 ? colors.announcementBg
                 : (userType.toLowerCase() == "admin")
-                    ? colors.adminPostBg
-                    : colors.cardColor,
+                ? colors.adminPostBg
+                : colors.cardColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: postType.toLowerCase() == "announcement"
                   ? colors.announcementBorder
                   : (userType.toLowerCase() == "admin")
-                      ? colors.adminPostBorder
-                      : colors.borderColor.withValues(alpha: 0.5),
+                  ? colors.adminPostBorder
+                  : colors.borderColor.withValues(alpha: 0.5),
               width: 1.0,
             ),
           ),
@@ -274,6 +280,14 @@ class CreatePostPreviewSection extends StatelessWidget {
                                       letterSpacing: -0.2,
                                     ),
                                   ),
+                            if (isVerified) ...[
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.verified,
+                                color: Colors.blue,
+                                size: 16,
+                              ),
+                            ],
                             const SizedBox(width: 8),
                             _buildUserTypeBadge(userType, colors),
                           ],
@@ -344,6 +358,60 @@ class CreatePostPreviewSection extends StatelessWidget {
                     )
                   : HashtagText(text: content, fontSize: 13),
 
+              /// MULTIPLE IMAGE ATTACHMENTS
+              if (images.isNotEmpty ||
+                  (existingImages != null && existingImages!.isNotEmpty)) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 220,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: (existingImages?.length ?? 0) + images.length,
+                    itemBuilder: (context, index) {
+                      final totalImages =
+                          (existingImages?.length ?? 0) + images.length;
+                      final isExisting = index < (existingImages?.length ?? 0);
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: isExisting
+                              ? Image.network(
+                                  existingImages![index],
+                                  height: 220,
+                                  width: totalImages == 1
+                                      ? MediaQuery.of(context).size.width - 64
+                                      : 280,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(
+                                        height: 220,
+                                        width: totalImages == 1
+                                            ? MediaQuery.of(
+                                                    context,
+                                                  ).size.width -
+                                                  64
+                                            : 280,
+                                        color: colors.borderColor,
+                                        child: const Icon(Icons.broken_image),
+                                      ),
+                                )
+                              : Image.memory(
+                                  images[index - (existingImages?.length ?? 0)],
+                                  height: 220,
+                                  width: totalImages == 1
+                                      ? MediaQuery.of(context).size.width - 64
+                                      : 280,
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+
               /// LINK ATTACHMENT (Bookmark Card Layout)
               if (link.isNotEmpty)
                 Padding(
@@ -359,7 +427,7 @@ class CreatePostPreviewSection extends StatelessWidget {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).brightness == Brightness.dark 
+                          color: Theme.of(context).brightness == Brightness.dark
                               ? Colors.blueAccent.withValues(alpha: 0.2)
                               : Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
@@ -373,7 +441,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                             Text(
                               "Open Link",
                               style: TextStyle(
-                                color: Theme.of(context).brightness == Brightness.dark 
+                                color:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? Colors.blue.shade300
                                     : Colors.blue.shade700,
                                 fontSize: 12.5,
@@ -384,7 +454,9 @@ class CreatePostPreviewSection extends StatelessWidget {
                             Icon(
                               Icons.open_in_new_rounded,
                               size: 14,
-                              color: Theme.of(context).brightness == Brightness.dark 
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
                                   ? Colors.blue.shade300
                                   : Colors.blue.shade700,
                             ),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 
 class CreatePostTopSection extends StatelessWidget {
@@ -58,10 +58,14 @@ class CreatePostTopSection extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: selected ? typeColor.withValues(alpha: 0.08) : colors.bgColor,
+            color: selected
+                ? typeColor.withValues(alpha: 0.08)
+                : colors.bgColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: selected ? typeColor : colors.borderColor.withValues(alpha: 0.6),
+              color: selected
+                  ? typeColor
+                  : colors.borderColor.withValues(alpha: 0.6),
               width: selected ? 1.5 : 1.0,
             ),
           ),
@@ -108,7 +112,7 @@ class CreatePostTopSection extends StatelessWidget {
               letterSpacing: -0.4,
             ),
           ),
-          
+
           const SizedBox(height: 20),
 
           SingleChildScrollView(
@@ -122,7 +126,7 @@ class CreatePostTopSection extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
 
           Text(
@@ -134,5 +138,3 @@ class CreatePostTopSection extends StatelessWidget {
     );
   }
 }
-
-

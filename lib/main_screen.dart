@@ -119,7 +119,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       backgroundColor: colors.bgColor,
-      extendBody: true, // This makes the notch gap transparent (shows content behind)
+      extendBody:
+          true, // This makes the notch gap transparent (shows content behind)
       resizeToAvoidBottomInset:
           false, // Prevents nav bar from moving above keyboard
       body: LayoutBuilder(
@@ -136,7 +137,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         children: screens,
                       ),
                     ),
-                    if (currentIndex != 2) const SizedBox(width: 350, child: CreatePostScreen()),
+                    if (currentIndex != 2)
+                      const SizedBox(width: 350, child: CreatePostScreen()),
                   ],
                 )
               : IndexedStack(index: currentIndex, children: screens);
@@ -175,15 +177,38 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       child: Container(
         height: 60,
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: colors.borderColor.withValues(alpha: 0.5), width: 1)),
+          border: Border(
+            top: BorderSide(
+              color: colors.borderColor.withValues(alpha: 0.5),
+              width: 1,
+            ),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home_filled, Icons.home_outlined, 0, "Home", colors),
-            _buildNavItem(Icons.search, Icons.search_outlined, 1, "Explore", colors),
+            _buildNavItem(
+              Icons.home_filled,
+              Icons.home_outlined,
+              0,
+              "Home",
+              colors,
+            ),
+            _buildNavItem(
+              Icons.search,
+              Icons.search_outlined,
+              1,
+              "Explore",
+              colors,
+            ),
             const SizedBox(width: 48), // Space for FAB
-            _buildNavItem(Icons.bookmark, Icons.bookmark_outline, 3, "Bookmarks", colors),
+            _buildNavItem(
+              Icons.bookmark,
+              Icons.bookmark_outline,
+              3,
+              "Bookmarks",
+              colors,
+            ),
             _buildProfileNavItem(photoUrl, 4, "Profile", colors),
           ],
         ),
@@ -200,7 +225,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   ) {
     final isSelected = currentIndex == index;
     final activeColor = const Color(0xFF3B82F6);
-    
+
     return GestureDetector(
       onTap: () => setState(() => currentIndex = index),
       behavior: HitTestBehavior.opaque,
@@ -238,7 +263,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   ) {
     final isSelected = currentIndex == index;
     final activeColor = const Color(0xFF3B82F6);
-    
+
     return GestureDetector(
       onTap: () => setState(() => currentIndex = index),
       behavior: HitTestBehavior.opaque,

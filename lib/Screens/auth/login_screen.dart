@@ -69,10 +69,7 @@ class _LoginScreen2State extends State<LoginScreen2> {
       return Container(
         width: double.infinity,
         color: Colors.white,
-        child: Image.asset(
-          "assets/images/loginscreen.png",
-          fit: BoxFit.cover,
-        ),
+        child: Image.asset("assets/images/loginscreen.png", fit: BoxFit.cover),
       );
     }
 
@@ -93,218 +90,204 @@ class _LoginScreen2State extends State<LoginScreen2> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                    // Logo + brand row
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/LinkPeer.png',
-                          height: 40,
-                          width: 40,
-                          fit: BoxFit.contain,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          "LinkPeer",
-                          style: TextStyle(
-                            color: colors.primaryText,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Text(
-                      "Welcome back 👋",
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 15,
+                  // Logo + brand row
+                  Row(
+                    children: [
+                      Image.asset(
+                        'assets/images/LinkPeer.png',
+                        height: 40,
+                        width: 40,
+                        fit: BoxFit.contain,
                       ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      "One Community. Endless Possibilities.",
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 13,
+                      const SizedBox(width: 12),
+                      Text(
+                        "LinkPeer",
+                        style: TextStyle(
+                          color: colors.primaryText,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
 
-                    const SizedBox(height: 16),
+                  const SizedBox(height: 10),
 
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: const [
-                        FeatureChip(
-                          icon: Icons.people_outline,
-                          text: "Network",
-                        ),
-                        FeatureChip(icon: Icons.work_outline, text: "Career"),
-                        FeatureChip(
-                          icon: Icons.school_outlined,
-                          text: "Campus",
-                        ),
-                      ],
-                    ),
+                  Text(
+                    "Welcome back 👋",
+                    style: TextStyle(color: colors.secondaryText, fontSize: 15),
+                  ),
 
-                    const SizedBox(height: 28),
+                  const SizedBox(height: 4),
 
-                    /// Student Login
-                    SizedBox(
-                      width: double.infinity,
-                      height: 58,
-                      child: ElevatedButton(
-                        onPressed: loadingMode != null
-                            ? null
-                            : () => login("student"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        child: loadingMode == "student"
-                            ? const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text("Signing in..."),
-                                ],
-                              )
-                            : const Text(
-                                "Continue as Student / Alumni",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
-                                ),
-                              ),
-                      ),
-                    ),
+                  Text(
+                    "One Community. Endless Possibilities.",
+                    style: TextStyle(color: colors.secondaryText, fontSize: 13),
+                  ),
 
-                    const SizedBox(height: 14),
+                  const SizedBox(height: 16),
 
-                    /// Faculty Card
-                    InkWell(
-                      borderRadius: BorderRadius.circular(18),
-                      onTap: loadingMode != null
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: const [
+                      FeatureChip(icon: Icons.people_outline, text: "Network"),
+                      FeatureChip(icon: Icons.work_outline, text: "Career"),
+                      FeatureChip(icon: Icons.school_outlined, text: "Campus"),
+                    ],
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  /// Student Login
+                  SizedBox(
+                    width: double.infinity,
+                    height: 58,
+                    child: ElevatedButton(
+                      onPressed: loadingMode != null
                           ? null
-                          : () => login("faculty"),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
+                          : () => login("student"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: colors.borderColor),
                         ),
-                        child: loadingMode == "faculty"
-                            ? const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text("Verifying faculty..."),
-                                ],
-                              )
-                            : Row(
-                                children: [
-                                  Icon(
-                                    Icons.verified_user_outlined,
-                                    color: colors.primaryText,
-                                  ),
-
-                                  const SizedBox(width: 12),
-
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Faculty Login",
-                                          style: TextStyle(
-                                            color: colors.primaryText,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          "Verification Required",
-                                          style: TextStyle(
-                                            color: colors.secondaryText,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 16,
-                                    color: colors.secondaryText,
-                                  ),
-                                ],
-                              ),
                       ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    Center(
-                      child: RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 12,
-                            height: 1.5,
-                          ),
-                          children: [
-                            const TextSpan(
-                              text: "By continuing, you agree to our ",
-                            ),
-                            TextSpan(
-                              text: "Privacy Policy",
-                              style: const TextStyle(
-                                color: Colors.blue,
+                      child: loadingMode == "student"
+                          ? const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Text("Signing in..."),
+                              ],
+                            )
+                          : const Text(
+                              "Continue as Student / Alumni",
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
+                                fontSize: 15,
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => const PrivacyPolicySheet(),
-                                  );
-                                },
                             ),
-                            const TextSpan(text: " and Community Guidelines."),
-                          ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  /// Faculty Card
+                  InkWell(
+                    borderRadius: BorderRadius.circular(18),
+                    onTap: loadingMode != null ? null : () => login("faculty"),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: colors.borderColor),
+                      ),
+                      child: loadingMode == "faculty"
+                          ? const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Text("Verifying faculty..."),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Icon(
+                                  Icons.verified_user_outlined,
+                                  color: colors.primaryText,
+                                ),
+
+                                const SizedBox(width: 12),
+
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Faculty Login",
+                                        style: TextStyle(
+                                          color: colors.primaryText,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "Verification Required",
+                                        style: TextStyle(
+                                          color: colors.secondaryText,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                  color: colors.secondaryText,
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Center(
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: TextStyle(
+                          color: colors.secondaryText,
+                          fontSize: 12,
+                          height: 1.5,
                         ),
+                        children: [
+                          const TextSpan(
+                            text: "By continuing, you agree to our ",
+                          ),
+                          TextSpan(
+                            text: "Privacy Policy",
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (_) => const PrivacyPolicySheet(),
+                                );
+                              },
+                          ),
+                          const TextSpan(text: " and Community Guidelines."),
+                        ],
                       ),
                     ),
+                  ),
                 ],
               ),
             ),

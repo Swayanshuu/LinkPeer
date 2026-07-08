@@ -1,4 +1,4 @@
-﻿// Component/Profile/ProfileStatsRow.dart
+// Component/Profile/ProfileStatsRow.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,12 +14,13 @@ class ProfileStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    
+
     final count = posts.maybeWhen(
-      data: (list) => list.where((p) => p["user_id"] == data["id"]).length.toString(),
+      data: (list) =>
+          list.where((p) => p["user_id"] == data["id"]).length.toString(),
       orElse: () => "0",
     );
-    
+
     final savedCount = posts.maybeWhen(
       data: (list) {
         final saved = list.where((p) {
@@ -48,9 +49,21 @@ class ProfileStatsRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem(count, "Posts", Icons.article_outlined, Colors.purple, colors),
+          _buildStatItem(
+            count,
+            "Posts",
+            Icons.article_outlined,
+            Colors.purple,
+            colors,
+          ),
           _buildDivider(colors),
-          _buildStatItem(savedCount, "Saved Posts", Icons.bookmark_outline_rounded, Colors.green, colors),
+          _buildStatItem(
+            savedCount,
+            "Saved Posts",
+            Icons.bookmark_outline_rounded,
+            Colors.green,
+            colors,
+          ),
         ],
       ),
     );
@@ -64,7 +77,13 @@ class ProfileStatsRow extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String value, String label, IconData icon, Color iconColor, AppColors colors) {
+  Widget _buildStatItem(
+    String value,
+    String label,
+    IconData icon,
+    Color iconColor,
+    AppColors colors,
+  ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -96,4 +115,3 @@ class ProfileStatsRow extends StatelessWidget {
     );
   }
 }
-

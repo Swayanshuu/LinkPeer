@@ -73,7 +73,9 @@ class _AuthGateState extends ConsumerState<AuthGate>
 
       // Not logged in
       if (user == null) {
-        debugPrint("AuthGate: No authenticated user found, redirecting to login.");
+        debugPrint(
+          "AuthGate: No authenticated user found, redirecting to login.",
+        );
         _nextNavigation = _openLogin;
       } else {
         final uid = user.uid;
@@ -83,21 +85,29 @@ class _AuthGateState extends ConsumerState<AuthGate>
         final localCompleted = prefs.getBool('profile_completed_$uid') ?? false;
 
         if (localCompleted) {
-          debugPrint("AuthGate: Local profile completed for uid: $uid, redirecting to main screen.");
+          debugPrint(
+            "AuthGate: Local profile completed for uid: $uid, redirecting to main screen.",
+          );
           _nextNavigation = _openMainScreen;
         } else {
           // DB fallback check
           try {
-            debugPrint("AuthGate: Fetching user data from database for uid: $uid");
+            debugPrint(
+              "AuthGate: Fetching user data from database for uid: $uid",
+            );
             final userData = await ref.read(userProvider.future);
             final isProfileCompleted = userData['profile_completed'] == true;
 
             if (isProfileCompleted) {
               await prefs.setBool('profile_completed_$uid', true);
-              debugPrint("AuthGate: DB profile completed, redirecting to main screen.");
+              debugPrint(
+                "AuthGate: DB profile completed, redirecting to main screen.",
+              );
               _nextNavigation = _openMainScreen;
             } else {
-              debugPrint("AuthGate: DB profile not completed, redirecting to onboarding.");
+              debugPrint(
+                "AuthGate: DB profile not completed, redirecting to onboarding.",
+              );
               _nextNavigation = _openOnboarding;
             }
           } catch (dbError, stackTrace) {

@@ -40,6 +40,7 @@ class ProfileHeaderSliver extends StatelessWidget {
   final AsyncValue posts;
   final WidgetRef ref;
   final PreferredSizeWidget? bottom;
+  final bool isOtherUser;
 
   const ProfileHeaderSliver({
     super.key,
@@ -47,6 +48,7 @@ class ProfileHeaderSliver extends StatelessWidget {
     required this.posts,
     required this.ref,
     this.bottom,
+    this.isOtherUser = false,
   });
 
   Future<void> _launchUrl(String urlString) async {
@@ -114,6 +116,8 @@ class ProfileHeaderSliver extends StatelessWidget {
         : "";
     final link2 = data["link2"]?.toString().trim() ?? "";
 
+    final String plan = data["subscription_plan"]?.toString() ?? 'free';
+
     return SliverAppBar(
       expandedHeight: 580,
       elevation: 0,
@@ -164,38 +168,69 @@ class ProfileHeaderSliver extends StatelessWidget {
               left: 16,
               right: 16,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: colors.cardColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.edit_outlined,
-                        color: colors.primaryText,
-                        size: 20,
-                      ),
-                      onPressed: () async {
-                        final updated = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const EditProfileScreen(),
+                  if (isOtherUser)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colors.cardColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
                           ),
-                        );
-                        if (updated == true) {
-                          ref.invalidate(userProvider);
-                        }
-                      },
-                    ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.arrow_back_rounded,
+                          color: colors.primaryText,
+                          size: 20,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(),
+                      ),
+                    )
+                  else
+                    const SizedBox(),
+                  Row(
+                    children: [
+                      if (!isOtherUser)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: colors.cardColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.edit_outlined,
+                              color: colors.primaryText,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              final updated = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const EditProfileScreen(),
+                                ),
+                              );
+                              if (updated == true) {
+                                ref.invalidate(userProvider);
+                              }
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -213,19 +248,46 @@ class ProfileHeaderSliver extends StatelessWidget {
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      CircleAvatar(
-                        radius: 48,
-                        backgroundColor: colors.borderColor,
-                        backgroundImage: photo.toString().isNotEmpty
-                            ? NetworkImage(photo)
-                            : null,
-                        child: photo.toString().isEmpty
-                            ? Icon(
-                                Icons.person,
-                                color: colors.primaryText,
-                                size: 40,
-                              )
-                            : null,
+                      Container(
+                        padding: EdgeInsets.all(plan != 'free' ? 4 : 0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: plan != 'free'
+                              ? Border.all(
+                                  color: plan == 'premium_pro'
+                                      ? Colors.amber.shade700
+                                      : Colors.blueGrey.shade500,
+                                  width: 2.5,
+                                )
+                              : null,
+                          boxShadow: plan != 'free'
+                              ? [
+                                  BoxShadow(
+                                    color:
+                                        (plan == 'premium_pro'
+                                                ? Colors.amber.shade700
+                                                : Colors.blueGrey.shade500)
+                                            .withValues(alpha: 0.4),
+                                    blurRadius: 12,
+                                    spreadRadius: 2,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: CircleAvatar(
+                          radius: plan != 'free' ? 44 : 48,
+                          backgroundColor: colors.borderColor,
+                          backgroundImage: photo.toString().isNotEmpty
+                              ? NetworkImage(photo)
+                              : null,
+                          child: photo.toString().isEmpty
+                              ? Icon(
+                                  Icons.person,
+                                  color: colors.primaryText,
+                                  size: 40,
+                                )
+                              : null,
+                        ),
                       ),
                     ],
                   ),
@@ -256,27 +318,73 @@ class ProfileHeaderSliver extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // User Type Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isStudent
-                          ? colors.badgeStudentBg
-                          : colors.badgeAlumniBg,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      isStudent ? "Student" : userType,
-                      style: TextStyle(
-                        color: isStudent
-                            ? colors.badgeStudentText
-                            : colors.badgeAlumniText,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isStudent
+                              ? colors.badgeStudentBg
+                              : colors.badgeAlumniBg,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          isStudent ? "Student" : userType,
+                          style: TextStyle(
+                            color: isStudent
+                                ? colors.badgeStudentText
+                                : colors.badgeAlumniText,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      // Subscription Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: plan == 'premium_pro'
+                              ? Colors.amber.shade700.withValues(alpha: 0.15)
+                              : (plan == 'premium_lite'
+                                    ? Colors.blueGrey.shade500.withValues(
+                                        alpha: 0.15,
+                                      )
+                                    : colors.badgeAlumniBg),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: plan == 'premium_pro'
+                                ? Colors.amber.shade700.withValues(alpha: 0.5)
+                                : (plan == 'premium_lite'
+                                      ? Colors.blueGrey.shade500.withValues(
+                                          alpha: 0.5,
+                                        )
+                                      : Colors.transparent),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          plan == 'premium_pro'
+                              ? "PRO"
+                              : (plan == 'premium_lite' ? "LITE" : "FREE"),
+                          style: TextStyle(
+                            color: plan == 'premium_pro'
+                                ? Colors.amber.shade700
+                                : (plan == 'premium_lite'
+                                      ? Colors.blueGrey.shade500
+                                      : colors.secondaryText),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
 

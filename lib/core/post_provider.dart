@@ -25,10 +25,21 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
           event: PostgresChangeEvent.insert,
           schema: 'public',
           table: 'posts',
-          callback: (payload) {
+          callback: (payload) async {
             final newPost = Map<String, dynamic>.from(payload.newRecord);
             newPost['post_likes'] = [];
             newPost['saved_posts'] = [];
+
+            try {
+              final userResp = await Supabase.instance.client
+                  .from('users')
+                  .select('is_verified, subscription_plan')
+                  .eq('id', newPost['user_id'])
+                  .maybeSingle();
+              if (userResp != null) {
+                newPost['users'] = userResp;
+              }
+            } catch (_) {}
 
             _addNewPost(newPost);
           },
@@ -58,7 +69,9 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
     try {
       final data = await Supabase.instance.client
           .from('posts')
-          .select('*, post_likes(user_id), saved_posts(user_id)')
+          .select(
+            '*, post_likes(user_id), saved_posts(user_id), users(is_verified, subscription_plan)',
+          )
           .order('created_at', ascending: false);
 
       final resultList = List<Map<String, dynamic>>.from(data);

@@ -6,10 +6,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
+import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
 import 'package:igit_connects/shared_components/hashtag_text.dart';
 import 'package:igit_connects/core/post_provider.dart';
 import 'package:igit_connects/shared_components/share_card.dart';
 import 'package:igit_connects/utils/share_service.dart';
+import 'package:igit_connects/Screens/Profile/other_user_profile_screen.dart';
 import 'package:igit_connects/screens/auth/login_screen.dart';
 
 class FullPostScreen extends ConsumerStatefulWidget {
@@ -236,8 +238,16 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     final link = (post["link"] ?? "").toString();
     final fileUrl = (post["file_url"] ?? "").toString();
     final fileName = (post["file_name"] ?? "").toString();
+    final imageUrls =
+        (post["image_urls"] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        [];
     final createdAt = (post["created_at"] ?? "").toString();
     final date = _formatTimestamp(createdAt);
+
+    final isVerified =
+        usersData?["is_verified"] == true || post["is_verified"] == true;
 
     return Scaffold(
       floatingActionButton: link.isNotEmpty
@@ -356,35 +366,59 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                       width: 1.0,
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: colors.borderColor,
-                        backgroundImage: photo.isNotEmpty
-                            ? NetworkImage(photo)
-                            : null,
-                        child: photo.isEmpty
-                            ? Icon(
-                                Icons.person,
-                                size: 28,
-                                color: colors.primaryText,
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Wrap(
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                isAuthorAdmin
-                                    ? Shimmer.fromColors(
-                                        baseColor: colors.primaryText,
-                                        highlightColor: Colors.blueAccent,
-                                        child: Text(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (post["user_id"] != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OtherUserProfileScreen(
+                              userId: post["user_id"].toString(),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 26,
+                          backgroundColor: colors.borderColor,
+                          backgroundImage: photo.isNotEmpty
+                              ? NetworkImage(photo)
+                              : null,
+                          child: photo.isEmpty
+                              ? Icon(
+                                  Icons.person,
+                                  size: 28,
+                                  color: colors.primaryText,
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  isAuthorAdmin
+                                      ? Shimmer.fromColors(
+                                          baseColor: colors.primaryText,
+                                          highlightColor: Colors.blueAccent,
+                                          child: Text(
+                                            name,
+                                            style: TextStyle(
+                                              color: colors.primaryText,
+                                              fontSize: 14.5,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: -0.3,
+                                            ),
+                                          ),
+                                        )
+                                      : Text(
                                           name,
                                           style: TextStyle(
                                             color: colors.primaryText,
@@ -393,105 +427,106 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                                             letterSpacing: -0.3,
                                           ),
                                         ),
-                                      )
-                                    : Text(
-                                        name,
-                                        style: TextStyle(
-                                          color: colors.primaryText,
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: -0.3,
-                                        ),
-                                      ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isAuthorAdmin
-                                        ? colors.badgeAdminBg
-                                        : userType.toLowerCase() == "alumni"
-                                        ? colors.badgeAlumniBg
-                                        : userType.toLowerCase() == "faculty"
-                                        ? colors.badgeFacultyBg
-                                        : colors.badgeStudentBg,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    userType.toUpperCase(),
-                                    style: TextStyle(
+                                  if (isVerified) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.verified,
+                                      color: Colors.blue,
+                                      size: 16,
+                                    ),
+                                  ],
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
                                       color: isAuthorAdmin
-                                          ? colors.badgeAdminText
+                                          ? colors.badgeAdminBg
                                           : userType.toLowerCase() == "alumni"
-                                          ? colors.badgeAlumniText
+                                          ? colors.badgeAlumniBg
                                           : userType.toLowerCase() == "faculty"
-                                          ? colors.badgeFacultyText
-                                          : colors.badgeStudentText,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
+                                          ? colors.badgeFacultyBg
+                                          : colors.badgeStudentBg,
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            if (isAuthorAdmin)
-                              Wrap(
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => _safelyLaunchUrl(
-                                      context,
-                                      "https://swynx.dev",
-                                      colors,
-                                    ),
-                                    child: Shimmer.fromColors(
-                                      baseColor: Colors.blueAccent,
-                                      highlightColor:
-                                          Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.blue.shade900,
-                                      child: Text(
-                                        "swynx.dev",
-                                        style: TextStyle(
-                                          color: Colors.blueAccent,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          decoration: TextDecoration.underline,
-                                          decorationColor: Colors.blueAccent
-                                              .withValues(alpha: 0.5),
-                                        ),
+                                    child: Text(
+                                      userType.toUpperCase(),
+                                      style: TextStyle(
+                                        color: isAuthorAdmin
+                                            ? colors.badgeAdminText
+                                            : userType.toLowerCase() == "alumni"
+                                            ? colors.badgeAlumniText
+                                            : userType.toLowerCase() ==
+                                                  "faculty"
+                                            ? colors.badgeFacultyText
+                                            : colors.badgeStudentText,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
                                       ),
-                                    ),
-                                  ),
-                                  Text(
-                                    " • $date",
-                                    style: TextStyle(
-                                      color: colors.secondaryText,
-                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
-                              )
-                            else
-                              Text(
-                                userType == "faculty" && department.isNotEmpty
-                                    ? "$department • $date"
-                                    : "$date",
-                                style: TextStyle(
-                                  color: colors.secondaryText,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
                               ),
-                          ],
+                              const SizedBox(height: 4),
+                              if (isAuthorAdmin)
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _safelyLaunchUrl(
+                                        context,
+                                        "https://swynx.dev",
+                                        colors,
+                                      ),
+                                      child: Shimmer.fromColors(
+                                        baseColor: Colors.blueAccent,
+                                        highlightColor:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.blue.shade900,
+                                        child: Text(
+                                          "swynx.dev",
+                                          style: TextStyle(
+                                            color: Colors.blueAccent,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Colors.blueAccent
+                                                .withValues(alpha: 0.5),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      " • $date",
+                                      style: TextStyle(
+                                        color: colors.secondaryText,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else
+                                Text(
+                                  userType == "faculty" && department.isNotEmpty
+                                      ? "$department • $date"
+                                      : date,
+                                  style: TextStyle(
+                                    color: colors.secondaryText,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 
@@ -519,7 +554,52 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                 const SizedBox(height: 24),
 
                 // Attachments Section
-                if (fileUrl.isNotEmpty) ...[
+                if (imageUrls.isNotEmpty) ...[
+                  SizedBox(
+                    height: 250,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: imageUrls.length,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FullScreenImageViewer(
+                                  imageUrls: imageUrls,
+                                  initialIndex: index,
+                                  heroTagPrefix: 'full_post_${post["id"]}',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Hero(
+                                tag:
+                                    'full_post_${post["id"]}_${imageUrls[index]}',
+                                child: Image.network(
+                                  imageUrls[index],
+                                  height: 250,
+                                  width: imageUrls.length == 1
+                                      ? MediaQuery.of(context).size.width - 32
+                                      : 300,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                if (fileUrl.isNotEmpty && imageUrls.isEmpty) ...[
                   if (isImage(fileUrl))
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),

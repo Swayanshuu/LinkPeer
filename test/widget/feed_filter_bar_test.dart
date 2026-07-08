@@ -27,9 +27,7 @@ Widget _wrap({
 void main() {
   group('FeedFilterBar', () {
     testWidgets('renders all four filter chips', (tester) async {
-      await tester.pumpWidget(
-        _wrap(selected: 'all', onChanged: (_) {}),
-      );
+      await tester.pumpWidget(_wrap(selected: 'all', onChanged: (_) {}));
 
       expect(find.text('ALL'), findsOneWidget);
       expect(find.text('JOB'), findsOneWidget);
@@ -37,8 +35,9 @@ void main() {
       expect(find.text('INTERNSHIP'), findsOneWidget);
     });
 
-    testWidgets('calls onChanged with "job" when job chip is tapped',
-        (tester) async {
+    testWidgets('calls onChanged with "job" when job chip is tapped', (
+      tester,
+    ) async {
       String? tapped;
 
       await tester.pumpWidget(
@@ -51,8 +50,9 @@ void main() {
       expect(tapped, 'job');
     });
 
-    testWidgets('calls onChanged with "announcement" when tapped',
-        (tester) async {
+    testWidgets('calls onChanged with "announcement" when tapped', (
+      tester,
+    ) async {
       String? tapped;
 
       await tester.pumpWidget(
@@ -65,8 +65,9 @@ void main() {
       expect(tapped, 'announcement');
     });
 
-    testWidgets('calls onChanged with "internship" when tapped',
-        (tester) async {
+    testWidgets('calls onChanged with "internship" when tapped', (
+      tester,
+    ) async {
       String? tapped;
 
       await tester.pumpWidget(
@@ -79,24 +80,20 @@ void main() {
       expect(tapped, 'internship');
     });
 
-    testWidgets('renders correctly in light theme without errors',
-        (tester) async {
+    testWidgets('renders correctly in light theme without errors', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        _wrap(
-          selected: 'job',
-          onChanged: (_) {},
-          brightness: Brightness.light,
-        ),
+        _wrap(selected: 'job', onChanged: (_) {}, brightness: Brightness.light),
       );
 
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('renders correctly in dark theme without errors',
-        (tester) async {
-      await tester.pumpWidget(
-        _wrap(selected: 'all', onChanged: (_) {}),
-      );
+    testWidgets('renders correctly in dark theme without errors', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_wrap(selected: 'all', onChanged: (_) {}));
 
       expect(tester.takeException(), isNull);
     });

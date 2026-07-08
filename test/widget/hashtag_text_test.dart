@@ -24,22 +24,20 @@ Widget _wrap(Widget child, {Brightness brightness = Brightness.dark}) {
 void main() {
   group('HashtagText widget', () {
     testWidgets('renders plain text with no hashtags', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const HashtagText(text: 'Hello world')),
-      );
+      await tester.pumpWidget(_wrap(const HashtagText(text: 'Hello world')));
 
       // Should find a RichText in the tree.
       expect(find.byType(RichText), findsWidgets);
 
       // The plain text should appear somewhere in the widget tree.
-      expect(find.textContaining('Hello world', findRichText: true),
-          findsWidgets);
+      expect(
+        find.textContaining('Hello world', findRichText: true),
+        findsWidgets,
+      );
     });
 
     testWidgets('renders a single hashtag token', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const HashtagText(text: '#flutter')),
-      );
+      await tester.pumpWidget(_wrap(const HashtagText(text: '#flutter')));
 
       expect(find.textContaining('#flutter', findRichText: true), findsWidgets);
     });
@@ -54,9 +52,7 @@ void main() {
     });
 
     testWidgets('renders without errors on empty string', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const HashtagText(text: '')),
-      );
+      await tester.pumpWidget(_wrap(const HashtagText(text: '')));
 
       expect(tester.takeException(), isNull);
     });

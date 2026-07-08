@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'package:igit_connects/screens/post/edit_post_screen.dart';
 import 'package:igit_connects/shared_components/hashtag_text.dart';
+import 'package:igit_connects/storage_backend.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
+import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
 import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/shared_components/share_card.dart';
 import 'package:igit_connects/utils/share_service.dart';
+import 'package:igit_connects/Screens/Profile/other_user_profile_screen.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Map post;
@@ -134,12 +137,27 @@ class _PostCardState extends ConsumerState<PostCard> {
   }
 
   Future<void> deletePost() async {
-    await Supabase.instance.client
-        .from("posts")
-        .delete()
-        .eq("id", widget.post["id"]);
+    try {
+      // 1. Delete images from storage if any
+      final imageUrls = widget.post["image_urls"];
+      if (imageUrls != null && imageUrls is List) {
+        for (final url in imageUrls) {
+          if (url is String && url.isNotEmpty) {
+            await StorageBackend().removePostImage(url);
+          }
+        }
+      }
 
-    widget.onRefresh();
+      // 2. Delete the post from DB
+      await Supabase.instance.client
+          .from("posts")
+          .delete()
+          .eq("id", widget.post["id"]);
+
+      widget.onRefresh();
+    } catch (e) {
+      debugPrint("Error deleting post: $e");
+    }
   }
 
   bool isImage(String url) {
@@ -205,9 +223,7 @@ class _PostCardState extends ConsumerState<PostCard> {
         backgroundColor: Colors.red.shade600,
         margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -362,6 +378,11 @@ class _PostCardState extends ConsumerState<PostCard> {
     final link = (post["link"] ?? "").toString();
     final fileName = (post["file_name"] ?? "").toString();
     final fileUrl = (post["file_url"] ?? "").toString();
+    final imageUrls =
+        (post["image_urls"] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        [];
     final createdAt = (post["created_at"] ?? "").toString();
 
     final commentsList = post["post_comments"] as List? ?? [];
@@ -370,6 +391,9 @@ class _PostCardState extends ConsumerState<PostCard> {
     final date = _formatTimestamp(createdAt);
     final isLongPost = content.length > 250;
     final shortContent = isLongPost ? content.substring(0, 250) : content;
+
+    final isVerified =
+        usersData?["is_verified"] == true || post["is_verified"] == true;
 
     String userHeadline = department;
     if (userRole.toLowerCase() == "student" ||
@@ -419,125 +443,158 @@ class _PostCardState extends ConsumerState<PostCard> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: colors.borderColor,
-                  backgroundImage: photo.isNotEmpty
-                      ? NetworkImage(photo)
-                      : null,
-                  child: photo.isEmpty ? const Icon(Icons.person) : null,
-                ),
-
-                const SizedBox(width: 12),
-
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          isAuthorAdmin
-                              ? Shimmer.fromColors(
-                                  baseColor: colors.primaryText,
-                                  highlightColor: Colors.blueAccent,
-                                  child: Text(
-                                    userName,
-                                    style: TextStyle(
-                                      color: colors.primaryText,
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.2,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (post["user_id"] != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OtherUserProfileScreen(
+                              userId: post["user_id"].toString(),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor: colors.borderColor,
+                          backgroundImage: photo.isNotEmpty
+                              ? NetworkImage(photo)
+                              : null,
+                          child: photo.isEmpty
+                              ? const Icon(Icons.person)
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  isAuthorAdmin
+                                      ? Shimmer.fromColors(
+                                          baseColor: colors.primaryText,
+                                          highlightColor: Colors.blueAccent,
+                                          child: Text(
+                                            userName,
+                                            style: TextStyle(
+                                              color: colors.primaryText,
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                        )
+                                      : Text(
+                                          userName,
+                                          style: TextStyle(
+                                            color: colors.primaryText,
+                                            fontSize: 13.5, // smaller text
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: -0.2,
+                                          ),
+                                        ),
+                                  if (isVerified) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.verified,
+                                      color: Colors.blue,
+                                      size: 16,
                                     ),
-                                  ),
-                                )
-                              : Text(
-                                  userName,
-                                  style: TextStyle(
-                                    color: colors.primaryText,
-                                    fontSize: 13.5, // smaller text
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: -0.2,
-                                  ),
-                                ),
-                          const SizedBox(width: 8),
-                          _buildUserTypeBadge(userRole, colors),
-                        ],
-                      ),
+                                  ],
+                                  const SizedBox(width: 8),
+                                  _buildUserTypeBadge(userRole, colors),
+                                ],
+                              ),
 
-                      const SizedBox(height: 4),
-                      if (isAuthorAdmin)
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: () =>
-                                  _safelyLaunchUrl("https://swynx.dev", colors),
-                              child: Shimmer.fromColors(
-                                baseColor: Colors.blueAccent,
-                                highlightColor:
-                                    Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Colors.white
-                                    : Colors.blue.shade900,
-                                child: Text(
-                                  "swynx.dev",
-                                  style: TextStyle(
-                                    color: Colors.blueAccent,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: Colors.blueAccent
-                                        .withValues(alpha: 0.5),
-                                  ),
+                              const SizedBox(height: 4),
+                              if (isAuthorAdmin)
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _safelyLaunchUrl(
+                                        "https://swynx.dev",
+                                        colors,
+                                      ),
+                                      child: Shimmer.fromColors(
+                                        baseColor: Colors.blueAccent,
+                                        highlightColor:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.blue.shade900,
+                                        child: Text(
+                                          "swynx.dev",
+                                          style: TextStyle(
+                                            color: Colors.blueAccent,
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.bold,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Colors.blueAccent
+                                                .withValues(alpha: 0.5),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      " • $date",
+                                      style: TextStyle(
+                                        color: colors.secondaryText.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        fontSize: 10.5,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Icon(
+                                      Icons.public,
+                                      size: 11,
+                                      color: colors.secondaryText.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else ...[
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        userHeadline.isNotEmpty
+                                            ? "$userHeadline • $date"
+                                            : date,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: colors.secondaryText,
+                                          fontSize: 11, // smaller text
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.public,
+                                      size: 11,
+                                      color: colors.secondaryText,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ),
-                            Text(
-                              " • $date",
-                              style: TextStyle(
-                                color: colors.secondaryText.withValues(
-                                  alpha: 0.7,
-                                ),
-                                fontSize: 10.5,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Icon(
-                              Icons.public,
-                              size: 11,
-                              color: colors.secondaryText.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                          ],
-                        )
-                      else ...[
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                userHeadline.isNotEmpty
-                                    ? "$userHeadline • $date"
-                                    : date,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: colors.secondaryText,
-                                  fontSize: 11, // smaller text
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.public,
-                              size: 11,
-                              color: colors.secondaryText,
-                            ),
-                          ],
+                              ],
+                            ],
+                          ),
                         ),
                       ],
-                    ],
+                    ),
                   ),
                 ),
 
@@ -565,6 +622,7 @@ class _PostCardState extends ConsumerState<PostCard> {
                       }
 
                       if (value == "delete") {
+                        if (!context.mounted) return;
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) {
@@ -698,18 +756,80 @@ class _PostCardState extends ConsumerState<PostCard> {
                 ),
               ),
 
-            /// FILE ATTACHMENT
-            if (fileUrl.isNotEmpty) ...[
+            /// MULTIPLE IMAGE ATTACHMENTS
+            if (imageUrls.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 220,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: imageUrls.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => FullScreenImageViewer(
+                              imageUrls: imageUrls,
+                              initialIndex: index,
+                              heroTagPrefix: 'post_card_${post["id"]}',
+                            ),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Hero(
+                            tag: 'post_card_${post["id"]}_${imageUrls[index]}',
+                            child: Image.network(
+                              imageUrls[index],
+                              height: 220,
+                              width: imageUrls.length == 1
+                                  ? MediaQuery.of(context).size.width - 32
+                                  : 280,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+
+            /// SINGLE FILE ATTACHMENT (Backward compatibility)
+            if (fileUrl.isNotEmpty && imageUrls.isEmpty) ...[
               const SizedBox(height: 12),
 
               if (isImage(fileUrl))
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    fileUrl,
-                    width: double.infinity,
-                    height: 220,
-                    fit: BoxFit.cover,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FullScreenImageViewer(
+                          imageUrls: [fileUrl],
+                          initialIndex: 0,
+                          heroTagPrefix: 'post_card_${post["id"]}',
+                        ),
+                      ),
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Hero(
+                      tag: 'post_card_${post["id"]}_$fileUrl',
+                      child: Image.network(
+                        fileUrl,
+                        width: double.infinity,
+                        height: 220,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 )
               else

@@ -1,14 +1,21 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:igit_connects/core/app_colors.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
-  Future<void> _launchUrl(BuildContext context, String urlString, AppColors colors) async {
+  Future<void> _launchUrl(
+    BuildContext context,
+    String urlString,
+    AppColors colors,
+  ) async {
     try {
       final uri = Uri.parse(urlString);
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
       if (!launched && context.mounted) {
         _showError(context, colors);
       }
@@ -22,7 +29,10 @@ class AboutScreen extends StatelessWidget {
   void _showError(BuildContext context, AppColors colors) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Could not open link", style: TextStyle(color: colors.bgColor)),
+        content: Text(
+          "Could not open link",
+          style: TextStyle(color: colors.bgColor),
+        ),
         backgroundColor: colors.primaryText,
       ),
     );
@@ -35,7 +45,13 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colors.bgColor,
       appBar: AppBar(
-        title: Text("About", style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.bold)),
+        title: Text(
+          "About",
+          style: TextStyle(
+            color: colors.primaryText,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: colors.bgColor,
         iconTheme: IconThemeData(color: colors.primaryText),
         elevation: 0,
@@ -54,9 +70,15 @@ class AboutScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: colors.cardColor,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: colors.borderColor.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: colors.borderColor.withValues(alpha: 0.5),
+                    ),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
                   child: Column(
@@ -67,7 +89,11 @@ class AboutScreen extends StatelessWidget {
                           color: colors.primaryAccent.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.rocket_launch_rounded, size: 48, color: colors.primaryAccent),
+                        child: Icon(
+                          Icons.rocket_launch_rounded,
+                          size: 48,
+                          color: colors.primaryAccent,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       Text(
@@ -81,7 +107,10 @@ class AboutScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: colors.bgColor,
                           borderRadius: BorderRadius.circular(8),
@@ -109,9 +138,9 @@ class AboutScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Developer Info Card
                 Container(
                   width: double.infinity,
@@ -119,9 +148,15 @@ class AboutScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: colors.cardColor,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: colors.borderColor.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: colors.borderColor.withValues(alpha: 0.5),
+                    ),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
                   child: Column(
@@ -161,14 +196,30 @@ class AboutScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton.icon(
-                        onPressed: () => _launchUrl(context, "https://swynx.dev", colors),
-                        icon: const Icon(Icons.public, size: 18, color: Colors.white),
-                        label: const Text("Visit swynx.dev", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        onPressed: () =>
+                            _launchUrl(context, "https://swynx.dev", colors),
+                        icon: const Icon(
+                          Icons.public,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          "Visit swynx.dev",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueAccent,
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ],
@@ -178,7 +229,7 @@ class AboutScreen extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Absolute Footer
           Positioned(
             bottom: 30,
@@ -191,7 +242,11 @@ class AboutScreen extends StatelessWidget {
                   "Built with ",
                   style: TextStyle(color: colors.secondaryText, fontSize: 13),
                 ),
-                const Icon(Icons.favorite_rounded, color: Colors.redAccent, size: 14),
+                const Icon(
+                  Icons.favorite_rounded,
+                  color: Colors.redAccent,
+                  size: 14,
+                ),
                 Text(
                   " by ",
                   style: TextStyle(color: colors.secondaryText, fontSize: 13),
@@ -215,4 +270,3 @@ class AboutScreen extends StatelessWidget {
     );
   }
 }
-

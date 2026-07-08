@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 
 class PolicySection extends StatelessWidget {
@@ -93,4 +93,3 @@ class PolicySection extends StatelessWidget {
     );
   }
 }
-

@@ -83,17 +83,20 @@ void main() {
       expect(prefs.getString('theme_mode'), 'dark');
     });
 
-    test('toggles from system to light (system is treated as non-light)', () async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'toggles from system to light (system is treated as non-light)',
+      () async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      // Default build() returns ThemeMode.system.
-      // toggle() logic: state == ThemeMode.light ? dark : light
-      // system != light → resolves to light.
-      await container.read(themeProvider.notifier).toggle();
+        // Default build() returns ThemeMode.system.
+        // toggle() logic: state == ThemeMode.light ? dark : light
+        // system != light → resolves to light.
+        await container.read(themeProvider.notifier).toggle();
 
-      expect(container.read(themeProvider), ThemeMode.light);
-    });
+        expect(container.read(themeProvider), ThemeMode.light);
+      },
+    );
   });
 
   group('ThemeNotifier.setMode()', () {

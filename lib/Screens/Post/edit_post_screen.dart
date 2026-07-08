@@ -1,12 +1,16 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/screens/post/components/create_post_input_card.dart';
 import 'package:igit_connects/screens/post/components/create_post_live_preview.dart';
 import 'package:igit_connects/screens/post/components/create_post_top_section.dart';
+import 'package:igit_connects/screens/premium/subscription_screen.dart';
 import 'package:igit_connects/core/user_provider.dart';
+import 'package:igit_connects/storage_backend.dart';
 
 class EditPostScreen extends ConsumerStatefulWidget {
   final Map post;
@@ -25,13 +29,23 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   bool loading = false;
   late String postType;
 
+  List<String> existingImages = [];
+  List<String> imagesToRemove =
+      []; // Keep track of images to delete from storage
+  List<XFile> _selectedXFiles = [];
+  List<Uint8List> _selectedImagesBytes = [];
+
   @override
   void initState() {
     super.initState();
     title = TextEditingController(text: widget.post["title"].toString());
     content = TextEditingController(text: widget.post["content"].toString());
-    link = TextEditingController(text: widget.post["link"].toString());
+    link = TextEditingController(text: (widget.post["link"] ?? "").toString());
     postType = widget.post["post_type"].toString();
+
+    if (widget.post["image_urls"] != null) {
+      existingImages = List<String>.from(widget.post["image_urls"]);
+    }
   }
 
   @override
@@ -42,11 +56,127 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     super.dispose();
   }
 
+  void _showPremiumPrompt(String message) {
+    final colors = AppColors.of(context);
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: colors.cardColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: colors.primaryAccent.withValues(alpha: 0.5),
+            width: 1,
+          ),
+        ),
+        margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colors.primaryAccent.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.workspace_premium,
+                color: colors.primaryAccent,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Limit Reached",
+                    style: TextStyle(
+                      color: colors.primaryText,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    message,
+                    style: TextStyle(color: colors.secondaryText, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: "Upgrade",
+          textColor: colors.primaryAccent,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+            );
+          },
+        ),
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
   Future<void> savePost() async {
+    if (title.text.trim().isEmpty &&
+        content.text.trim().isEmpty &&
+        link.text.trim().isEmpty &&
+        existingImages.isEmpty &&
+        _selectedXFiles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You cannot save an empty post.")),
+      );
+      return;
+    }
+
     try {
       setState(() {
         loading = true;
       });
+
+      final user = await ref.read(userProvider.future);
+      final plan = user["subscription_plan"] ?? 'free';
+      final isActive = user["subscription_status"] == 'active';
+      final isAdmin = user["role"] == 'admin';
+      final isPro = (plan == 'premium_pro' && isActive) || isAdmin;
+      final isLite = plan == 'premium_lite' && isActive;
+
+      final int maxImagesPerPost = isPro ? 999 : (isLite ? 4 : 2);
+
+      if (!isPro) {
+        if (existingImages.length + _selectedXFiles.length > maxImagesPerPost) {
+          _showPremiumPrompt(
+            isLite
+                ? "Premium Lite users can only have up to $maxImagesPerPost images per post."
+                : "Free tier users can only have up to $maxImagesPerPost images per post.",
+          );
+          return;
+        }
+      }
+
+      // 1. Delete removed images from storage
+      for (String url in imagesToRemove) {
+        await StorageBackend().removePostImage(url);
+      }
+
+      // 2. Upload new images
+      List<String> uploadedUrls = [];
+      if (_selectedXFiles.isNotEmpty) {
+        uploadedUrls = await StorageBackend().uploadMultipleImages(
+          _selectedXFiles,
+        );
+      }
+
+      // 3. Combine existing images and newly uploaded images
+      List<String> finalImageUrls = [...existingImages, ...uploadedUrls];
 
       await Supabase.instance.client
           .from('posts')
@@ -55,6 +185,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
             "content": content.text.trim(),
             "link": link.text.trim(),
             "post_type": postType,
+            "image_urls": finalImageUrls,
           })
           .eq("id", widget.post["id"]);
 
@@ -120,7 +251,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                   : const Icon(Icons.save_rounded, size: 16),
               label: Text(
                 loading ? "Saving..." : "Save",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
           ),
@@ -213,6 +347,9 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                             title: title.text,
                             content: content.text,
                             link: link.text,
+                            images: _selectedImagesBytes,
+                            existingImages: existingImages,
+                            isVerified: data?["is_verified"] == true,
                           ),
                         ),
                       ),
@@ -387,8 +524,69 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
 
                 const SizedBox(height: 28),
 
-                // Main Input Area
-                CreatePostInputCard(title: title, content: content, link: link),
+                CreatePostInputCard(
+                  title: title,
+                  content: content,
+                  link: link,
+                  images: _selectedImagesBytes,
+                  existingImages: existingImages,
+                  onAddImage: () async {
+                    final user = ref.read(userProvider).value;
+                    final plan = user?["subscription_plan"] ?? 'free';
+                    final isActive = user?["subscription_status"] == 'active';
+                    final isAdmin = user?["role"] == 'admin';
+
+                    int maxImages = 2; // free
+                    if (isAdmin) {
+                      maxImages = 999;
+                    } else if (isActive) {
+                      if (plan == 'premium_pro')
+                        maxImages = 10;
+                      else if (plan == 'premium_lite')
+                        maxImages = 4;
+                    }
+
+                    if (existingImages.length + _selectedXFiles.length >=
+                        maxImages) {
+                      if (isAdmin || (isActive && plan == 'premium_pro')) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "You can upload up to $maxImages images.",
+                            ),
+                          ),
+                        );
+                      } else {
+                        _showPremiumPrompt(
+                          plan == 'premium_lite'
+                              ? "Premium Lite users can only upload up to 4 images."
+                              : "Free tier users can only upload up to 2 images.",
+                        );
+                      }
+                      return;
+                    }
+                    final image = await StorageBackend().pickImage();
+                    if (image != null) {
+                      final bytes = await image.readAsBytes();
+                      setState(() {
+                        _selectedXFiles.add(image);
+                        _selectedImagesBytes.add(bytes);
+                      });
+                    }
+                  },
+                  onRemoveImage: (index) {
+                    setState(() {
+                      _selectedXFiles.removeAt(index);
+                      _selectedImagesBytes.removeAt(index);
+                    });
+                  },
+                  onRemoveExistingImage: (index) {
+                    setState(() {
+                      imagesToRemove.add(existingImages[index]);
+                      existingImages.removeAt(index);
+                    });
+                  },
+                ),
 
                 const SizedBox(height: 32),
 
@@ -411,4 +609,3 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     );
   }
 }
-

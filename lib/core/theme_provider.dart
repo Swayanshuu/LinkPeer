@@ -63,7 +63,10 @@ class ThemeNotifier extends Notifier<ThemeMode> {
     if (mode == ThemeMode.system) {
       await prefs.remove(_prefKey); // system → no stored preference
     } else {
-      await prefs.setString(_prefKey, mode == ThemeMode.dark ? 'dark' : 'light');
+      await prefs.setString(
+        _prefKey,
+        mode == ThemeMode.dark ? 'dark' : 'light',
+      );
     }
   }
 

@@ -1,4 +1,4 @@
-﻿import 'dart:typed_data';
+import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -10,10 +10,13 @@ import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/screens/post/components/create_post_input_card.dart';
 import 'package:igit_connects/screens/post/components/create_post_live_preview.dart';
 import 'package:igit_connects/screens/post/components/create_post_top_section.dart';
+import 'package:igit_connects/screens/premium/subscription_screen.dart';
 
 import 'package:igit_connects/core/post_provider.dart';
 import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/main_screen.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:igit_connects/storage_backend.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -34,6 +37,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   String postType = "normal";
 
   bool posting = false;
+  final List<XFile> _selectedXFiles = [];
+  final List<Uint8List> _selectedImagesBytes = [];
 
   @override
   void initState() {
@@ -52,13 +57,237 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     super.dispose();
   }
 
+  void _showPremiumPrompt(String message) {
+    final colors = AppColors.of(context);
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: colors.cardColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: colors.primaryAccent.withValues(alpha: 0.5),
+            width: 1,
+          ),
+        ),
+        margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colors.primaryAccent.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.workspace_premium,
+                color: colors.primaryAccent,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Limit Reached",
+                    style: TextStyle(
+                      color: colors.primaryText,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    message,
+                    style: TextStyle(color: colors.secondaryText, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: "Upgrade",
+          textColor: colors.primaryAccent,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+            );
+          },
+        ),
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
+  Future<void> _pickImages() async {
+    final user = ref.read(userProvider).value;
+    final plan = user?["subscription_plan"] ?? 'free';
+    final isActive = user?["subscription_status"] == 'active';
+    final isAdmin = user?["role"] == 'admin';
+
+    int maxImages = 2; // free
+    if (isAdmin) {
+      maxImages = 999;
+    } else if (isActive) {
+      if (plan == 'premium_pro')
+        maxImages = 10;
+      else if (plan == 'premium_lite')
+        maxImages = 4;
+    }
+
+    if (_selectedXFiles.length >= maxImages) {
+      if (isActive && plan == 'premium_pro') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("You can upload up to $maxImages images.")),
+        );
+      } else {
+        _showPremiumPrompt(
+          plan == 'premium_lite'
+              ? "Premium Lite users can only upload up to 4 images."
+              : "Free tier users can only upload up to 2 images.",
+        );
+      }
+      return;
+    }
+    try {
+      final ImagePicker picker = ImagePicker();
+      final List<XFile> images = await picker.pickMultiImage(imageQuality: 50);
+
+      if (images.isNotEmpty) {
+        if (_selectedXFiles.length + images.length > maxImages) {
+          if (mounted) {
+            if (isAdmin || (isActive && plan == 'premium_pro')) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    "You can only upload up to $maxImages images per post.",
+                  ),
+                ),
+              );
+            } else {
+              _showPremiumPrompt(
+                plan == 'premium_lite'
+                    ? "Premium Lite limit: Up to 4 images per post."
+                    : "Free tier limit: Up to 2 images per post.",
+              );
+            }
+          }
+          return;
+        }
+
+        List<Uint8List> newImagesBytes = [];
+        for (var image in images) {
+          final bytes = await image.readAsBytes();
+          newImagesBytes.add(bytes);
+        }
+
+        setState(() {
+          _selectedXFiles.addAll(images);
+          _selectedImagesBytes.addAll(newImagesBytes);
+        });
+      }
+    } catch (e) {
+      debugPrint("Error picking images: $e");
+    }
+  }
+
   Future<void> createPost() async {
+    if (title.text.trim().isEmpty &&
+        content.text.trim().isEmpty &&
+        link.text.trim().isEmpty &&
+        _selectedXFiles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You cannot publish an empty post.")),
+      );
+      return;
+    }
+
     try {
       setState(() {
         posting = true;
       });
 
       final user = await ref.read(userProvider.future);
+      final plan = user["subscription_plan"] ?? 'free';
+      final isActive = user["subscription_status"] == 'active';
+      final isAdmin = user["role"] == 'admin';
+      final isPro = (plan == 'premium_pro' && isActive) || isAdmin;
+      final isLite = plan == 'premium_lite' && isActive;
+
+      final int maxImagesPerPost = isPro ? 999 : (isLite ? 4 : 2);
+      final int maxPostsPerDay = isPro ? 999 : (isLite ? 10 : 3);
+      final int maxPicPostsPerMonth = isPro ? 999 : (isLite ? 15 : 5);
+
+      if (!isPro) {
+        if (_selectedXFiles.length > maxImagesPerPost) {
+          _showPremiumPrompt(
+            isLite
+                ? "Premium Lite users can only upload up to $maxImagesPerPost images per post."
+                : "Free tier users can only upload up to $maxImagesPerPost images per post.",
+          );
+          return;
+        }
+
+        final today = DateTime.now();
+        final startOfDay = DateTime(
+          today.year,
+          today.month,
+          today.day,
+        ).toIso8601String();
+
+        final dailyPostsResp = await Supabase.instance.client
+            .from("user_activities")
+            .select("id")
+            .eq("user_id", FirebaseAuth.instance.currentUser!.uid)
+            .inFilter("activity_type", ["text_post", "image_post"])
+            .gte("created_at", startOfDay);
+
+        if ((dailyPostsResp as List).length >= maxPostsPerDay) {
+          _showPremiumPrompt(
+            isLite
+                ? "Premium Lite limit: You can only publish $maxPostsPerDay posts per day."
+                : "Free tier limit: You can only publish $maxPostsPerDay posts per day.",
+          );
+          return;
+        }
+
+        if (_selectedXFiles.isNotEmpty) {
+          final startOfMonth = DateTime(
+            today.year,
+            today.month,
+            1,
+          ).toIso8601String();
+          final monthlyPicPostsResp = await Supabase.instance.client
+              .from("user_activities")
+              .select("id")
+              .eq("user_id", FirebaseAuth.instance.currentUser!.uid)
+              .eq("activity_type", "image_post")
+              .gte("created_at", startOfMonth);
+
+          if ((monthlyPicPostsResp as List).length >= maxPicPostsPerMonth) {
+            _showPremiumPrompt(
+              isLite
+                  ? "Premium Lite limit: You can only publish $maxPicPostsPerMonth posts with pictures per month."
+                  : "Free tier limit: You can only publish $maxPicPostsPerMonth posts with pictures per month.",
+            );
+            return;
+          }
+        }
+      }
+
+      List<String> uploadedUrls = [];
+      if (_selectedXFiles.isNotEmpty) {
+        uploadedUrls = await StorageBackend().uploadMultipleImages(
+          _selectedXFiles,
+        );
+      }
 
       await Supabase.instance.client.from("posts").insert({
         "user_id": FirebaseAuth.instance.currentUser!.uid,
@@ -72,6 +301,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         "title": title.text.trim(),
         "content": content.text.trim(),
         "link": link.text.trim(),
+        "image_urls": uploadedUrls,
+      });
+
+      // Insert into user_activities for immutable tracking
+      await Supabase.instance.client.from("user_activities").insert({
+        "user_id": FirebaseAuth.instance.currentUser!.uid,
+        "activity_type": uploadedUrls.isNotEmpty ? "image_post" : "text_post",
       });
 
       ref.invalidate(postsProvider);
@@ -98,8 +334,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       }
     }
   }
-
-  Uint8List? imageBytes;
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +383,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   : const Icon(Icons.send_rounded, size: 16),
               label: Text(
                 posting ? "Posting..." : "Post",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
           ),
@@ -242,6 +479,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             title: title.text,
                             content: content.text,
                             link: link.text,
+                            images: _selectedImagesBytes,
+                            isVerified: data?["is_verified"] == true,
                           ),
                         ),
                       ),
@@ -417,7 +656,19 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 const SizedBox(height: 28),
 
                 // Main Input Area
-                CreatePostInputCard(title: title, content: content, link: link),
+                CreatePostInputCard(
+                  title: title,
+                  content: content,
+                  link: link,
+                  images: _selectedImagesBytes,
+                  onAddImage: _pickImages,
+                  onRemoveImage: (index) {
+                    setState(() {
+                      _selectedXFiles.removeAt(index);
+                      _selectedImagesBytes.removeAt(index);
+                    });
+                  },
+                ),
 
                 const SizedBox(height: 32),
 
@@ -440,4 +691,3 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     );
   }
 }
-

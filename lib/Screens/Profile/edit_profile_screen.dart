@@ -55,17 +55,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           labelText: label,
           labelStyle: TextStyle(color: colors.secondaryText, fontSize: 14),
           filled: true,
-          fillColor: Theme.of(context).brightness == Brightness.dark 
-              ? colors.bgColor.withValues(alpha: 0.5) 
+          fillColor: Theme.of(context).brightness == Brightness.dark
+              ? colors.bgColor.withValues(alpha: 0.5)
               : colors.bgColor,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: colors.borderColor.withValues(alpha: 0.3)),
+            borderSide: BorderSide(
+              color: colors.borderColor.withValues(alpha: 0.3),
+            ),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: colors.borderColor.withValues(alpha: 0.5)),
+            borderSide: BorderSide(
+              color: colors.borderColor.withValues(alpha: 0.5),
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -89,7 +96,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -117,7 +124,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     if (name.isEmpty || phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Name and Phone are required"), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text("Name and Phone are required"),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -127,7 +137,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final desig = designationController.text.trim();
       if (dept.isEmpty || desig.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Department and Designation are required"), backgroundColor: Colors.red),
+          const SnackBar(
+            content: Text("Department and Designation are required"),
+            backgroundColor: Colors.red,
+          ),
         );
         return;
       }
@@ -137,7 +150,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final year = yearController.text.trim();
       if (branch.isEmpty || stream.isEmpty || year.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Branch, Stream, and Graduating Year are required"), backgroundColor: Colors.red),
+          const SnackBar(
+            content: Text("Branch, Stream, and Graduating Year are required"),
+            backgroundColor: Colors.red,
+          ),
         );
         return;
       }
@@ -164,6 +180,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               "department": departmentController.text.trim(),
               "designation": designationController.text.trim(),
             }
+          : userType == "admin"
+          ? {
+              ...baseData,
+              "name": nameController.text.trim(),
+              "phone": phoneController.text.trim(),
+              "branch": branchController.text.trim(),
+              "stream": streamController.text.trim(),
+              "graduating_year": int.tryParse(yearController.text.trim()),
+              "user_type": "ADMIN",
+              "role": "admin",
+              "is_verified": true,
+            }
           : {
               ...baseData,
               "name": nameController.text.trim(),
@@ -176,18 +204,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       // 1. Update the user table
       await Supabase.instance.client.from('users').update(data).eq('id', uid);
-      
+
       // 2. Update the user's posts so their name/branch/user_type is instantly reflected on all their posts
       try {
         final postUpdateData = {
           "user_name": data["name"],
-          "user_type": data["user_type"] ?? (userType == "faculty" ? "faculty" : null),
+          "user_type":
+              data["user_type"] ?? (userType == "faculty" ? "faculty" : null),
           "department": data["branch"] ?? data["department"],
         };
         // Clean up nulls
         postUpdateData.removeWhere((key, value) => value == null);
         if (postUpdateData.isNotEmpty) {
-          await Supabase.instance.client.from('posts').update(postUpdateData).eq('user_id', uid);
+          await Supabase.instance.client
+              .from('posts')
+              .update(postUpdateData)
+              .eq('user_id', uid);
         }
       } catch (e) {
         debugPrint("Failed to update posts: $e");
@@ -195,7 +227,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       // 3. Invalidate providers to trigger refetch
       ref.invalidate(userProvider);
-      
+
       // We can't easily import postsProvider here without a circular dependency or adding an import,
       // but wait, postsProvider is in core/post_provider.dart? Let's check imports.
       // Actually we don't have it imported. Let's just invalidate userProvider and wait for it.
@@ -210,7 +242,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           content: Text("Error saving: $e\nDid you run the SQL command?"),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 5),
-        )
+        ),
       );
     } finally {
       if (mounted) {
@@ -224,7 +256,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(userProvider);
 
     return Scaffold(
@@ -236,7 +267,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         iconTheme: IconThemeData(color: colors.primaryText),
         title: Text(
           "Edit Profile",
-          style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: colors.primaryText,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           Padding(
@@ -263,7 +297,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   : const Icon(Icons.cloud_download, size: 16),
               label: Text(
                 saving ? "Saving..." : "Save",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
           ),
@@ -299,26 +336,80 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             child: Column(
               children: [
                 _buildSection("Personal Information", [
-                  field(context: context, colors: colors, label: "Full Name", controller: nameController),
-                  field(context: context, colors: colors, label: "Phone", controller: phoneController, keyboard: TextInputType.phone),
-                  field(context: context, colors: colors, label: "Bio / Description", controller: descriptionController, maxLines: 3),
+                  field(
+                    context: context,
+                    colors: colors,
+                    label: "Full Name",
+                    controller: nameController,
+                  ),
+                  field(
+                    context: context,
+                    colors: colors,
+                    label: "Phone",
+                    controller: phoneController,
+                    keyboard: TextInputType.phone,
+                  ),
+                  field(
+                    context: context,
+                    colors: colors,
+                    label: "Bio / Description",
+                    controller: descriptionController,
+                    maxLines: 3,
+                  ),
                 ], colors),
 
                 if (userType == "faculty")
                   _buildSection("Academic Details", [
-                    field(context: context, colors: colors, label: "Department", controller: departmentController),
-                    field(context: context, colors: colors, label: "Designation", controller: designationController),
+                    field(
+                      context: context,
+                      colors: colors,
+                      label: "Department",
+                      controller: departmentController,
+                    ),
+                    field(
+                      context: context,
+                      colors: colors,
+                      label: "Designation",
+                      controller: designationController,
+                    ),
                   ], colors)
                 else
                   _buildSection("Academic Details", [
-                    field(context: context, colors: colors, label: "Branch", controller: branchController),
-                    field(context: context, colors: colors, label: "Stream", controller: streamController),
-                    field(context: context, colors: colors, label: "Graduating Year", controller: yearController, keyboard: TextInputType.number),
+                    field(
+                      context: context,
+                      colors: colors,
+                      label: "Branch",
+                      controller: branchController,
+                    ),
+                    field(
+                      context: context,
+                      colors: colors,
+                      label: "Stream",
+                      controller: streamController,
+                    ),
+                    field(
+                      context: context,
+                      colors: colors,
+                      label: "Graduating Year",
+                      controller: yearController,
+                      keyboard: TextInputType.number,
+                    ),
                   ], colors),
 
                 _buildSection("Social Links", [
-                  field(context: context, colors: colors, label: "GitHub Username (Optional)", controller: githubController),
-                  field(context: context, colors: colors, label: "Portfolio / Other Link (Optional)", controller: link2Controller, keyboard: TextInputType.url),
+                  field(
+                    context: context,
+                    colors: colors,
+                    label: "GitHub Username (Optional)",
+                    controller: githubController,
+                  ),
+                  field(
+                    context: context,
+                    colors: colors,
+                    label: "Portfolio / Other Link (Optional)",
+                    controller: link2Controller,
+                    keyboard: TextInputType.url,
+                  ),
                 ], colors),
 
                 const SizedBox(height: 80),
@@ -339,4 +430,3 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 }
-

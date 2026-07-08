@@ -18,9 +18,7 @@ List<Map<String, dynamic>> filterByType(
 ) {
   if (selected == 'all') return posts;
   return posts
-      .where(
-        (p) => p['post_type'].toString().toLowerCase() == selected,
-      )
+      .where((p) => p['post_type'].toString().toLowerCase() == selected)
       .toList();
 }
 
@@ -218,13 +216,19 @@ void main() {
     }
 
     test('job maps to green', () => expect(postTypeLabel('job'), 'green'));
-    test('announcement maps to orange',
-        () => expect(postTypeLabel('announcement'), 'orange'));
-    test('internship maps to blue',
-        () => expect(postTypeLabel('internship'), 'blue'));
+    test(
+      'announcement maps to orange',
+      () => expect(postTypeLabel('announcement'), 'orange'),
+    );
+    test(
+      'internship maps to blue',
+      () => expect(postTypeLabel('internship'), 'blue'),
+    );
     test('normal maps to grey', () => expect(postTypeLabel('normal'), 'grey'));
-    test('unknown type maps to grey',
-        () => expect(postTypeLabel('random'), 'grey'));
+    test(
+      'unknown type maps to grey',
+      () => expect(postTypeLabel('random'), 'grey'),
+    );
     test('is case-insensitive', () => expect(postTypeLabel('JOB'), 'green'));
   });
 }

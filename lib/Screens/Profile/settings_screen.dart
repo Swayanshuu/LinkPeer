@@ -77,7 +77,9 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             subtitle: Text(
-              Theme.of(context).brightness == Brightness.dark ? "Dark Mode" : "Light Mode",
+              Theme.of(context).brightness == Brightness.dark
+                  ? "Dark Mode"
+                  : "Light Mode",
               style: TextStyle(color: colors.secondaryText, fontSize: 12),
             ),
             trailing: Switch(

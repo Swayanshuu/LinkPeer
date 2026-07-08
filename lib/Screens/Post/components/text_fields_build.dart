@@ -24,11 +24,7 @@ Widget buildField({
       maxLines: maxLines,
       maxLength: maxLength,
 
-      style: TextStyle(
-        color: colors.primaryText,
-        fontSize: 15,
-        height: 1.4,
-      ),
+      style: TextStyle(color: colors.primaryText, fontSize: 15, height: 1.4),
 
       decoration: InputDecoration(
         counterStyle: TextStyle(color: colors.secondaryText),
@@ -39,10 +35,7 @@ Widget buildField({
 
         hintText: hint,
 
-        hintStyle: TextStyle(
-          color: colors.secondaryText,
-          fontSize: 14,
-        ),
+        hintStyle: TextStyle(color: colors.secondaryText, fontSize: 14),
 
         border: InputBorder.none,
 

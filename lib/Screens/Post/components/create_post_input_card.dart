@@ -1,16 +1,26 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 
 class CreatePostInputCard extends StatefulWidget {
   final TextEditingController title;
   final TextEditingController content;
   final TextEditingController link;
+  final List<dynamic> images; // dynamic for Uint8List
+  final List<String>? existingImages;
+  final VoidCallback onAddImage;
+  final ValueChanged<int> onRemoveImage;
+  final ValueChanged<int>? onRemoveExistingImage;
 
   const CreatePostInputCard({
     super.key,
     required this.title,
     required this.content,
     required this.link,
+    required this.images,
+    this.existingImages,
+    required this.onAddImage,
+    required this.onRemoveImage,
+    this.onRemoveExistingImage,
   });
 
   @override
@@ -125,6 +135,15 @@ class _CreatePostInputCardState extends State<CreatePostInputCard> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
+                    const SizedBox(width: 16),
+                    GestureDetector(
+                      onTap: widget.onAddImage,
+                      child: Icon(
+                        Icons.image_outlined,
+                        color: colors.primaryAccent,
+                        size: 22,
+                      ),
+                    ),
 
                     const Spacer(),
 
@@ -149,6 +168,105 @@ class _CreatePostInputCardState extends State<CreatePostInputCard> {
                   ],
                 ),
               ),
+
+              // Selected Images Preview
+              if (widget.images.isNotEmpty ||
+                  (widget.existingImages != null &&
+                      widget.existingImages!.isNotEmpty))
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      // Render existing network images
+                      if (widget.existingImages != null)
+                        ...List.generate(widget.existingImages!.length, (
+                          index,
+                        ) {
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  widget.existingImages![index],
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: colors.borderColor,
+                                        child: const Icon(Icons.broken_image),
+                                      ),
+                                ),
+                              ),
+                              if (widget.onRemoveExistingImage != null)
+                                Positioned(
+                                  top: -6,
+                                  right: -6,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        widget.onRemoveExistingImage!(index),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        size: 14,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        }),
+
+                      // Render newly selected local images
+                      ...List.generate(widget.images.length, (index) {
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.memory(
+                                widget.images[index],
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: -6,
+                              right: -6,
+                              child: GestureDetector(
+                                onTap: () => widget.onRemoveImage(index),
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),

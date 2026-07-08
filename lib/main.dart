@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:igit_connects/screens/post/full_post_screen.dart';
+import 'package:igit_connects/screens/premium/payment_result_screen.dart';
 import 'package:igit_connects/core/auth_gate.dart';
 import 'package:igit_connects/core/theme_provider.dart';
 import 'package:igit_connects/core/app_colors.dart';
@@ -141,6 +142,20 @@ class _MyAppState extends ConsumerState<MyApp> {
       } catch (e) {
         debugPrint('Error loading deep linked post: $e');
       }
+      return;
+    }
+
+    // Handle Payment Results: linkpeer://payment/success?txnId=...
+    if (uri.scheme == 'linkpeer' &&
+        uri.host == 'payment' &&
+        uri.pathSegments.isNotEmpty) {
+      final status = uri.pathSegments.first;
+      final txnId = uri.queryParameters['txnId'];
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => PaymentResultScreen(status: status, txnId: txnId),
+        ),
+      );
     }
   }
 
