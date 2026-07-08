@@ -74,7 +74,12 @@ class ProfileHeaderSliver extends StatelessWidget {
     final colors = AppColors.of(context);
     final name = data["name"] ?? "User";
     final photo = data["photo_url"] ?? "";
-    final userType = (data["user_type"] ?? "Student").toString().toUpperCase();
+    final role = (data["role"] ?? "user").toString().toLowerCase();
+    final isAdmin = role == "admin";
+    
+    final userType = isAdmin 
+        ? "ADMIN" 
+        : (data["user_type"] ?? "Student").toString().toUpperCase();
     final isStudent = userType.contains("STUDENT");
     final branch = data["branch"] ?? data["department"] ?? "CSE";
     final college = data["college"] ?? "IGIT Sarang";
@@ -326,17 +331,21 @@ class ProfileHeaderSliver extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: isStudent
-                              ? colors.badgeStudentBg
-                              : colors.badgeAlumniBg,
+                          color: isAdmin
+                              ? colors.badgeAdminBg
+                              : (isStudent
+                                  ? colors.badgeStudentBg
+                                  : colors.badgeAlumniBg),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          isStudent ? "Student" : userType,
+                          isAdmin ? "ADMIN" : (isStudent ? "Student" : userType),
                           style: TextStyle(
-                            color: isStudent
-                                ? colors.badgeStudentText
-                                : colors.badgeAlumniText,
+                            color: isAdmin
+                                ? colors.badgeAdminText
+                                : (isStudent
+                                    ? colors.badgeStudentText
+                                    : colors.badgeAlumniText),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),

@@ -36,14 +36,29 @@ class Googleauthcontroller {
   /// Called by both the web and Android sign-in paths to guarantee
   /// that exactly the same data is written on every platform.
   static Future<void> _upsertUser(User user) async {
-    await Supabase.instance.client.from('users').upsert({
-      'id': user.uid,
-      'name': user.displayName ?? 'User',
-      'email': user.email,
-      'photo_url': user.photoURL ?? '',
-      'role': 'user',
-      'last_login': DateTime.now().toIso8601String(),
-    });
+    final client = Supabase.instance.client;
+    
+    // Check if user already exists
+    final existingUser = await client.from('users').select('id').eq('id', user.uid).maybeSingle();
+    
+    if (existingUser != null) {
+      // User exists, update basic details and last_login without touching the role
+      await client.from('users').update({
+        'name': user.displayName ?? 'User',
+        'photo_url': user.photoURL ?? '',
+        'last_login': DateTime.now().toIso8601String(),
+      }).eq('id', user.uid);
+    } else {
+      // New user, insert full data including default role
+      await client.from('users').insert({
+        'id': user.uid,
+        'name': user.displayName ?? 'User',
+        'email': user.email,
+        'photo_url': user.photoURL ?? '',
+        'role': 'user',
+        'last_login': DateTime.now().toIso8601String(),
+      });
+    }
   }
 
   /// Signs the user in with Google.

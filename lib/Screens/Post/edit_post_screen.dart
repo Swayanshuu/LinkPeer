@@ -447,7 +447,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  "â€¢ Be respectful to all members.\nâ€¢ Do not share spam or irrelevant content.\nâ€¢ Ensure opportunities posted are genuine.\nâ€¢ Keep discussions professional and constructive.",
+                                  "• Be respectful to all members.\n• Do not share spam or irrelevant content.\n• Ensure opportunities posted are genuine.\n• Keep discussions professional and constructive.",
                                   style: TextStyle(
                                     color: colors.secondaryText,
                                     fontSize: 14,

@@ -447,9 +447,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 final data = ref.read(userProvider).value;
                 final name = (data?["name"] ?? "User").toString();
                 final photo = (data?["photo_url"] ?? "").toString();
-                final userType = (data?["user_type"] ?? "student")
-                    .toString()
-                    .toLowerCase();
+                final role = (data?["role"] ?? "user").toString().toLowerCase();
+                final isAdmin = role == "admin";
+                final userType = isAdmin 
+                    ? "admin" 
+                    : (data?["user_type"] ?? "student").toString().toLowerCase();
                 final department = (data?["department"] ?? "").toString();
 
                 showModalBottomSheet(
@@ -578,7 +580,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  "â€¢ Be respectful to all members.\nâ€¢ Do not share spam or irrelevant content.\nâ€¢ Ensure opportunities posted are genuine.\nâ€¢ Keep discussions professional and constructive.",
+                                  "• Be respectful to all members.\n• Do not share spam or irrelevant content.\n• Ensure opportunities posted are genuine.\n• Keep discussions professional and constructive.",
                                   style: TextStyle(
                                     color: colors.secondaryText,
                                     fontSize: 14,

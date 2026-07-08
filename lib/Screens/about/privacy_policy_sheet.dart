@@ -252,7 +252,7 @@ class PrivacyPolicySheet extends StatelessWidget {
 
                     Center(
                       child: Text(
-                        "Last Updated â€¢ July 2026",
+                        "Last Updated • July 2026",
                         style: TextStyle(
                           color: colors.secondaryText,
                           fontSize: 11,
