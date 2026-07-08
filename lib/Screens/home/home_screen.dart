@@ -166,7 +166,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           padding: const EdgeInsets.only(top: 20),
                           child: Center(
                             child: Text(
-                              "Error loading posts",
+                              "Error loading posts: $e",
                               style: TextStyle(color: colors.primaryText),
                             ),
                           ),

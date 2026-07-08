@@ -148,6 +148,13 @@ class _PostCardState extends ConsumerState<PostCard> {
         }
       }
 
+      final singleImageUrl = widget.post["image_url"];
+      if (singleImageUrl != null &&
+          singleImageUrl is String &&
+          singleImageUrl.isNotEmpty) {
+        await StorageBackend().removePostImage(singleImageUrl);
+      }
+
       // 2. Delete the post from DB
       await Supabase.instance.client
           .from("posts")

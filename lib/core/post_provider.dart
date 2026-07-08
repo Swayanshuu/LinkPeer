@@ -70,7 +70,7 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
       final data = await Supabase.instance.client
           .from('posts')
           .select(
-            '*, post_likes(user_id), saved_posts(user_id), users(is_verified, subscription_plan)',
+            '*, post_likes(user_id), saved_posts(user_id), users!posts_user_id_fkey(is_verified, subscription_plan)',
           )
           .order('created_at', ascending: false);
 
