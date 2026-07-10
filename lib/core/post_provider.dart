@@ -29,6 +29,7 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
             final newPost = Map<String, dynamic>.from(payload.newRecord);
             newPost['post_likes'] = [];
             newPost['saved_posts'] = [];
+            newPost['post_comments'] = [{'count': 0}];
 
             try {
               final userResp = await Supabase.instance.client
@@ -70,7 +71,7 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
       final data = await Supabase.instance.client
           .from('posts')
           .select(
-            '*, post_likes(user_id), saved_posts(user_id), users!posts_user_id_fkey(is_verified, subscription_plan, role)',
+            '*, post_likes(user_id), saved_posts(user_id), post_comments(count), users!posts_user_id_fkey(is_verified, subscription_plan, role)',
           )
           .order('created_at', ascending: false);
 

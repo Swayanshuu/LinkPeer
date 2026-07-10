@@ -30,6 +30,7 @@ class _PostCardState extends ConsumerState<PostCard> {
   bool _isLiked = false;
   int _likesCount = 0;
   bool _isSaved = false;
+  int _commentsCount = 0;
 
   @override
   void initState() {
@@ -58,6 +59,10 @@ class _PostCardState extends ConsumerState<PostCard> {
     // Parse saved posts
     final savedList = post["saved_posts"] as List? ?? [];
     _isSaved = savedList.any((save) => save["user_id"] == currentUserId);
+
+    // Parse comments count
+    final commentsData = post["post_comments"] as List? ?? [];
+    _commentsCount = commentsData.isNotEmpty ? (commentsData.first["count"] as int? ?? 0) : 0;
   }
 
   Future<void> _toggleLike() async {
@@ -373,7 +378,7 @@ class _PostCardState extends ConsumerState<PostCard> {
     final userName = (post["user_name"] ?? "User").toString();
     final photo = (post["user_photo"] ?? "").toString();
     final usersData = post["users"] as Map<String, dynamic>?;
-    final userRole = (usersData?["role"] ?? post["user_type"] ?? "student")
+    final userType = (usersData?["user_type"] ?? post["user_type"] ?? "student")
         .toString();
     final department = (post["department"] ?? "").toString();
     final branch = (usersData?["branch"] ?? post["branch"] ?? "").toString();
@@ -403,16 +408,16 @@ class _PostCardState extends ConsumerState<PostCard> {
         usersData?["is_verified"] == true || post["is_verified"] == true;
 
     String userHeadline = department;
-    if (userRole.toLowerCase() == "student" ||
-        userRole.toLowerCase() == "alumni") {
+    if (userType.toLowerCase() == "student" ||
+        userType.toLowerCase() == "alumni") {
       userHeadline = branch.isNotEmpty ? branch : department;
-    } else if (userRole.toLowerCase() == "faculty") {
+    } else if (userType.toLowerCase() == "faculty") {
       userHeadline = designation.isNotEmpty
           ? designation
           : (branch.isNotEmpty ? branch : department);
     }
 
-    final isAuthorAdmin = userRole.toLowerCase() == "admin";
+    final isAuthorAdmin = userType.toLowerCase() == "admin";
 
     return GestureDetector(
       onTap: () {
@@ -518,7 +523,7 @@ class _PostCardState extends ConsumerState<PostCard> {
                                     ),
                                   ],
                                   const SizedBox(width: 8),
-                                  _buildUserTypeBadge(userRole, colors),
+                                  _buildUserTypeBadge(userType, colors),
                                 ],
                               ),
 
@@ -954,7 +959,7 @@ class _PostCardState extends ConsumerState<PostCard> {
                   icon: Icons.chat_bubble_outline_rounded,
                   iconColor: colors.secondaryText,
                   textColor: colors.secondaryText,
-                  label: commentsCount > 0 ? "$commentsCount" : "",
+                  label: _commentsCount > 0 ? "$_commentsCount" : "",
                   onTap: () {
                     Navigator.push(
                       context,

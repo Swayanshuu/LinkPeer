@@ -13,6 +13,7 @@ import 'package:igit_connects/shared_components/share_card.dart';
 import 'package:igit_connects/utils/share_service.dart';
 import 'package:igit_connects/Screens/Profile/other_user_profile_screen.dart';
 import 'package:igit_connects/screens/auth/login_screen.dart';
+import 'package:igit_connects/Screens/Post/components/comment_widgets.dart';
 
 class FullPostScreen extends ConsumerStatefulWidget {
   final Map post;
@@ -28,6 +29,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
   int _likesCount = 0;
   bool _isSaved = false;
   bool _isGeneratingLink = false;
+  int _commentsCount = 0;
 
   @override
   void initState() {
@@ -48,6 +50,12 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     // Parse saved posts
     final savedList = post["saved_posts"] as List? ?? [];
     _isSaved = savedList.any((save) => save["user_id"] == currentUserId);
+
+    // Parse comments count
+    final commentsData = post["post_comments"] as List? ?? [];
+    _commentsCount = commentsData.isNotEmpty
+        ? (commentsData.first["count"] as int? ?? 0)
+        : 0;
   }
 
   Future<void> _toggleLike() async {
@@ -763,9 +771,56 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                           _buildActionButton(
                             icon: Icons.chat_bubble_outline_rounded,
                             color: colors.secondaryText,
-                            label: "",
+                            label: _commentsCount > 0 ? "$_commentsCount" : "",
                             onTap: () {
-                              // Keep current screen, maybe focus a comment field later
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) {
+                                  return DraggableScrollableSheet(
+                                    initialChildSize: 0.8,
+                                    maxChildSize: 0.95,
+                                    minChildSize: 0.5,
+                                    builder: (_, scrollController) {
+                                      final sheetColors = AppColors.of(context);
+                                      return AnimatedPadding(
+                                        padding: EdgeInsets.only(
+                                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                                        ),
+                                        duration: const Duration(milliseconds: 200),
+                                        curve: Curves.easeOut,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: sheetColors.bgColor,
+                                            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                margin: const EdgeInsets.symmetric(vertical: 12),
+                                                width: 40,
+                                                height: 4,
+                                                decoration: BoxDecoration(
+                                                  color: sheetColors.secondaryText.withValues(alpha: 0.3),
+                                                  borderRadius: BorderRadius.circular(2),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: SingleChildScrollView(
+                                                  controller: scrollController,
+                                                  child: CommentsSection(postId: widget.post['id']),
+                                                ),
+                                              ),
+                                              CommentInputBar(postId: widget.post['id']),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              );
                             },
                             isActive: false,
                           ),

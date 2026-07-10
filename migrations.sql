@@ -129,5 +129,71 @@ CREATE POLICY "Allow Public Select" ON public.user_activities FOR SELECT TO publ
 CREATE POLICY "Allow Public Inserts" ON public.user_activities FOR INSERT TO public WITH CHECK (true);
 
 -- ====================================================================
+-- Comments System Schema
+-- ====================================================================
+CREATE TABLE IF NOT EXISTS public.post_comments (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    user_id TEXT NOT NULL,
+    comment_text TEXT NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+
+    CONSTRAINT post_comments_post_id_fkey
+        FOREIGN KEY (post_id)
+        REFERENCES public.posts(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT post_comments_user_id_fkey
+        FOREIGN KEY (user_id)
+        REFERENCES public.users(id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_post_comments_post_id ON public.post_comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_user_id ON public.post_comments(user_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_created_at ON public.post_comments(created_at DESC);
+
+-- Enable RLS for post_comments (assuming public access based on other tables)
+ALTER TABLE public.post_comments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow Public Select" ON public.post_comments;
+DROP POLICY IF EXISTS "Allow Public Insert" ON public.post_comments;
+DROP POLICY IF EXISTS "Allow Public Delete" ON public.post_comments;
+CREATE POLICY "Allow Public Select" ON public.post_comments FOR SELECT TO public USING (true);
+CREATE POLICY "Allow Public Insert" ON public.post_comments FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow Public Delete" ON public.post_comments FOR DELETE TO public USING (true);
+
+-- ====================================================================
+-- Comment Likes
+-- ====================================================================
+ALTER TABLE public.post_comments 
+ADD COLUMN IF NOT EXISTS likes_count INT DEFAULT 0,
+ADD COLUMN IF NOT EXISTS liked_by TEXT[] DEFAULT '{}';
+
+CREATE OR REPLACE FUNCTION toggle_comment_like(p_comment_id BIGINT, p_user_id TEXT)
+RETURNS void AS $$
+DECLARE
+    v_liked_by TEXT[];
+BEGIN
+    -- Get current liked_by array
+    SELECT liked_by INTO v_liked_by FROM public.post_comments WHERE id = p_comment_id;
+    
+    IF p_user_id = ANY(v_liked_by) THEN
+        -- User has already liked it, so unlike (remove from array and decrement)
+        UPDATE public.post_comments
+        SET liked_by = array_remove(liked_by, p_user_id),
+            likes_count = likes_count - 1
+        WHERE id = p_comment_id;
+    ELSE
+        -- User hasn't liked it, so like (append to array and increment)
+        UPDATE public.post_comments
+        SET liked_by = array_append(liked_by, p_user_id),
+            likes_count = likes_count + 1
+        WHERE id = p_comment_id;
+    END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ====================================================================
 -- End of Migrations
 -- ====================================================================
