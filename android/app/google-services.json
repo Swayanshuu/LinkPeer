@@ -35,7 +35,44 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "330146928360-mjbglcl0s022qqd9l739c6j7bhvmeruu.apps.googleusercontent.com",
+              "client_id": "330146928360-407tn4r9sqja01rrg2phka6shsdtragd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330146928360:android:f3c4566402254b3e8bdb5d",
+        "android_client_info": {
+          "package_name": "com.swynx.linkpeer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "330146928360-7vq657b1it38igrdu5i10l9k4qgofpa3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.swynx.linkpeer",
+            "certificate_hash": "83bf330a86ad58b310a912a58208dc67ca961bb9"
+          }
+        },
+        {
+          "client_id": "330146928360-mjbglcl0s022qqd9l739c6j7bhvmeruu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLlCpuhO-jv8D-4Kh6OKgh9sOX15_qI1g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "330146928360-407tn4r9sqja01rrg2phka6shsdtragd.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
