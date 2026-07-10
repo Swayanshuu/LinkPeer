@@ -237,7 +237,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     final name = (post["user_name"] ?? "User").toString();
     final photo = (post["user_photo"] ?? "").toString();
     final usersData = post["users"] as Map<String, dynamic>?;
-    final userType = (usersData?["role"] ?? post["user_type"] ?? "student")
+    final userType = (usersData?["user_type"] ?? post["user_type"] ?? "student")
         .toString();
     final isAuthorAdmin = userType.toLowerCase() == "admin";
     final department = (post["department"] ?? "").toString();

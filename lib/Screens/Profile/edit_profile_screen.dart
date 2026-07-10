@@ -188,7 +188,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               "branch": branchController.text.trim(),
               "stream": streamController.text.trim(),
               "graduating_year": int.tryParse(yearController.text.trim()),
-              "user_type": "ADMIN",
+              "user_type": "admin",
               "role": "admin",
               "is_verified": true,
             }
@@ -312,7 +312,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           if (!initialized) {
             initialized = true;
 
-            userType = (data["user_type"] ?? "student").toString();
+            // Fetch user type case-insensitively and also check if role is admin
+            final fetchedType = (data["user_type"] ?? "student").toString().toLowerCase();
+            final fetchedRole = (data["role"] ?? "").toString().toLowerCase();
+            
+            if (fetchedRole == "admin" || fetchedType == "admin") {
+              userType = "admin";
+            } else {
+              userType = fetchedType;
+            }
 
             nameController.text = (data["name"] ?? "").toString();
 
