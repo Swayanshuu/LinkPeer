@@ -171,6 +171,14 @@ class CommentTile extends ConsumerWidget {
                               size: 14,
                             ),
                           ],
+                          if (comment.isFacultyVerified && comment.userType.toLowerCase() == "faculty") ...[
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.gpp_good_rounded,
+                              color: Theme.of(context).primaryColor,
+                              size: 14,
+                            ),
+                          ],
                           if (comment.role.isNotEmpty) ...[
                             const SizedBox(height: 2),
                             Text(

@@ -75,7 +75,7 @@ class _OnboardingUserDetailsScreenState
   String? department;
   String designation = "";
   String phone = "";
-  String? facultyProof;
+  String? facultyVerificationImage;
   bool isProofUploaded = false;
 
   bool _saving = false;
@@ -204,7 +204,7 @@ class _OnboardingUserDetailsScreenState
       await Supabase.instance.client
           .from("users")
           .update({
-            "user_type": userType,
+            "user_type": widget.userMode == "faculty" ? "user" : userType,
             "college": college,
 
             if (widget.userMode == "student") ...{
@@ -223,7 +223,8 @@ class _OnboardingUserDetailsScreenState
               "department": department,
               "designation": designation,
               "phone": phone,
-              "faculty_proof": facultyProof,
+              "faculty_verification_image": facultyVerificationImage,
+              "faculty_verified": false,
             },
 
             "profile_completed": true,
@@ -517,7 +518,7 @@ class _OnboardingUserDetailsScreenState
                 if (result != null) {
                   setState(() {
                     isProofUploaded = true;
-                    facultyProof = result;
+                    facultyVerificationImage = result;
                   });
                 }
               },
@@ -745,7 +746,7 @@ class _HeroCard extends StatelessWidget {
             ),
             child: Icon(
               isFaculty
-                  ? Icons.verified_user_rounded
+                  ? Icons.gpp_good_rounded
                   : Icons.person_add_alt_1_rounded,
               color: colors.primaryText,
               size: 26,

@@ -34,7 +34,7 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
             try {
               final userResp = await Supabase.instance.client
                   .from('users')
-                  .select('is_verified, subscription_plan, role')
+                  .select('is_verified, subscription_plan, role, faculty_verified, branch, designation, user_type')
                   .eq('id', newPost['user_id'])
                   .maybeSingle();
               if (userResp != null) {
@@ -71,7 +71,7 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
       final data = await Supabase.instance.client
           .from('posts')
           .select(
-            '*, post_likes(user_id), saved_posts(user_id), post_comments(count), users!posts_user_id_fkey(is_verified, subscription_plan, role)',
+            '*, post_likes(user_id), saved_posts(user_id), post_comments(count), users!posts_user_id_fkey(is_verified, subscription_plan, role, faculty_verified, branch, designation, user_type)',
           )
           .order('created_at', ascending: false);
 

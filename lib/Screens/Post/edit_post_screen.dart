@@ -144,7 +144,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
 
       final user = await ref.read(userProvider.future);
       final plan = user["subscription_plan"] ?? 'free';
-      final isActive = user["subscription_status"] == 'active';
+      final isActive = user["subscription_status"] == 'active' && plan != 'free';
       final isAdmin = user["role"] == 'admin';
       final isPro = (plan == 'premium_pro' && isActive) || isAdmin;
       final isLite = plan == 'premium_lite' && isActive;
@@ -319,6 +319,8 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                     .toString()
                     .toLowerCase();
                 final department = (data?["department"] ?? "").toString();
+                final designation = (data?["designation"] ?? "").toString();
+                final isFacultyVerified = data?["faculty_verified"] == true;
 
                 showModalBottomSheet(
                   context: context,
@@ -350,6 +352,8 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                             images: _selectedImagesBytes,
                             existingImages: existingImages,
                             isVerified: data?["is_verified"] == true,
+                            isFacultyVerified: isFacultyVerified,
+                            designation: designation,
                           ),
                         ),
                       ),
@@ -533,7 +537,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                   onAddImage: () async {
                     final user = ref.read(userProvider).value;
                     final plan = user?["subscription_plan"] ?? 'free';
-                    final isActive = user?["subscription_status"] == 'active';
+                    final isActive = user?["subscription_status"] == 'active' && plan != 'free';
                     final isAdmin = user?["role"] == 'admin';
 
                     int maxImages = 2; // free

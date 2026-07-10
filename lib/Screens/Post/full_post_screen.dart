@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
@@ -151,19 +152,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
         normalized = "${normalized}Z";
       }
       final dateTime = DateTime.parse(normalized).toLocal();
-      final year = dateTime.year;
-      final month = dateTime.month.toString().padLeft(2, '0');
-      final day = dateTime.day.toString().padLeft(2, '0');
-
-      final hourVal = dateTime.hour;
-      final minute = dateTime.minute.toString().padLeft(2, '0');
-      final amPm = hourVal >= 12 ? "PM" : "AM";
-      final hour = (hourVal % 12 == 0 ? 12 : hourVal % 12).toString().padLeft(
-        2,
-        '0',
-      );
-
-      return "$year-$month-$day, $hour:$minute $amPm";
+      return timeago.format(dateTime);
     } catch (_) {
       if (createdAt.length >= 16) {
         return "${createdAt.substring(0, 10)}, ${createdAt.substring(11, 16)}";
@@ -241,6 +230,22 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
         .toString();
     final isAuthorAdmin = userType.toLowerCase() == "admin";
     final department = (post["department"] ?? "").toString();
+    final branch = (usersData?["branch"] ?? post["branch"] ?? "").toString();
+    final designation = (usersData?["designation"] ?? post["designation"] ?? "").toString();
+
+    String userHeadline = department;
+    if (userType.toLowerCase() == "student" ||
+        userType.toLowerCase() == "alumni") {
+      userHeadline = branch.isNotEmpty ? branch : department;
+    } else if (userType.toLowerCase() == "faculty") {
+      if (designation.isNotEmpty && department.isNotEmpty) {
+        userHeadline = "$designation, $department";
+      } else if (designation.isNotEmpty) {
+        userHeadline = designation;
+      } else {
+        userHeadline = branch.isNotEmpty ? branch : department;
+      }
+    }
     final title = (post["title"] ?? "").toString();
     final content = (post["content"] ?? "").toString();
     final link = (post["link"] ?? "").toString();
@@ -443,6 +448,14 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                                       size: 16,
                                     ),
                                   ],
+                                  if ((usersData?["faculty_verified"] == true || post["faculty_verified"] == true) && userType.toLowerCase() == "faculty") ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.gpp_good_rounded,
+                                      color: colors.primaryAccent,
+                                      size: 16,
+                                    ),
+                                  ],
                                   const SizedBox(width: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
@@ -521,8 +534,8 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                                 )
                               else
                                 Text(
-                                  userType == "faculty" && department.isNotEmpty
-                                      ? "$department • $date"
+                                  userHeadline.isNotEmpty
+                                      ? "$userHeadline • $date"
                                       : date,
                                   style: TextStyle(
                                     color: colors.secondaryText,

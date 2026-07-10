@@ -1,0 +1,1 @@
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS faculty_verified BOOLEAN DEFAULT FALSE;

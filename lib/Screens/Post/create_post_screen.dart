@@ -129,7 +129,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   Future<void> _pickImages() async {
     final user = ref.read(userProvider).value;
     final plan = user?["subscription_plan"] ?? 'free';
-    final isActive = user?["subscription_status"] == 'active';
+    final isActive = user?["subscription_status"] == 'active' && plan != 'free';
     final isAdmin = user?["role"] == 'admin';
 
     int maxImages = 2; // free
@@ -216,7 +216,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
       final user = await ref.read(userProvider.future);
       final plan = user["subscription_plan"] ?? 'free';
-      final isActive = user["subscription_status"] == 'active';
+      final isActive = user["subscription_status"] == 'active' && plan != 'free';
       final isAdmin = user["role"] == 'admin';
       final isPro = (plan == 'premium_pro' && isActive) || isAdmin;
       final isLite = plan == 'premium_lite' && isActive;
@@ -453,6 +453,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     ? "admin" 
                     : (data?["user_type"] ?? "student").toString().toLowerCase();
                 final department = (data?["department"] ?? "").toString();
+                final designation = (data?["designation"] ?? "").toString();
+                final isFacultyVerified = data?["faculty_verified"] == true;
 
                 showModalBottomSheet(
                   context: context,
@@ -483,6 +485,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             link: link.text,
                             images: _selectedImagesBytes,
                             isVerified: data?["is_verified"] == true,
+                            isFacultyVerified: isFacultyVerified,
+                            designation: designation,
                           ),
                         ),
                       ),

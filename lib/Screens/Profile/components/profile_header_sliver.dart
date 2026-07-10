@@ -121,7 +121,9 @@ class ProfileHeaderSliver extends StatelessWidget {
         : "";
     final link2 = data["link2"]?.toString().trim() ?? "";
 
-    final String plan = data["subscription_plan"]?.toString() ?? 'free';
+    final String rawPlan = data["subscription_plan"]?.toString() ?? 'free';
+    final bool isSubActive = data["subscription_status"] == 'active';
+    final String plan = (isSubActive && rawPlan != 'free') ? rawPlan : 'free';
 
     return SliverAppBar(
       expandedHeight: 580,
@@ -315,6 +317,14 @@ class ProfileHeaderSliver extends StatelessWidget {
                         Icon(
                           Icons.verified,
                           color: colors.primaryAccent,
+                          size: 20,
+                        ),
+                      ],
+                      if (data["faculty_verified"] == true && userType.toLowerCase() == "faculty") ...[
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.gpp_good_rounded,
+                          color: Theme.of(context).primaryColor,
                           size: 20,
                         ),
                       ],

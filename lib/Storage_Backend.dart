@@ -53,7 +53,10 @@ class StorageBackend {
   }
 
   Future<String> uploadImage(XFile image) async {
-    String path = 'faculty/${image.name}';
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final ext = image.name.split('.').last;
+    String path = 'faculty/$uid/$timestamp.$ext';
     File file = File(image.path);
 
     // upload

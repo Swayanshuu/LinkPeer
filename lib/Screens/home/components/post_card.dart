@@ -6,6 +6,7 @@ import 'package:igit_connects/shared_components/hashtag_text.dart';
 import 'package:igit_connects/storage_backend.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -190,19 +191,7 @@ class _PostCardState extends ConsumerState<PostCard> {
         normalized = "${normalized}Z";
       }
       final dateTime = DateTime.parse(normalized).toLocal();
-      final year = dateTime.year;
-      final month = dateTime.month.toString().padLeft(2, '0');
-      final day = dateTime.day.toString().padLeft(2, '0');
-
-      final hourVal = dateTime.hour;
-      final minute = dateTime.minute.toString().padLeft(2, '0');
-      final amPm = hourVal >= 12 ? "PM" : "AM";
-      final hour = (hourVal % 12 == 0 ? 12 : hourVal % 12).toString().padLeft(
-        2,
-        '0',
-      );
-
-      return "$year-$month-$day • $hour:$minute $amPm";
+      return timeago.format(dateTime);
     } catch (_) {
       if (createdAt.length >= 16) {
         return "${createdAt.substring(0, 10)} • ${createdAt.substring(11, 16)}";
@@ -406,15 +395,22 @@ class _PostCardState extends ConsumerState<PostCard> {
 
     final isVerified =
         usersData?["is_verified"] == true || post["is_verified"] == true;
+    final isFacultyVerified =
+        (usersData?["faculty_verified"] == true || post["faculty_verified"] == true) &&
+        userType.toLowerCase() == "faculty";
 
     String userHeadline = department;
     if (userType.toLowerCase() == "student" ||
         userType.toLowerCase() == "alumni") {
       userHeadline = branch.isNotEmpty ? branch : department;
     } else if (userType.toLowerCase() == "faculty") {
-      userHeadline = designation.isNotEmpty
-          ? designation
-          : (branch.isNotEmpty ? branch : department);
+      if (designation.isNotEmpty && department.isNotEmpty) {
+        userHeadline = "$designation, $department";
+      } else if (designation.isNotEmpty) {
+        userHeadline = designation;
+      } else {
+        userHeadline = branch.isNotEmpty ? branch : department;
+      }
     }
 
     final isAuthorAdmin = userType.toLowerCase() == "admin";
@@ -519,6 +515,14 @@ class _PostCardState extends ConsumerState<PostCard> {
                                     Icon(
                                       Icons.verified,
                                       color: Colors.blue,
+                                      size: 16,
+                                    ),
+                                  ],
+                                  if (isFacultyVerified) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.gpp_good_rounded,
+                                      color: colors.primaryAccent,
                                       size: 16,
                                     ),
                                   ],

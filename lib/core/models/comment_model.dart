@@ -12,6 +12,8 @@ class CommentModel {
   final String userName;
   final String userPhoto;
   final bool isVerified;
+  final bool isFacultyVerified;
+  final String userType;
   final String
   role; // Assuming role acts like User Type or Designation from requirements
 
@@ -27,6 +29,8 @@ class CommentModel {
     required this.userName,
     required this.userPhoto,
     required this.isVerified,
+    required this.isFacultyVerified,
+    required this.userType,
     required this.role,
   });
 
@@ -46,6 +50,8 @@ class CommentModel {
       userName: userMap['name'] as String? ?? 'Unknown User',
       userPhoto: userMap['photo_url'] as String? ?? '',
       isVerified: userMap['is_verified'] as bool? ?? false,
+      isFacultyVerified: userMap['faculty_verified'] as bool? ?? false,
+      userType: userMap['user_type'] as String? ?? 'user',
       role: userMap['role'] as String? ?? 'User',
     );
   }
@@ -81,6 +87,8 @@ class CommentModel {
       userName: userName,
       userPhoto: userPhoto,
       isVerified: isVerified,
+      isFacultyVerified: isFacultyVerified,
+      userType: userType,
       role: role,
     );
   }

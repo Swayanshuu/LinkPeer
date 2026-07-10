@@ -47,7 +47,7 @@ class ShareService {
     String? imageUrl,
   }) async {
     const apiUrl = 'https://go.swynx.dev/api/links';
-    final targetUrl = 'linkpeer://post/$postId'; // Custom scheme deep link
+    final targetUrl = 'https://go.swynx.dev/$postId'; // Custom scheme deep link
 
     try {
       final client = HttpClient();

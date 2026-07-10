@@ -38,10 +38,10 @@ class _FacultyVerificationScreenState extends State<FacultyVerificationScreen> {
     });
 
     try {
-      await storage.uploadImage(pickedImage!);
+      String imageUrl = await storage.uploadImage(pickedImage!);
 
       if (!mounted) return;
-      Navigator.pop(context, "faculty/${pickedImage!.name}");
+      Navigator.pop(context, imageUrl);
     } catch (e) {
       setState(() {
         isLoading = false;

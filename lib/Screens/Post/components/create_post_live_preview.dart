@@ -17,6 +17,8 @@ class CreatePostPreviewSection extends StatelessWidget {
   final List<dynamic> images; // Can be Uint8List for local preview
   final List<String>? existingImages;
   final bool isVerified;
+  final bool isFacultyVerified;
+  final String? designation;
 
   const CreatePostPreviewSection({
     super.key,
@@ -31,6 +33,8 @@ class CreatePostPreviewSection extends StatelessWidget {
     required this.images,
     this.existingImages,
     required this.isVerified,
+    this.isFacultyVerified = false,
+    this.designation,
   });
 
   Color _getCategoryColor(String postType) {
@@ -193,7 +197,16 @@ class CreatePostPreviewSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final userHeadline = department;
+    
+    String userHeadline = department;
+    if (userType.toLowerCase() == "faculty") {
+      final desig = designation ?? "";
+      if (desig.isNotEmpty && department.isNotEmpty) {
+        userHeadline = "$desig, $department";
+      } else if (desig.isNotEmpty) {
+        userHeadline = desig;
+      }
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,6 +298,14 @@ class CreatePostPreviewSection extends StatelessWidget {
                               Icon(
                                 Icons.verified,
                                 color: Colors.blue,
+                                size: 16,
+                              ),
+                            ],
+                            if (isFacultyVerified && userType.toLowerCase() == "faculty") ...[
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.gpp_good_rounded,
+                                color: Theme.of(context).primaryColor,
                                 size: 16,
                               ),
                             ],

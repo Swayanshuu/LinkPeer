@@ -13,7 +13,7 @@ class CommentService {
     try {
       final data = await _client
           .from('post_comments')
-          .select('*, users!post_comments_user_id_fkey(name, photo_url, is_verified, role)')
+          .select('*, users!post_comments_user_id_fkey(name, photo_url, is_verified, role, faculty_verified, user_type)')
           .eq('post_id', postId)
           .order('likes_count', ascending: false)
           .order('created_at', ascending: false)
@@ -51,7 +51,7 @@ class CommentService {
         'post_id': postId,
         'user_id': userId,
         'comment_text': commentText.trim(),
-      }).select('*, users!post_comments_user_id_fkey(name, photo_url, is_verified, role)').single();
+      }).select('*, users!post_comments_user_id_fkey(name, photo_url, is_verified, role, faculty_verified, user_type)').single();
 
       return CommentModel.fromJson(response);
     } catch (e) {
