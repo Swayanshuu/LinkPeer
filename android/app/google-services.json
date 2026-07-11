@@ -59,6 +59,14 @@
           }
         },
         {
+          "client_id": "330146928360-8bg2bl5i9g9mq4jf7suh5hf5sr8std8h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.swynx.linkpeer",
+            "certificate_hash": "3246e26a6643a5d7fe516a7d82bfa3e58232404c"
+          }
+        },
+        {
           "client_id": "330146928360-mjbglcl0s022qqd9l739c6j7bhvmeruu.apps.googleusercontent.com",
           "client_type": 3
         }

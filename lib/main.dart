@@ -11,6 +11,7 @@ import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:igit_connects/core/services/notification_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:convert';
@@ -42,6 +43,15 @@ Future<void> main() async {
   );
 
   debugPrint("Supabase Initialized");
+  
+  if (!kIsWeb) {
+    try {
+      await NotificationService().initialize();
+      debugPrint("NotificationService Initialized");
+    } catch (e) {
+      debugPrint("Error initializing NotificationService: $e");
+    }
+  }
   if (!kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS)) {

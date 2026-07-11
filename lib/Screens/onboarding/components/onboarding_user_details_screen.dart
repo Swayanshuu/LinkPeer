@@ -422,13 +422,15 @@ class _OnboardingUserDetailsScreenState
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty)
+                      if (value == null || value.trim().isEmpty) {
                         return "Please enter graduation year";
+                      }
                       final year = int.tryParse(value);
                       if (year == null) return "Enter a valid year";
                       final cy = DateTime.now().year;
-                      if (year < 1990 || year > cy + 4)
+                      if (year < 1990 || year > cy + 4) {
                         return "Year must be between 1990 and ${cy + 4}";
+                      }
                       return null;
                     },
                     onChanged: (value) {
@@ -492,10 +494,12 @@ class _OnboardingUserDetailsScreenState
                       icon: Icons.phone_outlined,
                     ),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty)
+                      if (v == null || v.trim().isEmpty) {
                         return "Phone number is required";
-                      if (v.trim().length < 10)
+                      }
+                      if (v.trim().length < 10) {
                         return "Enter a valid phone number";
+                      }
                       return null;
                     },
                     onChanged: (v) => setState(() => phone = v),

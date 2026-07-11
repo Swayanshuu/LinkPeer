@@ -31,29 +31,49 @@ The application is built on a **dual-backend architecture** (Firebase + Supabase
 
 ## Architecture
 
-```text
-┌─────────────────────────────────────────────────────────────────────┐
-│                          LinkPeer                                   │
-│                                                                      │
-│   ┌───────────┐    ┌────────────┐    ┌──────────────────────────┐   │
-│   │   Login   │───▶│ Onboarding │───▶│       Main Shell         │   │
-│   │  (OAuth)  │    │   (Role    │    │   (Bottom Navigation)    │   │
-│   └───────────┘    │   Setup)   │    │                          │   │
-│                    └────────────┘    │  Home  │Search│Post│Prof │   │
-│                                      └──────────────────────────┘   │
-│                                                                      │
-│   ┌──────────────────────────────────────────────────────────────┐  │
-│   │                    State Layer — Riverpod                    │  │
-│   │       themeProvider  ·  userProvider  ·  postsProvider       │  │
-│   └──────────────────────────────────────────────────────────────┘  │
-│                                                                      │
-│   ┌───────────────────────┐      ┌───────────────────────────────┐  │
-│   │        Firebase       │      │           Supabase            │  │
-│   │  Auth  ·  Firestore   │      │   PostgreSQL  ·  Storage CDN  │  │
-│   │  (OAuth · User docs)  │      │   (Posts)    ·  (Files)       │  │
-│   └───────────────────────┘      └───────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    classDef client fill:#02569B,stroke:#0175C2,stroke-width:2px,color:#fff;
+    classDef firebase fill:#FFCA28,stroke:#FFA000,stroke-width:2px,color:#333;
+    classDef supabase fill:#3ECF8E,stroke:#24B47E,stroke-width:2px,color:#fff;
+    classDef state fill:#3B4EFF,stroke:#2436E0,stroke-width:2px,color:#fff;
+
+    %% Client App
+    subgraph Client [📱 Flutter Application]
+        UI[UI / Screens]:::client
+        Riverpod[Riverpod State Layer]:::state
+        UI <-->|Watch / Read| Riverpod
+    end
+
+    %% Backends
+    subgraph Services [☁️ Dual Backend Architecture]
+        Firebase[Firebase Auth & Firestore]:::firebase
+        Supabase[Supabase PostgreSQL & Storage]:::supabase
+    end
+
+    %% Edge & Notifications
+    subgraph Background [⚡ Event-Driven Services]
+        Edge[Supabase Edge Functions]:::supabase
+        FCM[Firebase Cloud Messaging]:::firebase
+    end
+
+    %% Connections
+    Riverpod -->|1. OAuth Sign In| Firebase
+    Riverpod -->|2. Query Posts & Profile| Supabase
+    Supabase -.->|3. Database Webhook Trigger| Edge
+    Edge -->|4. Push Payload Delivery| FCM
+    FCM -.->|5. Push Notification| UI
 ```
+
+### How the Architecture Works:
+1. **The Client Layer**: The app is built with Flutter, heavily utilizing **Riverpod** as the central nervous system. No UI widget directly contacts the database; everything routes through state providers.
+2. **The Firebase Layer**: Handles Google OAuth 2.0 and stores lightweight user profiles. It's incredibly fast for authentication and guarantees smooth, passwordless logins.
+3. **The Supabase Layer**: The heavy lifter. It handles all relational data (posts, comments, likes) via PostgreSQL and hosts all uploaded media (images/documents) via its global CDN.
+4. **The Event-Driven Notification System**: When an action occurs (like a comment on a post), Supabase fires a PostgreSQL trigger to an Edge Function, which securely talks to Firebase Cloud Messaging (FCM) to deliver a push notification to the user's phone — without ever exposing private API keys in the app.
+
+For more details on our secure serverless notification architecture, see [Push Notifications Architecture](notifications.md).
+
+For a deep dive into the complete user flow and data flow sequence diagrams, see the [Detailed System Design](system_design.md) document.
 
 ---
 
@@ -62,6 +82,7 @@ The application is built on a **dual-backend architecture** (Firebase + Supabase
 | Feature              | Description                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------- |
 | Google Sign-In       | One-tap OAuth 2.0 authentication — no password required                                      |
+| Push Notifications   | Event-driven, secure serverless push notifications via FCM and Supabase Edge Functions       |
 | Campus Feed          | Real-time post feed with filter tabs: All, Jobs, Announcements, Internships                  |
 | Post Composer        | Rich post creation — title, content, hashtag support, external links, file/image attachments |
 | Instant Search       | Client-side full-text search across all posts — zero server round-trip                       |
@@ -105,7 +126,7 @@ The application is built on a **dual-backend architecture** (Firebase + Supabase
 
 | Technology           | Version   | Notes                                                                                                                                                                                                               |
 | -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Supabase Flutter** | `^2.12.4` | Wraps both the PostgreSQL REST API (for the `posts` table) and Supabase Object Storage (for uploaded images and documents served via public CDN). Chosen for its open-source nature and row-level security support. |
+| **Supabase Flutter** | `^2.12.4` | Wraps both the PostgreSQL REST API (for the `posts` and `notifications` tables) and Supabase Object Storage. Also powers Edge Functions for backend triggers. Chosen for open-source nature and row-level security. |
 
 ### Persistence & Utilities
 

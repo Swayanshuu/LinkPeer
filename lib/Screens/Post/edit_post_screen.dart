@@ -32,8 +32,8 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   List<String> existingImages = [];
   List<String> imagesToRemove =
       []; // Keep track of images to delete from storage
-  List<XFile> _selectedXFiles = [];
-  List<Uint8List> _selectedImagesBytes = [];
+  final List<XFile> _selectedXFiles = [];
+  final List<Uint8List> _selectedImagesBytes = [];
 
   @override
   void initState() {
@@ -544,10 +544,11 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                     if (isAdmin) {
                       maxImages = 999;
                     } else if (isActive) {
-                      if (plan == 'premium_pro')
+                      if (plan == 'premium_pro') {
                         maxImages = 10;
-                      else if (plan == 'premium_lite')
+                      } else if (plan == 'premium_lite') {
                         maxImages = 4;
+                      }
                     }
 
                     if (existingImages.length + _selectedXFiles.length >=

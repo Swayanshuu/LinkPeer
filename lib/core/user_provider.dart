@@ -5,11 +5,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final userProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
+  final user = FirebaseAuth.instance.currentUser;
 
-  if (uid == null) {
-    return {};
+  if (user == null || user.isAnonymous) {
+    return {'user_type': 'guest'};
   }
+  
+  final uid = user.uid;
 
   final prefs = await SharedPreferences.getInstance();
   final cacheKey = 'cached_user_$uid';

@@ -46,3 +46,11 @@ app.*.map.json
 /android/app/release
 .vercel
 .env*
+
+# Android signing keys
+android/key.properties
+android/upload-keystore.jks
+
+# Alternative keystore names
+*.jks
+*.keystore

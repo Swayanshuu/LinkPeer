@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/core/app_colors.dart';
+import 'package:igit_connects/core/services/notification_service.dart';
+import 'package:igit_connects/Screens/notifications/notification_screen.dart';
 
 class HomeHeader extends ConsumerWidget {
   final Map me;
@@ -103,23 +105,51 @@ class HomeHeader extends ConsumerWidget {
               ),
             ],
           ),
-          child: IconButton(
-            icon: Icon(
-              Icons.notifications_none_rounded,
-              color: colors.primaryText,
-              size: 20,
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text("No new notifications"),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: colors.primaryText,
-                ),
+          child: FutureBuilder<int>(
+            future: NotificationService().getUnreadCount(),
+            builder: (context, snapshot) {
+              final unreadCount = snapshot.data ?? 0;
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.notifications_none_rounded,
+                      color: colors.primaryText,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                      );
+                    },
+                    constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                    padding: EdgeInsets.zero,
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          unreadCount > 9 ? '9+' : unreadCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               );
-            },
-            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-            padding: EdgeInsets.zero,
+            }
           ),
         ),
       ],

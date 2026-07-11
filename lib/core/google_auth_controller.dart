@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:igit_connects/core/services/notification_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -37,17 +38,24 @@ class Googleauthcontroller {
   /// that exactly the same data is written on every platform.
   static Future<void> _upsertUser(User user) async {
     final client = Supabase.instance.client;
-    
+
     // Check if user already exists
-    final existingUser = await client.from('users').select('id').eq('id', user.uid).maybeSingle();
-    
+    final existingUser = await client
+        .from('users')
+        .select('id')
+        .eq('id', user.uid)
+        .maybeSingle();
+
     if (existingUser != null) {
       // User exists, update basic details and last_login without touching the role
-      await client.from('users').update({
-        'name': user.displayName ?? 'User',
-        'photo_url': user.photoURL ?? '',
-        'last_login': DateTime.now().toIso8601String(),
-      }).eq('id', user.uid);
+      await client
+          .from('users')
+          .update({
+            'name': user.displayName ?? 'User',
+            'photo_url': user.photoURL ?? '',
+            'last_login': DateTime.now().toIso8601String(),
+          })
+          .eq('id', user.uid);
     } else {
       // New user, insert full data including default role
       await client.from('users').insert({
@@ -164,6 +172,9 @@ class Googleauthcontroller {
 
       if (user != null) {
         await _upsertUser(user);
+
+        // Fetch and save the FCM token for the user after they successfully login
+        await NotificationService().saveFCMToken();
 
         return userCredential;
       }

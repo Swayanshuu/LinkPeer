@@ -77,6 +77,9 @@ class _AuthGateState extends ConsumerState<AuthGate>
           "AuthGate: No authenticated user found, redirecting to login.",
         );
         _nextNavigation = _openLogin;
+      } else if (user.isAnonymous) {
+        debugPrint("AuthGate: Anonymous user, redirecting to main screen.");
+        _nextNavigation = _openMainScreen;
       } else {
         final uid = user.uid;
         final prefs = await SharedPreferences.getInstance();
