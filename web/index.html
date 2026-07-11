@@ -39,7 +39,7 @@
 
     if (isAndroid) {
       // Force Android Chrome/Browser to launch the app via intent
-      var intentUrl = "intent://linkpeer.swynx.dev" + window.location.pathname + window.location.search + window.location.hash + "#Intent;scheme=https;package=com.igitconnect.igit_connects;end;";
+      var intentUrl = "intent://linkpeer.swynx.dev" + window.location.pathname + window.location.search + window.location.hash + "#Intent;scheme=https;package=com.swynx.linkpeer;end;";
       window.location.replace(intentUrl);
     } else if (isIOS) {
       // Force iOS Safari to launch the app via custom scheme

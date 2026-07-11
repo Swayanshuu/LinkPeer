@@ -386,8 +386,6 @@ class _PostCardState extends ConsumerState<PostCard> {
         [];
     final createdAt = (post["created_at"] ?? "").toString();
 
-    final commentsList = post["post_comments"] as List? ?? [];
-
     final date = _formatTimestamp(createdAt);
     final isLongPost = content.length > 250;
     final shortContent = isLongPost ? content.substring(0, 250) : content;

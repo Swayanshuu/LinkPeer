@@ -16,6 +16,8 @@ import 'package:flutter/foundation.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
+import 'package:igit_connects/features/broadcast/screens/broadcast_details_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +65,13 @@ Future<void> main() async {
   runApp(ProviderScope(child: MyApp(initialTheme: initialTheme)));
 }
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
+/// Global state to handle cold-start deep linking and notification taps
+typedef DeepLinkAction = void Function();
+DeepLinkAction? pendingDeepLinkAction;
+bool isMainScreenReady = false;
+
 class MyApp extends ConsumerStatefulWidget {
   final ThemeMode initialTheme;
   const MyApp({super.key, required this.initialTheme});
@@ -72,7 +81,6 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
   final _appLinks = AppLinks();
 
   @override
@@ -146,11 +154,50 @@ class _MyAppState extends ConsumerState<MyApp> {
             .eq('id', postId)
             .single();
 
-        _navigatorKey.currentState?.push(
-          MaterialPageRoute(builder: (_) => FullPostScreen(post: post)),
-        );
+        final action = () {
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(builder: (_) => FullPostScreen(post: post)),
+          );
+        };
+        if (isMainScreenReady) {
+          action();
+        } else {
+          pendingDeepLinkAction = action;
+        }
       } catch (e) {
         debugPrint('Error loading deep linked post: $e');
+      }
+      return;
+    }
+
+    // Handle Broadcast Link: linkpeer://broadcast/123
+    if (uri.scheme == 'linkpeer' &&
+        uri.host == 'broadcast' &&
+        uri.pathSegments.isNotEmpty) {
+      final broadcastId = uri.pathSegments.first;
+      try {
+        final broadcastData = await Supabase.instance.client
+            .from('broadcasts')
+            .select()
+            .eq('id', broadcastId)
+            .single();
+
+        final action = () {
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (_) => BroadcastDetailsScreen(
+                broadcast: BroadcastModel.fromJson(broadcastData),
+              ),
+            ),
+          );
+        };
+        if (isMainScreenReady) {
+          action();
+        } else {
+          pendingDeepLinkAction = action;
+        }
+      } catch (e) {
+        debugPrint('Error loading deep linked broadcast: $e');
       }
       return;
     }
@@ -161,11 +208,18 @@ class _MyAppState extends ConsumerState<MyApp> {
         uri.pathSegments.isNotEmpty) {
       final status = uri.pathSegments.first;
       final txnId = uri.queryParameters['txnId'];
-      _navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (_) => PaymentResultScreen(status: status, txnId: txnId),
-        ),
-      );
+      final action = () {
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => PaymentResultScreen(status: status, txnId: txnId),
+          ),
+        );
+      };
+      if (isMainScreenReady) {
+        action();
+      } else {
+        pendingDeepLinkAction = action;
+      }
     }
   }
 
@@ -203,7 +257,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(
-      navigatorKey: _navigatorKey,
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
 
       themeMode: themeMode,

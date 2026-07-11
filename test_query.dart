@@ -1,4 +1,5 @@
-import 'package:supabase/supabase.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'dart:io';
 
 void main() async {
@@ -6,7 +7,7 @@ void main() async {
   final lines = await envFile.readAsLines();
   String supabaseUrl = '';
   String supabaseKey = '';
-  
+
   for (final line in lines) {
     if (line.startsWith('SUPABASE_URL=')) {
       supabaseUrl = line.split('=')[1];
@@ -16,12 +17,16 @@ void main() async {
     }
   }
 
-  final supabase = SupabaseClient(supabaseUrl, supabaseKey);
-
   try {
-    final res = await supabase.from('posts').select('*, post_likes(user_id), saved_posts(user_id), users!posts_user_id_fkey(is_verified, subscription_plan)').order('created_at', ascending: false).limit(1);
-    print("Success: ${res.first.keys}");
+    print("Fetching broadcasts via raw HTTP API...");
+    final response = await http.get(
+      Uri.parse('$supabaseUrl/rest/v1/broadcasts?select=*'),
+      headers: {'apikey': supabaseKey, 'Authorization': 'Bearer $supabaseKey'},
+    );
+
+    print("Status: ${response.statusCode}");
+    print("Body: ${response.body}");
   } catch (e) {
-    print("Error querying posts: $e");
+    print("Error querying broadcasts: $e");
   }
 }

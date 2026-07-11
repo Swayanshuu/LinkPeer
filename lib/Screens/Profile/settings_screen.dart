@@ -8,6 +8,7 @@ import 'package:igit_connects/core/post_provider.dart';
 import 'package:igit_connects/core/theme_provider.dart';
 import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/screens/profile/edit_profile_screen.dart';
+import 'package:igit_connects/features/broadcast/screens/admin_broadcast_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -98,6 +99,54 @@ class SettingsScreen extends ConsumerWidget {
             tileColor: colors.cardColor,
           ),
           const SizedBox(height: 12),
+          Consumer(
+            builder: (context, ref, child) {
+              final userAsync = ref.watch(userProvider);
+              return userAsync.when(
+                data: (user) {
+                  if (user['role'] == 'admin') {
+                    return Column(
+                      children: [
+                        ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const AdminBroadcastScreen()),
+                            );
+                          },
+                          leading: Icon(Icons.campaign, color: colors.primaryAccent),
+                          title: Text(
+                            "Broadcast Announcement",
+                            style: TextStyle(
+                              color: colors.primaryText,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "Create and send announcements",
+                            style: TextStyle(color: colors.secondaryText, fontSize: 12),
+                          ),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: colors.secondaryText,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          tileColor: colors.cardColor,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
           ListTile(
             onTap: () async {
               await FirebaseAuth.instance.signOut();

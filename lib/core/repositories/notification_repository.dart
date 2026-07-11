@@ -31,7 +31,7 @@ class NotificationRepository {
           .eq('user_id', user.uid)
           .eq('is_read', false)
           .count(CountOption.exact);
-      return res.count ?? 0;
+      return res.count;
     } catch (e) {
       debugPrint("Error getting unread count: $e");
       return 0;

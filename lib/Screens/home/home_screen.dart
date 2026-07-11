@@ -11,6 +11,7 @@ import 'package:igit_connects/screens/home/components/home_header.dart';
 import 'package:igit_connects/screens/home/components/post_card.dart';
 import 'package:igit_connects/core/post_provider.dart';
 import 'package:igit_connects/core/user_provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -156,10 +157,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
 
-                    posts.when(
-                      loading: () => const SliverToBoxAdapter(
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
+                      posts.when(
+                        loading: () => SliverPadding(
+                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 100),
+                          sliver: SliverList.builder(
+                            itemCount: 3,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: _buildShimmerPost(colors),
+                              );
+                            },
+                          ),
+                        ),
 
                       error: (e, s) => SliverToBoxAdapter(
                         child: Padding(
@@ -262,6 +272,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+  Widget _buildShimmerPost(AppColors colors) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors.cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.borderColor, width: 1.5),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const CircleAvatar(radius: 20, backgroundColor: Colors.white),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(width: 120, height: 14, color: Colors.white),
+                    const SizedBox(height: 6),
+                    Container(width: 80, height: 10, color: Colors.white),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(width: double.infinity, height: 16, color: Colors.white),
+            const SizedBox(height: 6),
+            Container(width: MediaQuery.of(context).size.width * 0.7, height: 16, color: Colors.white),
+            const SizedBox(height: 16),
+            Container(width: double.infinity, height: 150, color: Colors.white),
+          ],
         ),
       ),
     );

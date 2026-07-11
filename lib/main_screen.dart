@@ -12,6 +12,8 @@ import 'package:igit_connects/screens/bookmarks/bookmarks_screen.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/shared_components/app_drawer.dart';
 
+import 'package:igit_connects/main.dart'; // Import to access global deep link variables
+
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
@@ -49,6 +51,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         // Automatically fetch the latest data when internet is restored
         ref.invalidate(userProvider);
         ref.invalidate(postsProvider);
+      }
+    });
+
+    // Handle deep links that came in during cold start
+    isMainScreenReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (pendingDeepLinkAction != null) {
+        pendingDeepLinkAction!();
+        pendingDeepLinkAction = null;
       }
     });
   }

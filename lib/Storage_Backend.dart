@@ -94,4 +94,21 @@ class StorageBackend {
     }
     return urls;
   }
+
+  Future<String> uploadBroadcastImage(XFile image) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+    final ext = image.name.split('.').last;
+    final fileName =
+        '${DateTime.now().millisecondsSinceEpoch}_${image.name.hashCode}.$ext';
+    String path = '$uid/$fileName';
+    File file = File(image.path);
+
+    // upload
+    await supabase.storage.from('broadcast').upload(path, file);
+
+    // public url
+    String imageUrl = supabase.storage.from('broadcast').getPublicUrl(path);
+
+    return imageUrl;
+  }
 }

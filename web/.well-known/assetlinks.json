@@ -3,9 +3,11 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.igitconnect.igit_connects",
+      "package_name": "com.swynx.linkpeer",
       "sha256_cert_fingerprints": [
-        "79:B5:DF:CF:15:94:5E:24:B8:B5:51:81:52:6B:E5:02:35:29:6A:83:54:62:3F:B7:8A:8D:6C:2D:9B:B2:F9:8A"
+        "79:B5:DF:CF:15:94:5E:24:B8:B5:51:81:52:6B:E5:02:35:29:6A:83:54:62:3F:B7:8A:8D:6C:2D:9B:B2:F9:8A",
+        "0E:68:8E:33:10:A9:46:8F:EC:DA:49:FB:CA:8B:E3:C8:34:24:D6:0E:DB:93:59:D7:7A:88:AC:70:40:8D:94:6C",
+        "93:5A:56:77:1D:22:40:74:37:12:CD:C4:8D:EF:1D:77:41:45:A2:4D:28:CA:95:6C:5A:AA:5F:F3:F9:14:A4:68"
       ]
     }
   }

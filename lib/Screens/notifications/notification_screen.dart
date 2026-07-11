@@ -3,6 +3,7 @@ import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/models/notification_model.dart';
 import 'package:igit_connects/core/services/notification_service.dart';
 import 'package:igit_connects/screens/post/full_post_screen.dart';
+import 'package:igit_connects/features/broadcast/screens/broadcast_tab.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:shimmer/shimmer.dart';
@@ -21,7 +22,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   bool _isLoading = false;
   bool _hasMore = true;
   int _offset = 0;
-  final int _limit = 20;
+  final int _limit = 50;
 
   @override
   void initState() {
@@ -268,65 +269,83 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
 
-    return Scaffold(
-      backgroundColor: colors.bgColor,
-      appBar: AppBar(
-        title: Text(
-          'Notifications',
-          style: TextStyle(
-            color: colors.primaryText,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: colors.bgColor,
+        appBar: AppBar(
+          title: Text(
+            'Notifications',
+            style: TextStyle(
+              color: colors.primaryText,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          backgroundColor: colors.bgColor,
+          elevation: 0,
+          iconTheme: IconThemeData(color: colors.primaryText),
+          bottom: TabBar(
+            labelColor: colors.primaryAccent,
+            unselectedLabelColor: colors.secondaryText,
+            indicatorColor: colors.primaryAccent,
+            tabs: const [
+              Tab(text: "Notifications"),
+              Tab(text: "Broadcasts"),
+            ],
           ),
         ),
-        backgroundColor: colors.bgColor,
-        elevation: 0,
-        iconTheme: IconThemeData(color: colors.primaryText),
+        body: TabBarView(
+          children: [
+            // Original Notifications Tab
+            _notifications.isEmpty && _isLoading
+                ? _buildShimmer(colors)
+                : _notifications.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.notifications_off_outlined,
+                          size: 64,
+                          color: colors.secondaryText.withValues(alpha: 0.5),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "No notifications yet",
+                          style: TextStyle(color: colors.secondaryText, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        _offset = 0;
+                        _notifications.clear();
+                        _hasMore = true;
+                      });
+                      await _fetchNotifications();
+                    },
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      controller: _scrollController,
+                      itemCount: _notifications.length + (_hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _notifications.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        return _buildNotificationItem(_notifications[index], colors);
+                      },
+                    ),
+                  ),
+            const BroadcastTab(),
+          ],
+        ),
       ),
-      body: _notifications.isEmpty && _isLoading
-          ? _buildShimmer(colors)
-          : _notifications.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.notifications_off_outlined,
-                    size: 64,
-                    color: colors.secondaryText.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "No notifications yet",
-                    style: TextStyle(color: colors.secondaryText, fontSize: 16),
-                  ),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: () async {
-                setState(() {
-                  _offset = 0;
-                  _notifications.clear();
-                  _hasMore = true;
-                });
-                await _fetchNotifications();
-              },
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: _notifications.length + (_hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  debugPrint("Building ListView item index: $index");
-                  if (index == _notifications.length) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  return _buildNotificationItem(_notifications[index], colors);
-                },
-              ),
-            ),
     );
   }
 }

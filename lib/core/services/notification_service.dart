@@ -5,6 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:igit_connects/core/models/notification_model.dart';
 import 'package:igit_connects/core/repositories/notification_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:igit_connects/main.dart';
+import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
+import 'package:igit_connects/features/broadcast/screens/broadcast_details_screen.dart';
 
 // Top level background handler
 @pragma('vm:entry-point')
@@ -49,6 +53,19 @@ class NotificationService {
 
     // Handle Background messages (setup handler)
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Handle taps when app is in the background
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      debugPrint("Notification Tapped from background!");
+      _handleNotificationTap(jsonEncode(message.data));
+    });
+
+    // Handle taps when app is killed (cold start)
+    final initialMessage = await _fcm.getInitialMessage();
+    if (initialMessage != null) {
+      debugPrint("Notification Tapped from cold start!");
+      _handleNotificationTap(jsonEncode(initialMessage.data));
+    }
 
     _isInitialized = true;
   }
@@ -152,13 +169,57 @@ class NotificationService {
     }
   }
 
-  void _handleNotificationTap(String? payload) {
+  void _handleNotificationTap(String? payload) async {
     if (payload == null) return;
     try {
       final data = jsonDecode(payload);
-      // Implement deep linking logic here
-      // For instance, pushing a screen using a global navigator key based on data['post_id']
       debugPrint("Notification Tapped with payload: $data");
+      
+      if (data['type'] == 'broadcast' && data['broadcast_id'] != null) {
+        final broadcastId = data['broadcast_id'];
+        
+        try {
+          final response = await Supabase.instance.client
+              .from('broadcasts')
+              .select()
+              .eq('id', broadcastId)
+              .maybeSingle();
+              
+          if (response == null) {
+            // Broadcast was deleted from the admin panel
+            final action = () {
+              if (navigatorKey.currentContext != null) {
+                ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+                  const SnackBar(content: Text("This broadcast has been deleted or is no longer available.")),
+                );
+              }
+            };
+            if (isMainScreenReady) {
+              action();
+            } else {
+              pendingDeepLinkAction = action;
+            }
+            return;
+          }
+
+          final action = () {
+            navigatorKey.currentState?.push(
+              MaterialPageRoute(
+                builder: (_) => BroadcastDetailsScreen(
+                  broadcast: BroadcastModel.fromJson(response),
+                ),
+              ),
+            );
+          };
+          if (isMainScreenReady) {
+            action();
+          } else {
+            pendingDeepLinkAction = action;
+          }
+        } catch (e) {
+          debugPrint('Error loading broadcast from notification: $e');
+        }
+      }
     } catch (e) {
       debugPrint("Error parsing payload: $e");
     }
