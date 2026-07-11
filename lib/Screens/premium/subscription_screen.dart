@@ -24,15 +24,15 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
   Widget _buildFeatureRow(String text, AppColors colors) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(Icons.check_circle, color: colors.primaryAccent, size: 20),
-          const SizedBox(width: 12),
+          Icon(Icons.check_circle, color: colors.primaryAccent, size: 16),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: colors.primaryText, fontSize: 14),
+              style: TextStyle(color: colors.primaryText, fontSize: 12),
             ),
           ),
         ],
@@ -48,6 +48,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     required String description,
     required List<String> features,
     required bool isPro,
+    required bool isCurrentPlan,
     required VoidCallback onSubscribe,
   }) {
     return Container(
@@ -91,16 +92,16 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             title,
             style: TextStyle(
               color: colors.primaryText,
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             description,
-            style: TextStyle(color: colors.secondaryText, fontSize: 14),
+            style: TextStyle(color: colors.secondaryText, fontSize: 12),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -109,7 +110,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 "₹$price",
                 style: TextStyle(
                   color: colors.primaryText,
-                  fontSize: 36,
+                  fontSize: 28,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -117,7 +118,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 "/month",
                 style: TextStyle(
                   color: colors.secondaryText,
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -137,7 +138,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             width: double.infinity,
             height: 50,
             child: FilledButton(
-              onPressed: isLoading ? null : onSubscribe,
+              onPressed: isLoading || isCurrentPlan ? null : onSubscribe,
               style: FilledButton.styleFrom(
                 backgroundColor: isPro ? colors.primaryAccent : colors.bgColor,
                 foregroundColor: isPro
@@ -157,10 +158,12 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : Text(
-                      "Upgrade to $title",
+                      isCurrentPlan
+                          ? "Current Plan"
+                          : (price == "0" ? "Downgrade" : "Upgrade to $title"),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
                     ),
             ),
@@ -179,7 +182,6 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     return Scaffold(
       backgroundColor: colors.bgColor,
       appBar: AppBar(
-        backgroundColor: colors.bgColor,
         elevation: 0,
         iconTheme: IconThemeData(color: colors.primaryText),
         title: Text(
@@ -264,18 +266,35 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 _buildPlanCard(
                   context: context,
                   colors: colors,
+                  title: "Basic Free",
+                  price: "0",
+                  description: "Standard features to get you started.",
+                  features: [
+                    "Standard profile visibility",
+                    "3 posts per day",
+                    "5 image post per month",
+                    "2 image per post",
+                    "Community support",
+                  ],
+                  isPro: false,
+                  isCurrentPlan: currentPlan == "free",
+                  onSubscribe: () => _processPayment("free", 0),
+                ),
+                _buildPlanCard(
+                  context: context,
+                  colors: colors,
                   title: "Premium Lite",
                   price: "49",
-                  description:
-                      "Essential tools for students and professionals.",
+                  description: "Essential tools for students & active users.",
                   features: [
                     "Verified badge on profile",
-                    "Higher visibility in directory",
-                    "Up to 10 posts per day",
-                    "Up to 15 imaged posts per month",
+                    "Boosted profile visibility",
+                    "10 posts per day",
+                    "15 image posts per month",
                     "Up to 4 images per post",
                   ],
                   isPro: false,
+                  isCurrentPlan: currentPlan == "premium_lite",
                   onSubscribe: () => _processPayment("premium_lite", 49),
                 ),
                 _buildPlanCard(
@@ -283,16 +302,17 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   colors: colors,
                   title: "Premium Pro",
                   price: "99",
-                  description: "Maximum visibility and unlimited features.",
+                  description: "Maximum visibility and unlimited freedom.",
                   features: [
                     "Everything in Premium Lite",
-                    "Highest ranking in search & directory",
+                    "Maximum directory visibility",
                     "Unlimited posts per day",
-                    "Unlimited imaged posts",
-                    "Up to 10 images per post",
-                    "Priority support",
+                    "Unlimited image posts",
+                    "Unlimited images per post",
+                    "Priority 24/7 support",
                   ],
                   isPro: true,
+                  isCurrentPlan: currentPlan == "premium_pro",
                   onSubscribe: () => _processPayment("premium_pro", 99),
                 ),
               ],

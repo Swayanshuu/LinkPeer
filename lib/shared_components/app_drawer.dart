@@ -378,10 +378,16 @@ class AppDrawer extends ConsumerWidget {
                     final Uri emailUri = Uri(
                       scheme: 'mailto',
                       path: 'swynx.dev@gmail.com',
-                      queryParameters: {'subject': 'Bug Report in LinkPeer'},
+                      queryParameters: {'subject': 'report a bug'},
                     );
-                    if (await canLaunchUrl(emailUri)) {
-                      await launchUrl(emailUri);
+                    try {
+                      await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Could not open email app. Please email swynx.dev@gmail.com manually.")),
+                        );
+                      }
                     }
                   },
                   colors: colors,
