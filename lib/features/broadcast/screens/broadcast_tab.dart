@@ -212,7 +212,7 @@ class _BroadcastTabState extends ConsumerState<BroadcastTab> {
                     },
                   );
 
-                  if (confirm == true && mounted) {
+                  if (confirm == true && context.mounted) {
                     try {
                       await _broadcastService.deleteBroadcast(
                         broadcast.id,
@@ -221,13 +221,13 @@ class _BroadcastTabState extends ConsumerState<BroadcastTab> {
                       setState(() {
                         _broadcasts.removeAt(index);
                       });
-                      if (mounted) {
+                      if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Broadcast deleted successfully')),
                         );
                       }
                     } catch (e) {
-                      if (mounted) {
+                      if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Failed to delete broadcast')),
                         );

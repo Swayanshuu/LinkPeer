@@ -11,11 +11,7 @@ class BroadcastDetailsScreen extends StatelessWidget {
   final VoidCallback? onDeleteSuccess;
 
   const BroadcastDetailsScreen({
-<<<<<<< HEAD
     super.key,
-=======
-    super.key, 
->>>>>>> da7ffb0579161da2d14b3f0c79dc0fb69cf0a990
     required this.broadcast,
     this.isAdmin = false,
     this.onDeleteSuccess,
@@ -53,9 +49,9 @@ class BroadcastDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final formattedDate = DateFormat(
-      'MMMM d, yyyy - h:mm a',
-    ).format(broadcast.createdAt);
+    // final formattedDate = DateFormat(
+    //   'MMMM d, yyyy - h:mm a',
+    // ).format(broadcast.createdAt);
 
     return Scaffold(
       backgroundColor: colors.bgColor,
@@ -102,7 +98,6 @@ class BroadcastDetailsScreen extends StatelessWidget {
                         ),
                         FilledButton(
                           onPressed: () => Navigator.pop(context, true),
-<<<<<<< HEAD
                           style: FilledButton.styleFrom(
                             backgroundColor: Colors.red,
                           ),
@@ -112,12 +107,6 @@ class BroadcastDetailsScreen extends StatelessWidget {
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
-=======
-                          style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                          child: const Text(
-                            "Delete",
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
->>>>>>> da7ffb0579161da2d14b3f0c79dc0fb69cf0a990
                           ),
                         ),
                       ],
@@ -136,26 +125,18 @@ class BroadcastDetailsScreen extends StatelessWidget {
                     }
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
                         const SnackBar(
                           content: Text('Broadcast deleted successfully'),
                         ),
-=======
-                        const SnackBar(content: Text('Broadcast deleted successfully')),
->>>>>>> da7ffb0579161da2d14b3f0c79dc0fb69cf0a990
                       );
                       Navigator.pop(context, true); // Pop details screen
                     }
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
                         const SnackBar(
                           content: Text('Failed to delete broadcast'),
                         ),
-=======
-                        const SnackBar(content: Text('Failed to delete broadcast')),
->>>>>>> da7ffb0579161da2d14b3f0c79dc0fb69cf0a990
                       );
                     }
                   }
