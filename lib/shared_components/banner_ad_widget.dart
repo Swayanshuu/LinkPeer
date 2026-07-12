@@ -10,8 +10,13 @@ class BannerAdWidget extends StatefulWidget {
   State<BannerAdWidget> createState() => _BannerAdWidgetState();
 }
 
-class _BannerAdWidgetState extends State<BannerAdWidget> {
+class _BannerAdWidgetState extends State<BannerAdWidget>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   BannerAd? _bannerAd;
+  bool _isLoaded = false;
 
   @override
   void initState() {
@@ -37,6 +42,9 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         listener: BannerAdListener(
           onAdLoaded: (ad) {
             debugPrint('AD LOADED');
+            setState(() {
+              _isLoaded = true;
+            });
           },
           onAdFailedToLoad: (ad, error) {
             debugPrint('AD FAILED: $error');
@@ -57,7 +65,9 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_bannerAd == null) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    
+    if (_bannerAd == null || !_isLoaded) {
       return const SizedBox();
     }
 

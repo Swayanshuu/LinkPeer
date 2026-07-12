@@ -10,7 +10,7 @@ List<int> generateAdPositions(int postCount) {
   while (current < postCount) {
     positions.add(current);
 
-    current += random.nextInt(1) + 3; // next gap 8-15
+    current += random.nextInt(1) + 4; // next gap 8-15
   }
 
   return positions;

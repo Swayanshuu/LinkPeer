@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/Screens/Post/full_post_screen.dart';
-import 'package:igit_connects/shared_components/banner_ad_widget.dart';
+import 'package:igit_connects/shared_components/native_ad_widget.dart';
 import 'package:igit_connects/utils/ad_position.dart';
 import 'package:igit_connects/shared_components/app_drawer.dart';
 
@@ -239,10 +239,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               final item = feedItems[index];
 
                               if (item == "__AD__") {
-                                return const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 10),
-                                  child: BannerAdWidget(),
-                                );
+                                return const NativeAdWidget();
                               }
 
                               return GestureDetector(

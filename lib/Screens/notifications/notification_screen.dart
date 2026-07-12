@@ -7,6 +7,7 @@ import 'package:igit_connects/features/broadcast/screens/broadcast_tab.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:shimmer/shimmer.dart';
+import 'package:igit_connects/shared_components/banner_ad_widget.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -297,59 +298,74 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ],
           ),
         ),
-        body: TabBarView(
+        body: Column(
           children: [
-            // Original Notifications Tab
-            _notifications.isEmpty && _isLoading
-                ? _buildShimmer(colors)
-                : _notifications.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.notifications_off_outlined,
-                          size: 64,
-                          color: colors.secondaryText.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          "No notifications yet",
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 16,
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: BannerAdWidget(),
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  // Original Notifications Tab
+                  _notifications.isEmpty && _isLoading
+                      ? _buildShimmer(colors)
+                      : _notifications.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.notifications_off_outlined,
+                                size: 64,
+                                color: colors.secondaryText.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "No notifications yet",
+                                style: TextStyle(
+                                  color: colors.secondaryText,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async {
+                            setState(() {
+                              _offset = 0;
+                              _notifications.clear();
+                              _hasMore = true;
+                            });
+                            await _fetchNotifications();
+                          },
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount:
+                                _notifications.length + (_hasMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == _notifications.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+                              return _buildNotificationItem(
+                                _notifications[index],
+                                colors,
+                              );
+                            },
                           ),
                         ),
-                      ],
-                    ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      setState(() {
-                        _offset = 0;
-                        _notifications.clear();
-                        _hasMore = true;
-                      });
-                      await _fetchNotifications();
-                    },
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: _notifications.length + (_hasMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == _notifications.length) {
-                          return const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        return _buildNotificationItem(
-                          _notifications[index],
-                          colors,
-                        );
-                      },
-                    ),
-                  ),
-            const BroadcastTab(),
+                  const BroadcastTab(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
