@@ -3,11 +3,19 @@ import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
+import 'package:igit_connects/features/broadcast/services/broadcast_service.dart';
 
 class BroadcastDetailsScreen extends StatelessWidget {
   final BroadcastModel broadcast;
+  final bool isAdmin;
+  final VoidCallback? onDeleteSuccess;
 
-  const BroadcastDetailsScreen({super.key, required this.broadcast});
+  const BroadcastDetailsScreen({
+    super.key, 
+    required this.broadcast,
+    this.isAdmin = false,
+    this.onDeleteSuccess,
+  });
 
   Future<void> _launchUrl(BuildContext context, String url) async {
     try {
@@ -57,6 +65,74 @@ class BroadcastDetailsScreen extends StatelessWidget {
         backgroundColor: colors.bgColor,
         elevation: 0,
         iconTheme: IconThemeData(color: colors.primaryText),
+        actions: [
+          if (isAdmin)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      backgroundColor: colors.cardColor,
+                      title: Text(
+                        "Delete Broadcast",
+                        style: TextStyle(
+                          color: colors.primaryText,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      content: Text(
+                        "Are you sure you want to delete this broadcast? This action cannot be undone.",
+                        style: TextStyle(color: colors.secondaryText),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text(
+                            "Cancel",
+                            style: TextStyle(color: colors.secondaryText),
+                          ),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                          child: const Text(
+                            "Delete",
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                if (confirm == true && context.mounted) {
+                  try {
+                    await BroadcastService().deleteBroadcast(
+                      broadcast.id,
+                      imageUrl: broadcast.imageUrl,
+                    );
+                    if (onDeleteSuccess != null) {
+                      onDeleteSuccess!();
+                    }
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Broadcast deleted successfully')),
+                      );
+                      Navigator.pop(context, true); // Pop details screen
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to delete broadcast')),
+                      );
+                    }
+                  }
+                }
+              },
+            ),
+        ],
       ),
       floatingActionButton: (broadcast.linkUrl != null && broadcast.linkUrl!.isNotEmpty)
           ? Padding(
