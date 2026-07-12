@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:igit_connects/storage_backend.dart';
 
 class BroadcastService {
   final _supabase = Supabase.instance.client;
@@ -67,7 +68,19 @@ class BroadcastService {
         'link_url': linkUrl,
       });
     } catch (e) {
-      debugPrint("Error creating broadcast: \$e");
+      debugPrint("Error creating broadcast: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> deleteBroadcast(String id, {String? imageUrl}) async {
+    try {
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        await StorageBackend().removeBroadcastImage(imageUrl);
+      }
+      await _supabase.from('broadcasts').delete().eq('id', id);
+    } catch (e) {
+      debugPrint("Error deleting broadcast: $e");
       rethrow;
     }
   }

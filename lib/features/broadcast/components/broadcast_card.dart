@@ -6,8 +6,17 @@ import 'package:igit_connects/features/broadcast/screens/broadcast_details_scree
 
 class BroadcastCard extends StatelessWidget {
   final BroadcastModel broadcast;
+  final bool isAdmin;
+  final VoidCallback? onDelete;
+  final VoidCallback? onDeleteSuccess;
 
-  const BroadcastCard({super.key, required this.broadcast});
+  const BroadcastCard({
+    super.key, 
+    required this.broadcast,
+    this.isAdmin = false,
+    this.onDelete,
+    this.onDeleteSuccess,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +27,11 @@ class BroadcastCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => BroadcastDetailsScreen(broadcast: broadcast),
+            builder: (context) => BroadcastDetailsScreen(
+              broadcast: broadcast,
+              isAdmin: isAdmin,
+              onDeleteSuccess: onDeleteSuccess,
+            ),
           ),
         );
       },
@@ -83,6 +96,15 @@ class BroadcastCard extends StatelessWidget {
                           fontSize: 12,
                         ),
                       ),
+                      if (isAdmin)
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            if (onDelete != null) onDelete!();
+                          },
+                        ),
                     ],
                   ),
                   const SizedBox(height: 12),

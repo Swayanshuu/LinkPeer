@@ -111,4 +111,19 @@ class StorageBackend {
 
     return imageUrl;
   }
+
+  Future<void> removeBroadcastImage(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      final segments = uri.pathSegments;
+      final bucketIndex = segments.indexOf('broadcast');
+      if (bucketIndex != -1 && bucketIndex + 1 < segments.length) {
+        final path = segments.sublist(bucketIndex + 1).join('/');
+        await supabase.storage.from('broadcast').remove([path]);
+        debugPrint("Deleted broadcast image from storage: $path");
+      }
+    } catch (e) {
+      debugPrint("Error removing broadcast image: $e");
+    }
+  }
 }

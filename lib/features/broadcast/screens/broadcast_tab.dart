@@ -161,7 +161,81 @@ class _BroadcastTabState extends ConsumerState<BroadcastTab> {
                   child: Center(child: CircularProgressIndicator()),
                 );
               }
-              return BroadcastCard(broadcast: _broadcasts[index]);
+              
+              final broadcast = _broadcasts[index];
+              final isAdmin = userData['role']?.toString().toLowerCase() == 'admin' ||
+                              userData['user_type']?.toString().toLowerCase() == 'admin';
+                              
+              return BroadcastCard(
+                broadcast: broadcast,
+                isAdmin: isAdmin,
+                onDeleteSuccess: () {
+                  setState(() {
+                    _broadcasts.removeAt(index);
+                  });
+                },
+                onDelete: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        backgroundColor: colors.cardColor,
+                        title: Text(
+                          "Delete Broadcast",
+                          style: TextStyle(
+                            color: colors.primaryText,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        content: Text(
+                          "Are you sure you want to delete this broadcast? This action cannot be undone.",
+                          style: TextStyle(color: colors.secondaryText),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(color: colors.secondaryText),
+                            ),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                            child: const Text(
+                              "Delete",
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+
+                  if (confirm == true && mounted) {
+                    try {
+                      await _broadcastService.deleteBroadcast(
+                        broadcast.id,
+                        imageUrl: broadcast.imageUrl,
+                      );
+                      setState(() {
+                        _broadcasts.removeAt(index);
+                      });
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Broadcast deleted successfully')),
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Failed to delete broadcast')),
+                        );
+                      }
+                    }
+                  }
+                },
+              );
             },
           ),
         );
