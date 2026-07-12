@@ -3,6 +3,9 @@
 <img src="assets/images/LinkPeerFULL.png" alt="LinkPeer Logo" width="220" />
 
 # LinkPeer
+<a href="https://play.google.com/store/apps/details?id=com.swynx.linkpeer">
+  <img src="https://img.shields.io/badge/Download%20on-Google%20Play-34A853?style=for-the-badge&logo=google-play&logoColor=white" alt="Download on Google Play">
+</a>
 
 **The official campus social platform for Indira Gandhi Institute of Technology, Sarang, Odisha.**  
 A full-stack Flutter mobile application connecting students, alumni, and faculty through a shared community feed, career opportunities, and campus announcements.
@@ -385,7 +388,11 @@ Released under the [MIT License](LICENSE). See `LICENSE` for details.
 ---
 
 <div align="center">
-
+    
+<a href="https://play.google.com/store/apps/details?id=com.swynx.linkpeer">
+  <img src="https://img.shields.io/badge/Download%20on-Google%20Play-34A853?style=for-the-badge&logo=google-play&logoColor=white" alt="Download on Google Play">
+</a>
+    
 Built for the IGIT campus community — Indira Gandhi Institute of Technology, Sarang, Odisha.
 
 </div>
@@ -395,5 +402,6 @@ Built for the IGIT campus community — Indira Gandhi Institute of Technology, S
 <div align="center">
 
 Built with ❤️ by <a href="https://swynx.dev">Swynx.dev</a>
+
 
 </div>
