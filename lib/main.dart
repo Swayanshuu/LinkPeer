@@ -118,12 +118,6 @@ class _MyAppState extends ConsumerState<MyApp> {
         uri.pathSegments.isNotEmpty) {
       postId = uri.pathSegments.first;
     }
-    // Handle Web App Link: https://linkpeer.swynx.dev/post/123
-    else if (uri.host == 'linkpeer.swynx.dev' && uri.pathSegments.length > 1) {
-      if (uri.pathSegments.first == 'post') {
-        postId = uri.pathSegments[1];
-      }
-    }
     // Handle verified App Link (Shortlink): https://go.swynx.dev/xyz
     else if (uri.host == 'go.swynx.dev' && uri.pathSegments.isNotEmpty) {
       final slug = uri.pathSegments.first;

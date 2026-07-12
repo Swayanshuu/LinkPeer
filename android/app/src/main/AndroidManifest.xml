@@ -39,13 +39,20 @@
                 <data android:scheme="linkpeer" />
             </intent-filter>
             
-            <!-- Verified App Links (Automatic Opening) -->
+            <!-- Verified App Links for go.swynx.dev -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http" android:host="go.swynx.dev" />
                 <data android:scheme="https" android:host="go.swynx.dev" />
+            </intent-filter>
+            
+            <!-- Verified App Links for linkpeer.swynx.dev -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http" android:host="linkpeer.swynx.dev" />
                 <data android:scheme="https" android:host="linkpeer.swynx.dev" />
             </intent-filter>

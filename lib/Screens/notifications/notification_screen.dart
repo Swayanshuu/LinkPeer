@@ -22,7 +22,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   bool _isLoading = false;
   bool _hasMore = true;
   int _offset = 0;
-  final int _limit = 50;
+  final int _limit = 20;
 
   @override
   void initState() {
@@ -53,7 +53,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
       setState(() {
         _offset += newNotifications.length;
         _notifications.addAll(newNotifications);
-        debugPrint("State update count (Total UI Notifications): ${_notifications.length}");
+        debugPrint(
+          "State update count (Total UI Notifications): ${_notifications.length}",
+        );
         if (newNotifications.length < _limit) {
           _hasMore = false;
         }
@@ -313,7 +315,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         const SizedBox(height: 16),
                         Text(
                           "No notifications yet",
-                          style: TextStyle(color: colors.secondaryText, fontSize: 16),
+                          style: TextStyle(
+                            color: colors.secondaryText,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
@@ -328,7 +333,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       await _fetchNotifications();
                     },
                     child: ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
                       controller: _scrollController,
                       itemCount: _notifications.length + (_hasMore ? 1 : 0),
                       itemBuilder: (context, index) {
@@ -338,7 +342,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             child: Center(child: CircularProgressIndicator()),
                           );
                         }
-                        return _buildNotificationItem(_notifications[index], colors);
+                        return _buildNotificationItem(
+                          _notifications[index],
+                          colors,
+                        );
                       },
                     ),
                   ),
