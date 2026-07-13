@@ -76,9 +76,9 @@ class ProfileHeaderSliver extends StatelessWidget {
     final photo = data["photo_url"] ?? "";
     final role = (data["role"] ?? "user").toString().toLowerCase();
     final isAdmin = role == "admin";
-    
-    final userType = isAdmin 
-        ? "ADMIN" 
+
+    final userType = isAdmin
+        ? "ADMIN"
         : (data["user_type"] ?? "Student").toString().toUpperCase();
     final isStudent = userType.contains("STUDENT");
     final branch = data["branch"] ?? data["department"] ?? "CSE";
@@ -320,7 +320,8 @@ class ProfileHeaderSliver extends StatelessWidget {
                           size: 20,
                         ),
                       ],
-                      if (data["faculty_verified"] == true && userType.toLowerCase() == "faculty") ...[
+                      if (data["faculty_verified"] == true &&
+                          userType.toLowerCase() == "faculty") ...[
                         const SizedBox(width: 6),
                         Icon(
                           Icons.gpp_good_rounded,
@@ -344,18 +345,20 @@ class ProfileHeaderSliver extends StatelessWidget {
                           color: isAdmin
                               ? colors.badgeAdminBg
                               : (isStudent
-                                  ? colors.badgeStudentBg
-                                  : colors.badgeAlumniBg),
+                                    ? colors.badgeStudentBg
+                                    : colors.badgeAlumniBg),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          isAdmin ? "ADMIN" : (isStudent ? "Student" : userType),
+                          isAdmin
+                              ? "ADMIN"
+                              : (isStudent ? "Student" : userType),
                           style: TextStyle(
                             color: isAdmin
                                 ? colors.badgeAdminText
                                 : (isStudent
-                                    ? colors.badgeStudentText
-                                    : colors.badgeAlumniText),
+                                      ? colors.badgeStudentText
+                                      : colors.badgeAlumniText),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),

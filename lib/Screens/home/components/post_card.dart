@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
@@ -16,6 +17,8 @@ import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/shared_components/share_card.dart';
 import 'package:igit_connects/utils/share_service.dart';
 import 'package:igit_connects/Screens/Profile/other_user_profile_screen.dart';
+
+import 'package:igit_connects/core/post_provider.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Map post;
@@ -83,19 +86,28 @@ class _PostCardState extends ConsumerState<PostCard> {
     });
 
     try {
+      final updatedPost = Map<String, dynamic>.from(widget.post);
+      final likesList = List<dynamic>.from(updatedPost["post_likes"] ?? []);
       if (!_isLiked) {
+        // Liked toggled to false, so we remove the like
+        likesList.removeWhere((l) => l["user_id"] == currentUserId);
         await Supabase.instance.client
             .from("post_likes")
             .delete()
             .eq("post_id", postId)
             .eq("user_id", currentUserId);
       } else {
+        // Liked toggled to true, so we add the like
+        likesList.add({"user_id": currentUserId});
         await Supabase.instance.client.from("post_likes").insert({
           "post_id": postId,
           "user_id": currentUserId,
         });
       }
-      widget.onRefresh();
+      
+      updatedPost["post_likes"] = likesList;
+      ref.read(postsProvider.notifier).updatePostLocally(updatedPost);
+      // Removed widget.onRefresh() to prevent full refetch
     } catch (e) {
       setState(() {
         if (_isLiked) {
@@ -121,19 +133,25 @@ class _PostCardState extends ConsumerState<PostCard> {
     });
 
     try {
+      final updatedPost = Map<String, dynamic>.from(widget.post);
+      final savesList = List<dynamic>.from(updatedPost["saved_posts"] ?? []);
       if (!_isSaved) {
+        savesList.removeWhere((s) => s["user_id"] == currentUserId);
         await Supabase.instance.client
             .from("saved_posts")
             .delete()
             .eq("post_id", postId)
             .eq("user_id", currentUserId);
       } else {
+        savesList.add({"user_id": currentUserId});
         await Supabase.instance.client.from("saved_posts").insert({
           "post_id": postId,
           "user_id": currentUserId,
         });
       }
-      widget.onRefresh();
+      updatedPost["saved_posts"] = savesList;
+      ref.read(postsProvider.notifier).updatePostLocally(updatedPost);
+      // Removed widget.onRefresh() to prevent full refetch
     } catch (e) {
       setState(() {
         _isSaved = !_isSaved;
@@ -470,7 +488,7 @@ class _PostCardState extends ConsumerState<PostCard> {
                           radius: 22,
                           backgroundColor: colors.borderColor,
                           backgroundImage: photo.isNotEmpty
-                              ? NetworkImage(photo)
+                              ? CachedNetworkImageProvider(photo)
                               : null,
                           child: photo.isEmpty
                               ? const Icon(Icons.person)
@@ -797,8 +815,8 @@ class _PostCardState extends ConsumerState<PostCard> {
                           borderRadius: BorderRadius.circular(12),
                           child: Hero(
                             tag: 'post_card_${post["id"]}_${imageUrls[index]}',
-                            child: Image.network(
-                              imageUrls[index],
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrls[index],
                               height: 220,
                               width: imageUrls.length == 1
                                   ? MediaQuery.of(context).size.width - 32
@@ -836,8 +854,8 @@ class _PostCardState extends ConsumerState<PostCard> {
                     borderRadius: BorderRadius.circular(12),
                     child: Hero(
                       tag: 'post_card_${post["id"]}_$fileUrl',
-                      child: Image.network(
-                        fileUrl,
+                      child: CachedNetworkImage(
+                        imageUrl: fileUrl,
                         width: double.infinity,
                         height: 220,
                         fit: BoxFit.cover,

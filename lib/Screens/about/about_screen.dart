@@ -91,7 +91,6 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                   _buildCommunitySection(colors),
                   const SizedBox(height: 24),
                   _buildSupportLegalCard(colors, supportLinksAsync),
-
                   const SizedBox(height: 24),
                   _buildSwynxCard(colors),
                   const SizedBox(height: 48),
@@ -239,7 +238,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                   gradient: LinearGradient(
                     colors: [
                       colors.primaryAccent,
-                      colors.primaryAccent.withValues(alpha: 0.1)
+                      colors.primaryAccent.withValues(alpha: 0.1),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -259,7 +258,11 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                       ? NetworkImage(profile!.imageUrl)
                       : null,
                   child: profile?.imageUrl.isEmpty ?? true
-                      ? Icon(Icons.person, size: 40, color: colors.primaryAccent)
+                      ? Icon(
+                          Icons.person,
+                          size: 40,
+                          color: colors.primaryAccent,
+                        )
                       : null,
                 ),
               ),

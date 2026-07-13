@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/core/app_colors.dart';
@@ -179,6 +180,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     final user = ref.watch(userProvider);
     final currentPlan = user.value?["subscription_plan"] ?? "free";
 
+    final isAdmin =
+        (user.value?["role"] ?? "user").toString().toLowerCase() == "admin";
+
     return Scaffold(
       backgroundColor: colors.bgColor,
       appBar: AppBar(
@@ -192,135 +196,151 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
+      body: isAdmin
+          ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Supercharge your\nprofessional growth.",
-                  style: TextStyle(
-                    color: colors.primaryText,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    height: 1.2,
-                    letterSpacing: -1,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Get verified, boost your profile visibility, and unlock unlimited posting capabilities.",
-                  style: TextStyle(color: colors.secondaryText, fontSize: 16),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors.cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: colors.borderColor),
-                  ),
-                  child: Row(
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.workspace_premium,
-                        color: colors.primaryAccent,
+                      Text(
+                        "Supercharge your\nprofessional growth.",
+                        style: TextStyle(
+                          color: colors.primaryText,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          height: 1.2,
+                          letterSpacing: -1,
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Current Plan",
-                            style: TextStyle(
-                              color: colors.secondaryText,
-                              fontSize: 12,
+                      const SizedBox(height: 12),
+                      Text(
+                        "Get verified, boost your profile visibility, and unlock unlimited posting capabilities.",
+                        style: TextStyle(
+                          color: colors.secondaryText,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: colors.borderColor),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.workspace_premium,
+                              color: colors.primaryAccent,
                             ),
-                          ),
-                          Text(
-                            currentPlan.toString().toUpperCase(),
-                            style: TextStyle(
-                              color: colors.primaryText,
-                              fontWeight: FontWeight.bold,
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Current Plan",
+                                  style: TextStyle(
+                                    color: colors.secondaryText,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                Text(
+                                  currentPlan.toString().toUpperCase(),
+                                  style: TextStyle(
+                                    color: colors.primaryText,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
+                Expanded(
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    children: [
+                      _buildPlanCard(
+                        context: context,
+                        colors: colors,
+                        title: "Basic Free",
+                        price: "0",
+                        description: "Standard features to get you started.",
+                        features: [
+                          "Standard profile visibility",
+                          "3 posts per day",
+                          "5 image post per month",
+                          "2 image per post",
+                          "Community support",
+                        ],
+                        isPro: false,
+                        isCurrentPlan: currentPlan == "free",
+                        onSubscribe: () => _processPayment("free", 0),
+                      ),
+                      _buildPlanCard(
+                        context: context,
+                        colors: colors,
+                        title: "Premium Lite",
+                        price: "49",
+                        description:
+                            "Essential tools for students & active users.",
+                        features: [
+                          "Verified badge on profile",
+                          "Boosted profile visibility",
+                          "10 posts per day",
+                          "15 image posts per month",
+                          "Up to 4 images per post",
+                        ],
+                        isPro: false,
+                        isCurrentPlan: currentPlan == "premium_lite",
+                        onSubscribe: () => _processPayment("premium_lite", 49),
+                      ),
+                      _buildPlanCard(
+                        context: context,
+                        colors: colors,
+                        title: "Premium Pro",
+                        price: "99",
+                        description:
+                            "Maximum visibility and unlimited freedom.",
+                        features: [
+                          "Everything in Premium Lite",
+                          "Maximum directory visibility",
+                          "Unlimited posts per day",
+                          "Unlimited image posts",
+                          "Unlimited images per post",
+                          "Priority 24/7 support",
+                        ],
+                        isPro: true,
+                        isCurrentPlan: currentPlan == "premium_pro",
+                        onSubscribe: () => _processPayment("premium_pro", 99),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
               ],
+            )
+          : Center(
+              child: AutoSizeText(
+                textAlign: TextAlign.center,
+                minFontSize: 10,
+                "We are trying hard to diliver this feture to you :)\nCheck back Later",
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              children: [
-                _buildPlanCard(
-                  context: context,
-                  colors: colors,
-                  title: "Basic Free",
-                  price: "0",
-                  description: "Standard features to get you started.",
-                  features: [
-                    "Standard profile visibility",
-                    "3 posts per day",
-                    "5 image post per month",
-                    "2 image per post",
-                    "Community support",
-                  ],
-                  isPro: false,
-                  isCurrentPlan: currentPlan == "free",
-                  onSubscribe: () => _processPayment("free", 0),
-                ),
-                _buildPlanCard(
-                  context: context,
-                  colors: colors,
-                  title: "Premium Lite",
-                  price: "49",
-                  description: "Essential tools for students & active users.",
-                  features: [
-                    "Verified badge on profile",
-                    "Boosted profile visibility",
-                    "10 posts per day",
-                    "15 image posts per month",
-                    "Up to 4 images per post",
-                  ],
-                  isPro: false,
-                  isCurrentPlan: currentPlan == "premium_lite",
-                  onSubscribe: () => _processPayment("premium_lite", 49),
-                ),
-                _buildPlanCard(
-                  context: context,
-                  colors: colors,
-                  title: "Premium Pro",
-                  price: "99",
-                  description: "Maximum visibility and unlimited freedom.",
-                  features: [
-                    "Everything in Premium Lite",
-                    "Maximum directory visibility",
-                    "Unlimited posts per day",
-                    "Unlimited image posts",
-                    "Unlimited images per post",
-                    "Priority 24/7 support",
-                  ],
-                  isPro: true,
-                  isCurrentPlan: currentPlan == "premium_pro",
-                  onSubscribe: () => _processPayment("premium_pro", 99),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
     );
   }
 }

@@ -121,21 +121,37 @@ class _BroadcastTabState extends ConsumerState<BroadcastTab> {
         }
 
         if (_broadcasts.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.campaign_outlined,
-                  size: 64,
-                  color: colors.secondaryText.withValues(alpha: 0.5),
+          return RefreshIndicator(
+            onRefresh: () async {
+              setState(() {
+                _offset = 0;
+                _broadcasts.clear();
+                _hasMore = true;
+              });
+              await _fetchBroadcasts();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.campaign_outlined,
+                        size: 64,
+                        color: colors.secondaryText.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "No announcements yet",
+                        style: TextStyle(color: colors.secondaryText, fontSize: 16),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  "No announcements yet",
-                  style: TextStyle(color: colors.secondaryText, fontSize: 16),
-                ),
-              ],
+              ),
             ),
           );
         }

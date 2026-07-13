@@ -231,7 +231,8 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     final isAuthorAdmin = userType.toLowerCase() == "admin";
     final department = (post["department"] ?? "").toString();
     final branch = (usersData?["branch"] ?? post["branch"] ?? "").toString();
-    final designation = (usersData?["designation"] ?? post["designation"] ?? "").toString();
+    final designation = (usersData?["designation"] ?? post["designation"] ?? "")
+        .toString();
 
     String userHeadline = department;
     if (userType.toLowerCase() == "student" ||
@@ -448,7 +449,9 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                                       size: 16,
                                     ),
                                   ],
-                                  if ((usersData?["faculty_verified"] == true || post["faculty_verified"] == true) && userType.toLowerCase() == "faculty") ...[
+                                  if ((usersData?["faculty_verified"] == true ||
+                                          post["faculty_verified"] == true) &&
+                                      userType.toLowerCase() == "faculty") ...[
                                     const SizedBox(width: 4),
                                     Icon(
                                       Icons.gpp_good_rounded,
@@ -799,33 +802,50 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                                       final sheetColors = AppColors.of(context);
                                       return AnimatedPadding(
                                         padding: EdgeInsets.only(
-                                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                                          bottom: MediaQuery.of(
+                                            context,
+                                          ).viewInsets.bottom,
                                         ),
-                                        duration: const Duration(milliseconds: 200),
+                                        duration: const Duration(
+                                          milliseconds: 200,
+                                        ),
                                         curve: Curves.easeOut,
                                         child: Container(
                                           decoration: BoxDecoration(
                                             color: sheetColors.bgColor,
-                                            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                                  top: Radius.circular(20),
+                                                ),
                                           ),
                                           child: Column(
                                             children: [
                                               Container(
-                                                margin: const EdgeInsets.symmetric(vertical: 12),
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                    ),
                                                 width: 40,
                                                 height: 4,
                                                 decoration: BoxDecoration(
-                                                  color: sheetColors.secondaryText.withValues(alpha: 0.3),
-                                                  borderRadius: BorderRadius.circular(2),
+                                                  color: sheetColors
+                                                      .secondaryText
+                                                      .withValues(alpha: 0.3),
+                                                  borderRadius:
+                                                      BorderRadius.circular(2),
                                                 ),
                                               ),
                                               Expanded(
                                                 child: SingleChildScrollView(
                                                   controller: scrollController,
-                                                  child: CommentsSection(postId: widget.post['id']),
+                                                  child: CommentsSection(
+                                                    postId: widget.post['id'],
+                                                  ),
                                                 ),
                                               ),
-                                              CommentInputBar(postId: widget.post['id']),
+                                              CommentInputBar(
+                                                postId: widget.post['id'],
+                                              ),
                                             ],
                                           ),
                                         ),

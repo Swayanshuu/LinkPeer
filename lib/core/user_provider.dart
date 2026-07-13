@@ -4,19 +4,48 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final userProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final user = FirebaseAuth.instance.currentUser;
-
-  if (user == null || user.isAnonymous) {
-    return {'user_type': 'guest'};
+class UserNotifier extends AsyncNotifier<Map<String, dynamic>> {
+  @override
+  Future<Map<String, dynamic>> build() async {
+    return _loadCacheAndFetch();
   }
-  
-  final uid = user.uid;
 
-  final prefs = await SharedPreferences.getInstance();
-  final cacheKey = 'cached_user_$uid';
+  Future<Map<String, dynamic>> _loadCacheAndFetch() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.isAnonymous) {
+      return {'user_type': 'guest'};
+    }
+    
+    final uid = user.uid;
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'cached_user_$uid';
+    final cachedStr = prefs.getString(cacheKey);
 
-  try {
+    if (cachedStr != null) {
+      try {
+        final cachedData = jsonDecode(cachedStr) as Map<String, dynamic>;
+        
+        // Trigger background fetch to update the state silently
+        _fetchNetworkAndUpdate(uid, cacheKey, prefs);
+        
+        return cachedData;
+      } catch (_) {}
+    }
+
+    // No cache available, fetch from network and wait
+    return await _fetchNetwork(uid, cacheKey, prefs);
+  }
+
+  Future<void> _fetchNetworkAndUpdate(String uid, String cacheKey, SharedPreferences prefs) async {
+    try {
+      final freshData = await _fetchNetwork(uid, cacheKey, prefs);
+      state = AsyncData(freshData);
+    } catch (e) {
+      // Background fetch failed, silently ignore to keep cache shown
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchNetwork(String uid, String cacheKey, SharedPreferences prefs) async {
     final data = await Supabase.instance.client
         .from('users')
         .select(
@@ -27,20 +56,28 @@ final userProvider = FutureProvider<Map<String, dynamic>>((ref) async {
 
     // Cache the latest user data
     await prefs.setString(cacheKey, jsonEncode(data));
-
     return data;
-  } catch (e) {
-    // On network failure or error, attempt to load from local cache
-    final cachedStr = prefs.getString(cacheKey);
-    if (cachedStr != null) {
-      try {
-        return jsonDecode(cachedStr) as Map<String, dynamic>;
-      } catch (_) {
-        // If parsing fails, rethrow the original error
-        rethrow;
-      }
-    }
-    // No cache available, throw the original error
-    rethrow;
   }
-});
+
+  // Use this for pull-to-refresh on profile screen
+  Future<void> forceRefresh() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.isAnonymous) return;
+    
+    final uid = user.uid;
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'cached_user_$uid';
+
+    state = const AsyncLoading();
+    try {
+      final freshData = await _fetchNetwork(uid, cacheKey, prefs);
+      state = AsyncData(freshData);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+}
+
+final userProvider = AsyncNotifierProvider<UserNotifier, Map<String, dynamic>>(
+  () => UserNotifier(),
+);

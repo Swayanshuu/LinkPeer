@@ -5,6 +5,7 @@ import 'package:igit_connects/core/services/notification_service.dart';
 import 'package:igit_connects/Screens/notifications/notification_screen.dart';
 import 'package:igit_connects/core/update/update_provider.dart';
 import 'package:igit_connects/features/update/screens/app_update_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeHeader extends ConsumerWidget {
   final Map me;
@@ -52,7 +53,7 @@ class HomeHeader extends ConsumerWidget {
                 child: CircleAvatar(
                   radius: 22,
                   backgroundImage: photoUrl.isNotEmpty
-                      ? NetworkImage(photoUrl)
+                      ? CachedNetworkImageProvider(photoUrl)
                       : null,
                   backgroundColor: colors.cardColor,
                   child: photoUrl.isEmpty

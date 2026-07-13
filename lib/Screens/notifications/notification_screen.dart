@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/models/notification_model.dart';
-import 'package:igit_connects/core/services/notification_service.dart';
+import 'package:igit_connects/core/notification_provider.dart';
 import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'package:igit_connects/features/broadcast/screens/broadcast_tab.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,92 +10,31 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:shimmer/shimmer.dart';
 import 'package:igit_connects/shared_components/banner_ad_widget.dart';
 
-class NotificationScreen extends StatefulWidget {
+class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
 
   @override
-  State<NotificationScreen> createState() => _NotificationScreenState();
+  ConsumerState<NotificationScreen> createState() => _NotificationScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
-  final NotificationService _notificationService = NotificationService();
+class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   final ScrollController _scrollController = ScrollController();
-  final List<NotificationModel> _notifications = [];
-  bool _isLoading = false;
-  bool _hasMore = true;
-  int _offset = 0;
-  final int _limit = 20;
 
   @override
   void initState() {
     super.initState();
-    _fetchNotifications();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 200 &&
-          !_isLoading &&
-          _hasMore) {
-        _fetchNotifications();
+          _scrollController.position.maxScrollExtent - 200) {
+        ref.read(notificationProvider.notifier).loadMore();
       }
     });
-  }
-
-  Future<void> _fetchNotifications() async {
-    if (_isLoading) return;
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final newNotifications = await _notificationService.getNotifications(
-        offset: _offset,
-        limit: _limit,
-      );
-
-      setState(() {
-        _offset += newNotifications.length;
-        _notifications.addAll(newNotifications);
-        debugPrint(
-          "State update count (Total UI Notifications): ${_notifications.length}",
-        );
-        if (newNotifications.length < _limit) {
-          _hasMore = false;
-        }
-      });
-    } catch (e) {
-      debugPrint("Error fetching notifications: $e");
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
   }
 
   Future<void> _handleNotificationTap(NotificationModel notification) async {
-    // Mark as read
+    // Optimistically mark as read in the provider
     if (!notification.isRead) {
-      await _notificationService.markAsRead(notification.id);
-      setState(() {
-        final index = _notifications.indexWhere((n) => n.id == notification.id);
-        if (index != -1) {
-          _notifications[index] = NotificationModel(
-            id: notification.id,
-            userId: notification.userId,
-            type: notification.type,
-            title: notification.title,
-            body: notification.body,
-            isRead: true,
-            createdAt: notification.createdAt,
-            actorUserId: notification.actorUserId,
-            postId: notification.postId,
-            commentId: notification.commentId,
-            actorName: notification.actorName,
-            actorPhotoUrl: notification.actorPhotoUrl,
-          );
-        }
-      });
+      await ref.read(notificationProvider.notifier).markAsRead(notification);
     }
 
     // Navigate to post if it exists
@@ -161,11 +101,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
               backgroundColor: colors.borderColor,
               backgroundImage:
                   notification.actorPhotoUrl != null &&
-                      notification.actorPhotoUrl!.isNotEmpty
-                  ? NetworkImage(notification.actorPhotoUrl!)
-                  : null,
-              child:
-                  notification.actorPhotoUrl == null ||
+                          notification.actorPhotoUrl!.isNotEmpty
+                      ? NetworkImage(notification.actorPhotoUrl!)
+                      : null,
+              child: notification.actorPhotoUrl == null ||
                       notification.actorPhotoUrl!.isEmpty
                   ? Icon(iconData, color: iconColor)
                   : null,
@@ -271,6 +210,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
+    final notificationState = ref.watch(notificationProvider);
+    final isPaginating = notificationState.isLoading && notificationState.hasValue;
 
     return DefaultTabController(
       length: 2,
@@ -307,61 +248,69 @@ class _NotificationScreenState extends State<NotificationScreen> {
             Expanded(
               child: TabBarView(
                 children: [
-                  // Original Notifications Tab
-                  _notifications.isEmpty && _isLoading
-                      ? _buildShimmer(colors)
-                      : _notifications.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.notifications_off_outlined,
-                                size: 64,
-                                color: colors.secondaryText.withValues(
-                                  alpha: 0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                "No notifications yet",
-                                style: TextStyle(
-                                  color: colors.secondaryText,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : RefreshIndicator(
+                  notificationState.when(
+                    loading: () => _buildShimmer(colors),
+                    error: (error, stack) => Center(
+                      child: Text(
+                        "Error loading notifications",
+                        style: TextStyle(color: colors.secondaryText),
+                      ),
+                    ),
+                    data: (notifications) {
+                      if (notifications.isEmpty) {
+                        return RefreshIndicator(
                           onRefresh: () async {
-                            setState(() {
-                              _offset = 0;
-                              _notifications.clear();
-                              _hasMore = true;
-                            });
-                            await _fetchNotifications();
+                            return ref.read(notificationProvider.notifier).forceRefresh();
                           },
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            itemCount:
-                                _notifications.length + (_hasMore ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == _notifications.length) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              }
-                              return _buildNotificationItem(
-                                _notifications[index],
-                                colors,
-                              );
-                            },
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.6,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.notifications_off_outlined,
+                                      size: 64,
+                                      color: colors.secondaryText.withValues(alpha: 0.5),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      "No notifications yet",
+                                      style: TextStyle(
+                                        color: colors.secondaryText,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
+                        );
+                      }
+
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          return ref.read(notificationProvider.notifier).forceRefresh();
+                        },
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          itemCount: notifications.length + (ref.read(notificationProvider.notifier).hasMore ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == notifications.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            }
+                            return _buildNotificationItem(notifications[index], colors);
+                          },
                         ),
+                      );
+                    },
+                  ),
                   const BroadcastTab(),
                 ],
               ),
