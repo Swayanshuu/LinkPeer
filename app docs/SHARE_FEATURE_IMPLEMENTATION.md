@@ -9,6 +9,29 @@ The system consists of two major components working together:
 1. **Spring Boot Microservice (`go.swynx.dev`)**: Responsible for URL shortening, Android App Link verification, and aggressive intent-based redirects.
 2. **Flutter App (`igit_connects`)**: Responsible for rendering visual share cards, generating images, and routing deep links directly to specific posts.
 
+```mermaid
+graph TD
+    %% Client & Server setup
+    subgraph Client [Flutter App]
+        UI[ShareCard UI]
+        Service[ShareService]
+        Router[Deep Link Router]
+    end
+    
+    subgraph Server [Spring Boot Microservice]
+        URLAPI[URL Shortener API]
+        AssetLink[assetlinks.json]
+        HTMLFallback[HTML Fallback Redirect]
+    end
+    
+    %% Interactions
+    UI --> Service
+    Service -->|Request Short Link| URLAPI
+    URLAPI -->|Return go.swynx.dev/xyz| Service
+    Router -->|Verify App| AssetLink
+    Router -->|Handle deep link| HTMLFallback
+```
+
 ---
 
 ## 1. The Spring Boot URL Shortener
@@ -30,6 +53,24 @@ When a user taps "Share" on a post, we don't just share text. We generate a beau
 ## 3. Flutter: App Links & Cold Starts
 
 We needed to ensure that clicking a link always opens the specific post, whether the app is running or completely closed.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Browser
+    participant OS
+    participant FlutterApp
+
+    User->>Browser: Clicks go.swynx.dev/xyz
+    Browser->>OS: Trigger Redirect Intent
+    alt App is Installed
+        OS->>FlutterApp: Wake / Open via App Links
+        FlutterApp->>FlutterApp: Fetch Post & Route to FullPostScreen
+    else App Not Installed
+        OS->>Browser: Open HTML Fallback
+        Browser->>OS: Fallback to Google Play Store
+    end
+```
 
 - **AndroidManifest.xml**: We added `<intent-filter>` blocks to register both our custom scheme (`linkpeer://`) and our verified domain (`https://go.swynx.dev`).
 - **The `app_links` Package**: In `main.dart`, we implemented a robust `_initDeepLinks()` method.

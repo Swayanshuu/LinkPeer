@@ -2,6 +2,16 @@
 
 This document outlines the features and exact limits for all LinkPeer user tiers, directly reflecting the internal application logic.
 
+```mermaid
+flowchart LR
+    A[Basic Free<br/>₹0/month] --> B(Premium Lite<br/>₹49/month)
+    B --> C{Premium Pro<br/>₹99/month}
+    
+    style A fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#fff,stroke-width:2px,color:#fff
+    style C fill:#9C27B0,stroke:#fff,stroke-width:2px,color:#fff
+```
+
 ## 1. Basic Free
 
 The default tier for all users.

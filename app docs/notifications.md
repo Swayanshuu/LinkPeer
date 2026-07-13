@@ -10,6 +10,22 @@ Instead, we use **Supabase Edge Functions** and **PostgreSQL Database Triggers**
 
 ## How It Works (The Notification Flow)
 
+```mermaid
+sequenceDiagram
+    participant UserApp as Flutter App
+    participant DB as Supabase DB
+    participant Trigger as Postgres Trigger
+    participant Edge as Edge Function
+    participant FCM as Firebase Cloud Messaging
+    
+    UserApp->>DB: Insert into 'notifications' table
+    DB->>Trigger: Fire AFTER INSERT Trigger
+    Trigger->>Edge: pg_net HTTP POST Webhook
+    Edge->>Edge: Fetch target fcm_token & Generate OAuth Token
+    Edge->>FCM: HTTP v1 POST Request
+    FCM-->>UserApp: Deliver Push Notification
+```
+
 1. **Trigger Event in App**
    When a user performs an action (e.g., commenting on a post), the Flutter app simply inserts a new row into the `notifications` table in Supabase.
    

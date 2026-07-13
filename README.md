@@ -74,9 +74,14 @@ graph TD
 3. **The Supabase Layer**: The heavy lifter. It handles all relational data (posts, comments, likes) via PostgreSQL and hosts all uploaded media (images/documents) via its global CDN.
 4. **The Event-Driven Notification System**: When an action occurs (like a comment on a post), Supabase fires a PostgreSQL trigger to an Edge Function, which securely talks to Firebase Cloud Messaging (FCM) to deliver a push notification to the user's phone — without ever exposing private API keys in the app.
 
-For more details on our secure serverless notification architecture, see [Push Notifications Architecture](notifications.md).
+### Detailed Documentation
 
-For a deep dive into the complete user flow and data flow sequence diagrams, see the [Detailed System Design](system_design.md) document.
+For a deep dive into specific systems, refer to our technical documentation:
+- [System Design & App Flow](app%20docs/system_design.md): Complete user flow and data sequence diagrams.
+- [Push Notifications Architecture](app%20docs/notifications.md): Secure serverless notification system.
+- [Share & Deep Linking Implementation](app%20docs/SHARE_FEATURE_IMPLEMENTATION.md): How URL shortening and deep linking work.
+- [Cache-First Strategy](app%20docs/cache_first_strategy.md): Background fetch pattern for zero-wait UX.
+- [Subscription Tiers](app%20docs/subscription.md): Breakdown of user tiers and limits.
 
 ---
 
@@ -176,6 +181,16 @@ The theme engine goes beyond a simple `ThemeMode` toggle. It is a **context-awar
 ---
 
 ## User Roles
+
+```mermaid
+stateDiagram-v2
+    [*] --> Student: Sign-up Default
+    Student --> Alumni: If graduating_year <= current_year
+    Student --> Faculty: Verification Request
+    Faculty --> AdminApproval: Manual Review
+    AdminApproval --> VerifiedFaculty: Approved
+    AdminApproval --> Student: Rejected
+```
 
 | Role    | Assignment                                          | Notes                              |
 | ------- | --------------------------------------------------- | ---------------------------------- |
