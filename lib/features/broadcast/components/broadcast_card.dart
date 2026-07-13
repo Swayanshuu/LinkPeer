@@ -4,6 +4,8 @@ import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:igit_connects/features/broadcast/screens/broadcast_details_screen.dart';
 
+import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
+
 class BroadcastCard extends StatelessWidget {
   final BroadcastModel broadcast;
   final bool isAdmin;
@@ -57,13 +59,30 @@ class BroadcastCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (broadcast.imageUrl != null && broadcast.imageUrl!.isNotEmpty)
-              Image.network(
-                broadcast.imageUrl!,
-                width: double.infinity,
-                height: 160,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    const SizedBox.shrink(),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FullScreenImageViewer(
+                        imageUrls: [broadcast.imageUrl!],
+                        initialIndex: 0,
+                        heroTagPrefix: 'broadcast_${broadcast.id}',
+                      ),
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: 'broadcast_${broadcast.id}_${broadcast.imageUrl}',
+                  child: Image.network(
+                    broadcast.imageUrl!,
+                    width: double.infinity,
+                    height: 160,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const SizedBox.shrink(),
+                  ),
+                ),
               ),
             Padding(
               padding: const EdgeInsets.all(16.0),

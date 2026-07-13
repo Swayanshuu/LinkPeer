@@ -4,6 +4,7 @@ import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:igit_connects/features/broadcast/services/broadcast_service.dart';
+import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
 
 class BroadcastDetailsScreen extends StatelessWidget {
   final BroadcastModel broadcast;
@@ -172,12 +173,29 @@ class BroadcastDetailsScreen extends StatelessWidget {
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.40,
                 ),
-                child: Image.network(
-                  broadcast.imageUrl!,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox.shrink(),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FullScreenImageViewer(
+                          imageUrls: [broadcast.imageUrl!],
+                          initialIndex: 0,
+                          heroTagPrefix: 'broadcast_details_${broadcast.id}',
+                        ),
+                      ),
+                    );
+                  },
+                  child: Hero(
+                    tag: 'broadcast_details_${broadcast.id}_${broadcast.imageUrl}',
+                    child: Image.network(
+                      broadcast.imageUrl!,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox.shrink(),
+                    ),
+                  ),
                 ),
               ),
             Padding(
