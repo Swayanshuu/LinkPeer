@@ -306,51 +306,50 @@ class _LoginScreen2State extends State<LoginScreen2> {
 
                     const SizedBox(height: 12),
 
-                    Center(
-                      child: OutlinedButton.icon(
-                        onPressed: loadingMode != null ? null : loginAsGuest,
-                        icon: loadingMode == "guest"
-                            ? const SizedBox.shrink()
-                            : Icon(
-                                Icons.explore_outlined,
-                                size: 18,
-                                color: colors.primaryText,
-                              ),
-                        label: loadingMode == "guest"
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                "Continue as Guest",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                  color: colors.primaryText,
-                                ),
-                              ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.primaryText,
-                          side: BorderSide(
-                            color: colors.borderColor,
-                            width: 1.5,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // Center(
+                    //   child: OutlinedButton.icon(
+                    //     onPressed: loadingMode != null ? null : loginAsGuest,
+                    //     icon: loadingMode == "guest"
+                    //         ? const SizedBox.shrink()
+                    //         : Icon(
+                    //             Icons.explore_outlined,
+                    //             size: 18,
+                    //             color: colors.primaryText,
+                    //           ),
+                    //     label: loadingMode == "guest"
+                    //         ? const SizedBox(
+                    //             width: 16,
+                    //             height: 16,
+                    //             child: CircularProgressIndicator(
+                    //               strokeWidth: 2,
+                    //             ),
+                    //           )
+                    //         : Text(
+                    //             "Continue as Guest",
+                    //             style: TextStyle(
+                    //               fontWeight: FontWeight.w600,
+                    //               fontSize: 14,
+                    //               color: colors.primaryText,
+                    //             ),
+                    //           ),
+                    //     style: OutlinedButton.styleFrom(
+                    //       foregroundColor: colors.primaryText,
+                    //       side: BorderSide(
+                    //         color: colors.borderColor,
+                    //         width: 1.5,
+                    //       ),
+                    //       padding: const EdgeInsets.symmetric(
+                    //         horizontal: 24,
+                    //         vertical: 12,
+                    //       ),
+                    //       shape: RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(20),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
 
-                    const SizedBox(height: 24),
-
+                    // const SizedBox(height: 24),
                     Center(
                       child: RichText(
                         textAlign: TextAlign.center,
