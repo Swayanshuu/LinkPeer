@@ -42,7 +42,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
   void initState() {
     super.initState();
     _initializeLikesAndSaves();
-    
+
     if (widget.autoFocusComment) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showCommentsModal(context, widget.post['id'], AppColors.of(context));
@@ -298,108 +298,109 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
           IconButton(
             icon: const Icon(Icons.share_outlined),
             onPressed: () async {
+              final String imageUrl = (widget.post["image_url"] ?? "")
+                  .toString();
+              final String title = (widget.post["title"] ?? "").toString();
+              final String content = (widget.post["content"] ?? "").toString();
 
-                final String imageUrl = (widget.post["image_url"] ?? "")
-                    .toString();
-                final String title = (widget.post["title"] ?? "").toString();
-                final String content = (widget.post["content"] ?? "")
-                    .toString();
+              final shortUrl = await ShareService.generateShortLink(
+                postId: widget.post['id'].toString(),
+                title: title.isNotEmpty ? title : 'LinkPeer Post',
+                imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+              );
 
-                final shortUrl = await ShareService.generateShortLink(
-                  postId: widget.post['id'].toString(),
-                  title: title.isNotEmpty ? title : 'LinkPeer Post',
-                  imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
-                );
-
-                await ShareService.shareWidgetAsImage(
-                  widget: ShareCard(
-                    userName:
-                        widget.post["user_name"]?.toString() ?? "Anonymous",
-                    userRole: widget.post["user_type"]?.toString() ?? "User",
-                    userAvatar: widget.post["user_photo"]?.toString() ?? "",
-                    postContent: title.isNotEmpty
-                        ? title
-                        : (content.isNotEmpty
-                              ? content
-                              : "Check out this post!"),
-                  ),
-                  shareUrl: shortUrl,
-                  postTitle: title.isNotEmpty ? title : "LinkPeer Post",
-                );
-              },
-            ),
+              await ShareService.shareWidgetAsImage(
+                context: context,
+                widget: ShareCard(
+                  userName: widget.post["user_name"]?.toString() ?? "Anonymous",
+                  userRole: widget.post["user_type"]?.toString() ?? "User",
+                  userAvatar: widget.post["user_photo"]?.toString() ?? "",
+                  postContent: title.isNotEmpty
+                      ? title
+                      : (content.isNotEmpty ? content : "Check out this post!"),
+                ),
+                shareUrl: shortUrl,
+                postTitle: title.isNotEmpty ? title : "LinkPeer Post",
+              );
+            },
+          ),
         ],
       ),
       body: Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                16,
-                12,
-                16,
-                16,
-              ),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isAuthorAdmin
-                        ? colors.adminPostBg
-                        : colors.cardColor.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
                       color: isAuthorAdmin
-                          ? colors.adminPostBorder
-                          : colors.borderColor.withValues(alpha: 0.4),
-                      width: 1.0,
+                          ? colors.adminPostBg
+                          : colors.cardColor.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isAuthorAdmin
+                            ? colors.adminPostBorder
+                            : colors.borderColor.withValues(alpha: 0.4),
+                        width: 1.0,
+                      ),
                     ),
-                  ),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      if (post["user_id"] != null) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OtherUserProfileScreen(
-                              userId: post["user_id"].toString(),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        if (post["user_id"] != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => OtherUserProfileScreen(
+                                userId: post["user_id"].toString(),
+                              ),
                             ),
+                          );
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 26,
+                            backgroundColor: colors.borderColor,
+                            backgroundImage: photo.isNotEmpty
+                                ? NetworkImage(photo)
+                                : null,
+                            child: photo.isEmpty
+                                ? Icon(
+                                    Icons.person,
+                                    size: 28,
+                                    color: colors.primaryText,
+                                  )
+                                : null,
                           ),
-                        );
-                      }
-                    },
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 26,
-                          backgroundColor: colors.borderColor,
-                          backgroundImage: photo.isNotEmpty
-                              ? NetworkImage(photo)
-                              : null,
-                          child: photo.isEmpty
-                              ? Icon(
-                                  Icons.person,
-                                  size: 28,
-                                  color: colors.primaryText,
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Wrap(
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  isAuthorAdmin
-                                      ? Shimmer.fromColors(
-                                          baseColor: colors.primaryText,
-                                          highlightColor: Colors.blueAccent,
-                                          child: Text(
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    isAuthorAdmin
+                                        ? Shimmer.fromColors(
+                                            baseColor: colors.primaryText,
+                                            highlightColor: Colors.blueAccent,
+                                            child: Text(
+                                              name,
+                                              style: TextStyle(
+                                                color: colors.primaryText,
+                                                fontSize: 14.5,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: -0.3,
+                                              ),
+                                            ),
+                                          )
+                                        : Text(
                                             name,
                                             style: TextStyle(
                                               color: colors.primaryText,
@@ -408,263 +409,261 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                                               letterSpacing: -0.3,
                                             ),
                                           ),
-                                        )
-                                      : Text(
-                                          name,
-                                          style: TextStyle(
-                                            color: colors.primaryText,
-                                            fontSize: 14.5,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: -0.3,
-                                          ),
-                                        ),
-                                  if (isVerified) ...[
-                                    const SizedBox(width: 4),
-                                    Icon(
-                                      Icons.verified,
-                                      color: Colors.blue,
-                                      size: 16,
-                                    ),
-                                  ],
-                                  if ((usersData?["faculty_verified"] == true ||
-                                          post["faculty_verified"] == true) &&
-                                      userType.toLowerCase() == "faculty") ...[
-                                    const SizedBox(width: 4),
-                                    Icon(
-                                      Icons.gpp_good_rounded,
-                                      color: colors.primaryAccent,
-                                      size: 16,
-                                    ),
-                                  ],
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isAuthorAdmin
-                                          ? colors.badgeAdminBg
-                                          : userType.toLowerCase() == "alumni"
-                                          ? colors.badgeAlumniBg
-                                          : userType.toLowerCase() == "faculty"
-                                          ? colors.badgeFacultyBg
-                                          : colors.badgeStudentBg,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      userType.toUpperCase(),
-                                      style: TextStyle(
+                                    if (isVerified) ...[
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        Icons.verified,
+                                        color: Colors.blue,
+                                        size: 16,
+                                      ),
+                                    ],
+                                    if ((usersData?["faculty_verified"] ==
+                                                true ||
+                                            post["faculty_verified"] == true) &&
+                                        userType.toLowerCase() ==
+                                            "faculty") ...[
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        Icons.gpp_good_rounded,
+                                        color: colors.primaryAccent,
+                                        size: 16,
+                                      ),
+                                    ],
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
                                         color: isAuthorAdmin
-                                            ? colors.badgeAdminText
+                                            ? colors.badgeAdminBg
                                             : userType.toLowerCase() == "alumni"
-                                            ? colors.badgeAlumniText
+                                            ? colors.badgeAlumniBg
                                             : userType.toLowerCase() ==
                                                   "faculty"
-                                            ? colors.badgeFacultyText
-                                            : colors.badgeStudentText,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.5,
+                                            ? colors.badgeFacultyBg
+                                            : colors.badgeStudentBg,
+                                        borderRadius: BorderRadius.circular(6),
                                       ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              if (isAuthorAdmin)
-                                Wrap(
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () => _safelyLaunchUrl(
-                                        context,
-                                        "https://swynx.dev",
-                                        colors,
-                                      ),
-                                      child: Shimmer.fromColors(
-                                        baseColor: Colors.blueAccent,
-                                        highlightColor:
-                                            Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Colors.white
-                                            : Colors.blue.shade900,
-                                        child: Text(
-                                          "swynx.dev",
-                                          style: TextStyle(
-                                            color: Colors.blueAccent,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            decoration:
-                                                TextDecoration.underline,
-                                            decorationColor: Colors.blueAccent
-                                                .withValues(alpha: 0.5),
-                                          ),
+                                      child: Text(
+                                        userType.toUpperCase(),
+                                        style: TextStyle(
+                                          color: isAuthorAdmin
+                                              ? colors.badgeAdminText
+                                              : userType.toLowerCase() ==
+                                                    "alumni"
+                                              ? colors.badgeAlumniText
+                                              : userType.toLowerCase() ==
+                                                    "faculty"
+                                              ? colors.badgeFacultyText
+                                              : colors.badgeStudentText,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.5,
                                         ),
                                       ),
                                     ),
-                                    Text(
-                                      " • $date",
-                                      style: TextStyle(
-                                        color: colors.secondaryText,
-                                        fontSize: 12,
-                                      ),
-                                    ),
                                   ],
-                                )
-                              else
-                                Text(
-                                  userHeadline.isNotEmpty
-                                      ? "$userHeadline • $date"
-                                      : date,
-                                  style: TextStyle(
-                                    color: colors.secondaryText,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                                ),
+                                const SizedBox(height: 4),
+                                if (isAuthorAdmin)
+                                  Wrap(
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => _safelyLaunchUrl(
+                                          context,
+                                          "https://swynx.dev",
+                                          colors,
+                                        ),
+                                        child: Shimmer.fromColors(
+                                          baseColor: Colors.blueAccent,
+                                          highlightColor:
+                                              Theme.of(context).brightness ==
+                                                  Brightness.dark
+                                              ? Colors.white
+                                              : Colors.blue.shade900,
+                                          child: Text(
+                                            "swynx.dev",
+                                            style: TextStyle(
+                                              color: Colors.blueAccent,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor: Colors.blueAccent
+                                                  .withValues(alpha: 0.5),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        " • $date",
+                                        style: TextStyle(
+                                          color: colors.secondaryText,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                else
+                                  Text(
+                                    userHeadline.isNotEmpty
+                                        ? "$userHeadline • $date"
+                                        : date,
+                                    style: TextStyle(
+                                      color: colors.secondaryText,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Title Section
+                  if (title.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          color: colors.primaryText,
+                          fontSize: 20, // smaller title
+                          height: 1.3,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+
+                  // Content Section
+                  HashtagText(text: content, fontSize: 14),
+
+                  const SizedBox(height: 24),
+
+                  // Attachments Section
+                  if (imageUrls.isNotEmpty) ...[
+                    SizedBox(
+                      height: 250,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: imageUrls.length,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => FullScreenImageViewer(
+                                    imageUrls: imageUrls,
+                                    initialIndex: index,
+                                    heroTagPrefix: 'full_post_${post["id"]}',
                                   ),
                                 ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Hero(
+                                  tag:
+                                      'full_post_${post["id"]}_${imageUrls[index]}',
+                                  child: Image.network(
+                                    imageUrls[index],
+                                    height: 250,
+                                    width: imageUrls.length == 1
+                                        ? MediaQuery.of(context).size.width - 32
+                                        : 300,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  if (fileUrl.isNotEmpty && imageUrls.isEmpty) ...[
+                    if (isImage(fileUrl))
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.network(
+                          fileUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    else
+                      InkWell(
+                        onTap: () => _safelyLaunchUrl(context, fileUrl, colors),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: colors.cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: colors.borderColor),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.insert_drive_file,
+                                color: colors.secondaryText,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  fileName.isEmpty
+                                      ? "View File Attachment"
+                                      : fileName,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: colors.primaryText,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.download_rounded,
+                                color: colors.primaryText,
+                              ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Title Section
-                if (title.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        color: colors.primaryText,
-                        fontSize: 20, // smaller title
-                        height: 1.3,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
                       ),
-                    ),
-                  ),
+                    const SizedBox(height: 24),
+                  ],
 
-                // Content Section
-                HashtagText(text: content, fontSize: 14),
-
-                const SizedBox(height: 24),
-
-                // Attachments Section
-                if (imageUrls.isNotEmpty) ...[
-                  SizedBox(
-                    height: 250,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: imageUrls.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => FullScreenImageViewer(
-                                  imageUrls: imageUrls,
-                                  initialIndex: index,
-                                  heroTagPrefix: 'full_post_${post["id"]}',
-                                ),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Hero(
-                                tag:
-                                    'full_post_${post["id"]}_${imageUrls[index]}',
-                                child: Image.network(
-                                  imageUrls[index],
-                                  height: 250,
-                                  width: imageUrls.length == 1
-                                      ? MediaQuery.of(context).size.width - 32
-                                      : 300,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                  // Link Secti                // Link Section moved to FAB
                 ],
-
-                if (fileUrl.isNotEmpty && imageUrls.isEmpty) ...[
-                  if (isImage(fileUrl))
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        fileUrl,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  else
-                    InkWell(
-                      onTap: () => _safelyLaunchUrl(context, fileUrl, colors),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: colors.cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: colors.borderColor),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.insert_drive_file,
-                              color: colors.secondaryText,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                fileName.isEmpty
-                                    ? "View File Attachment"
-                                    : fileName,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: colors.primaryText,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.download_rounded,
-                              color: colors.primaryText,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 24),
-                ],
-
-                // Link Secti                // Link Section moved to FAB
-              ],
+              ),
             ),
           ),
-        ),
           if (FirebaseAuth.instance.currentUser == null)
             _buildLoginBanner(colors)
           else
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -700,12 +699,12 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                       color: colors.secondaryText,
                       label: "",
                       onTap: () async {
-                        final String imageUrl =
-                            (widget.post["image_url"] ?? "").toString();
-                        final String title =
-                            (widget.post["title"] ?? "").toString();
-                        final String content =
-                            (widget.post["content"] ?? "").toString();
+                        final String imageUrl = (widget.post["image_url"] ?? "")
+                            .toString();
+                        final String title = (widget.post["title"] ?? "")
+                            .toString();
+                        final String content = (widget.post["content"] ?? "")
+                            .toString();
 
                         final shortUrl = await ShareService.generateShortLink(
                           postId: widget.post['id'].toString(),
@@ -714,18 +713,20 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                         );
 
                         await ShareService.shareWidgetAsImage(
+                          context: context,
                           widget: ShareCard(
-                            userName: widget.post["user_name"]?.toString() ??
+                            userName:
+                                widget.post["user_name"]?.toString() ??
                                 "Anonymous",
-                            userRole: widget.post["user_type"]?.toString() ??
-                                "User",
-                            userAvatar: widget.post["user_photo"]?.toString() ??
-                                "",
+                            userRole:
+                                widget.post["user_type"]?.toString() ?? "User",
+                            userAvatar:
+                                widget.post["user_photo"]?.toString() ?? "",
                             postContent: title.isNotEmpty
                                 ? title
                                 : (content.isNotEmpty
-                                    ? content
-                                    : "Check out this post!"),
+                                      ? content
+                                      : "Check out this post!"),
                           ),
                           shareUrl: shortUrl,
                           postTitle: title.isNotEmpty ? title : "LinkPeer Post",
@@ -746,9 +747,7 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     return InkWell(
       onTap: () {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => const LoginScreen2(),
-          ),
+          MaterialPageRoute(builder: (_) => const LoginScreen2()),
           (route) => false,
         );
       },

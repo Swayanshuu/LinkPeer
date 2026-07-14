@@ -1035,6 +1035,7 @@ class _PostCardState extends ConsumerState<PostCard> {
 
                     // Share widget as professional image + short link
                     await ShareService.shareWidgetAsImage(
+                      context: context,
                       widget: ShareCard(
                         userName: widget.post["user_name"] ?? "Anonymous",
                         userRole: widget.post["user_type"] ?? "User",

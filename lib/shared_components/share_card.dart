@@ -16,13 +16,9 @@ class ShareCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MediaQuery(
-      data: const MediaQueryData(),
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
+    return Material(
+      color: Colors.transparent,
+      child: Container(
             width: 400,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -139,8 +135,6 @@ class ShareCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
       ),
     );
   }

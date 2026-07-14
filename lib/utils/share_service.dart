@@ -11,6 +11,7 @@ class ShareService {
 
   /// Captures a widget as an image, saves it temporarily, and opens the native share sheet.
   static Future<void> shareWidgetAsImage({
+    required BuildContext context,
     required Widget widget,
     required String shareUrl,
     required String postTitle,
@@ -18,25 +19,30 @@ class ShareService {
     try {
       // Capture widget as image
       final imageBytes = await _screenshotController.captureFromWidget(
-        MaterialApp(
-          debugShowCheckedModeBanner: false,
-          home: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Center(child: widget),
+        MediaQuery(
+          data: MediaQuery.of(context),
+          child: Directionality(
+            textDirection: Directionality.of(context),
+            child: Theme(
+              data: Theme.of(context),
+              child: widget,
+            ),
           ),
         ),
-        delay: const Duration(milliseconds: 100),
+        delay: const Duration(milliseconds: 500),
         pixelRatio: 3.0,
+        context: context,
       );
 
       // Write to temp file
       final directory = await getTemporaryDirectory();
-      final imagePath = await File('${directory.path}/share_post.png').create();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final imagePath = await File('${directory.path}/share_post_$timestamp.png').create();
       await imagePath.writeAsBytes(imageBytes);
 
       // Share via native share sheet
       await Share.shareXFiles(
-        [XFile(imagePath.path)],
+        [XFile(imagePath.path, mimeType: 'image/png')],
         text: 'Check out this post on LinkPeer: $postTitle\n\n$shareUrl',
         subject: postTitle,
       );
