@@ -338,7 +338,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               child: AutoSizeText(
                 textAlign: TextAlign.center,
                 minFontSize: 10,
-                "We are trying hard to diliver this feture to you :)\nCheck back Later",
+                "We are trying hard to deliver this feture to you :)\nCheck back Later",
               ),
             ),
     );
