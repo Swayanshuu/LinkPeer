@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:intl/intl.dart';
 import 'package:igit_connects/features/broadcast/services/broadcast_service.dart';
 import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
 
@@ -57,6 +56,8 @@ class BroadcastDetailsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colors.bgColor,
       appBar: AppBar(
+        backgroundColor: colors.bgColor,
+        surfaceTintColor: colors.bgColor,
         title: Text(
           'Announcement',
           style: TextStyle(
@@ -65,7 +66,6 @@ class BroadcastDetailsScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: colors.bgColor,
         elevation: 0,
         iconTheme: IconThemeData(color: colors.primaryText),
         actions: [

@@ -34,16 +34,16 @@ class _NativeAdWidgetState extends State<NativeAdWidget>
 
     if (!isMobile) return;
 
-    // final adUnitId = kDebugMode
-    //     ? (defaultTargetPlatform == TargetPlatform.android
-    //           ? 'ca-app-pub-3940256099942544/2247696110'
-    //           : 'ca-app-pub-3940256099942544/3986624511')
-    //     : (dotenv.env['NATIVE_AD_UNIT_ID'] ??
-    //           'a-app-pub-3940256099942544/2247696110');
+    final adUnitId = kDebugMode
+        ? (defaultTargetPlatform == TargetPlatform.android
+              ? 'ca-app-pub-3940256099942544/2247696110'
+              : 'ca-app-pub-3940256099942544/3986624511')
+        : (dotenv.env['NATIVE_AD_UNIT_ID'] ??
+              'a-app-pub-3940256099942544/2247696110');
 
-    final adUnitId = dotenv.env['NATIVE_AD_UNIT_ID'];
+    // final adUnitId = dotenv.env['NATIVE_AD_UNIT_ID'];
     _nativeAd = NativeAd(
-      adUnitId: adUnitId!,
+      adUnitId: adUnitId,
       request: const AdRequest(),
       listener: NativeAdListener(
         onAdLoaded: (ad) {

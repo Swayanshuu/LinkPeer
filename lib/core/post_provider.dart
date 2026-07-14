@@ -8,13 +8,13 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
 
   @override
   Future<List<Map<String, dynamic>>> build() async {
-    // 1. Clean up any previous channel subscription if rebuilding
+    // Clean previous subscription
     _channel?.unsubscribe();
 
-    // 2. Set up the realtime subscription for new posts
+    // Subscribe to new posts
     _setupSubscription();
 
-    // 3. Fetch and return initial data
+    // Fetch initial data
     return _loadCacheAndFetch();
   }
 
@@ -29,12 +29,16 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
             final newPost = Map<String, dynamic>.from(payload.newRecord);
             newPost['post_likes'] = [];
             newPost['saved_posts'] = [];
-            newPost['post_comments'] = [{'count': 0}];
+            newPost['post_comments'] = [
+              {'count': 0},
+            ];
 
             try {
               final userResp = await Supabase.instance.client
                   .from('users')
-                  .select('is_verified, subscription_plan, role, faculty_verified, branch, designation, user_type')
+                  .select(
+                    'is_verified, subscription_plan, role, faculty_verified, branch, designation, user_type',
+                  )
                   .eq('id', newPost['user_id'])
                   .maybeSingle();
               if (userResp != null) {
@@ -71,11 +75,13 @@ class PostsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
     if (cachedStr != null) {
       try {
         final decoded = jsonDecode(cachedStr) as List<dynamic>;
-        final cachedList = decoded.map((e) => e as Map<String, dynamic>).toList();
-        
+        final cachedList = decoded
+            .map((e) => e as Map<String, dynamic>)
+            .toList();
+
         // Trigger background fetch to update the state silently
         _fetchNetworkAndUpdate();
-        
+
         return cachedList;
       } catch (_) {}
     }

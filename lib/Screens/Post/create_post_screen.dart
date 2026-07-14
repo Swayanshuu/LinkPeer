@@ -14,6 +14,7 @@ import 'package:igit_connects/screens/premium/subscription_screen.dart';
 
 import 'package:igit_connects/core/post_provider.dart';
 import 'package:igit_connects/core/user_provider.dart';
+import 'package:igit_connects/utils/profanity_filter.dart';
 import 'package:igit_connects/main_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:igit_connects/storage_backend.dart';
@@ -206,6 +207,18 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         _selectedXFiles.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("You cannot publish an empty post.")),
+      );
+      return;
+    }
+
+    if (ProfanityFilter.hasProfanity(title.text) ||
+        ProfanityFilter.hasProfanity(content.text) ||
+        ProfanityFilter.hasProfanity(link.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please remove inappropriate language from your post."),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }

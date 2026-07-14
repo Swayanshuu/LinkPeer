@@ -11,7 +11,8 @@ import 'package:shimmer/shimmer.dart';
 import 'package:igit_connects/shared_components/banner_ad_widget.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
-  const NotificationScreen({super.key});
+  final int initialIndex;
+  const NotificationScreen({super.key, this.initialIndex = 0});
 
   @override
   ConsumerState<NotificationScreen> createState() => _NotificationScreenState();
@@ -101,10 +102,11 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
               backgroundColor: colors.borderColor,
               backgroundImage:
                   notification.actorPhotoUrl != null &&
-                          notification.actorPhotoUrl!.isNotEmpty
-                      ? NetworkImage(notification.actorPhotoUrl!)
-                      : null,
-              child: notification.actorPhotoUrl == null ||
+                      notification.actorPhotoUrl!.isNotEmpty
+                  ? NetworkImage(notification.actorPhotoUrl!)
+                  : null,
+              child:
+                  notification.actorPhotoUrl == null ||
                       notification.actorPhotoUrl!.isEmpty
                   ? Icon(iconData, color: iconColor)
                   : null,
@@ -211,10 +213,11 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final notificationState = ref.watch(notificationProvider);
-    final isPaginating = notificationState.isLoading && notificationState.hasValue;
+    // final isPaginating = notificationState.isLoading && notificationState.hasValue;
 
     return DefaultTabController(
       length: 2,
+      initialIndex: widget.initialIndex,
       child: Scaffold(
         backgroundColor: colors.bgColor,
         appBar: AppBar(
@@ -260,7 +263,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                       if (notifications.isEmpty) {
                         return RefreshIndicator(
                           onRefresh: () async {
-                            return ref.read(notificationProvider.notifier).forceRefresh();
+                            return ref
+                                .read(notificationProvider.notifier)
+                                .forceRefresh();
                           },
                           child: SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
@@ -273,7 +278,9 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                                     Icon(
                                       Icons.notifications_off_outlined,
                                       size: 64,
-                                      color: colors.secondaryText.withValues(alpha: 0.5),
+                                      color: colors.secondaryText.withValues(
+                                        alpha: 0.5,
+                                      ),
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
@@ -293,19 +300,30 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
 
                       return RefreshIndicator(
                         onRefresh: () async {
-                          return ref.read(notificationProvider.notifier).forceRefresh();
+                          return ref
+                              .read(notificationProvider.notifier)
+                              .forceRefresh();
                         },
                         child: ListView.builder(
                           controller: _scrollController,
-                          itemCount: notifications.length + (ref.read(notificationProvider.notifier).hasMore ? 1 : 0),
+                          itemCount:
+                              notifications.length +
+                              (ref.read(notificationProvider.notifier).hasMore
+                                  ? 1
+                                  : 0),
                           itemBuilder: (context, index) {
                             if (index == notifications.length) {
                               return const Padding(
                                 padding: EdgeInsets.all(16.0),
-                                child: Center(child: CircularProgressIndicator()),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
                               );
                             }
-                            return _buildNotificationItem(notifications[index], colors);
+                            return _buildNotificationItem(
+                              notifications[index],
+                              colors,
+                            );
                           },
                         ),
                       );

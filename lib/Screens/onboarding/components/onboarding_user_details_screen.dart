@@ -5,11 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:igit_connects/screens/auth/faculty_verification_screen.dart';
 import 'package:igit_connects/core/app_colors.dart';
+import 'package:igit_connects/core/app_constants.dart';
 import 'package:igit_connects/main_screen.dart';
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Main Screen
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class OnboardingUserDetailsScreen extends StatefulWidget {
   final String userMode;
@@ -23,46 +20,18 @@ class OnboardingUserDetailsScreen extends StatefulWidget {
 
 class _OnboardingUserDetailsScreenState
     extends State<OnboardingUserDetailsScreen> {
-  // â”€â”€ Form key (class-level â€” never inside build) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   final _formKey = GlobalKey<FormState>();
 
-  // â”€â”€ Year picker controller â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   final graduationYearController = TextEditingController();
 
-  // â”€â”€ Static data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  final departments = [
-    "CSE",
-    "ECE",
-    "EEE",
-    "Mechanical",
-    "Civil",
-    "Production",
-    "Chemical",
-    "Mathematics",
-    "Physics",
-    "Chemistry",
-    "Humanities",
-  ];
+  // -----------------------------------------------------------
 
-  final branches = [
-    "CSE",
-    "ECE",
-    "EEE",
-    "Mechanical",
-    "Civil",
-    "Production",
-    "Chemical",
-  ];
-
-  final streams = ["BTech", "MTech", "MCA"];
-
-  /// Dynamic year range: 1990 â†’ current year + 4.
+  /// Dynamic year range: 1990 → current year + 4. + 4.
   List<int> get years {
     final currentYear = DateTime.now().year;
     return List.generate((currentYear + 4) - 1990 + 1, (i) => 1990 + i);
   }
 
-  // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   String college = "IGIT";
   String userType = "";
 
@@ -81,13 +50,12 @@ class _OnboardingUserDetailsScreenState
   bool _saving = false;
   int _currentStep = 0;
 
-  // â”€â”€ Completion ratio (drives the truthful progress bar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   double get _completionRatio {
     if (widget.userMode == "faculty") {
       final filled = [
         department != null,
         designation.trim().isNotEmpty,
-        phone.trim().length >= 10,
+        phone.trim().length == 10,
         isProofUploaded,
       ].where((v) => v).length;
       return filled / 4;
@@ -96,12 +64,12 @@ class _OnboardingUserDetailsScreenState
         branch != null,
         stream != null,
         graduatingYear != null,
+        phone.trim().length == 10,
       ].where((v) => v).length;
-      return filled / 3;
+      return filled / 4;
     }
   }
 
-  // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   @override
   void initState() {
     super.initState();
@@ -114,7 +82,6 @@ class _OnboardingUserDetailsScreenState
     super.dispose();
   }
 
-  // â”€â”€ Graduation year picker (themed to AppColors) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> pickGraduationYear() async {
     final now = DateTime.now();
     final colors = AppColors.of(context);
@@ -167,7 +134,6 @@ class _OnboardingUserDetailsScreenState
     }
   }
 
-  // â”€â”€ Role detection based on graduation year â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void detectRole() {
     if (graduatingYear == null) return;
     final currentYear = DateTime.now().year;
@@ -176,7 +142,6 @@ class _OnboardingUserDetailsScreenState
     });
   }
 
-  // â”€â”€ Save to Supabase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> save() async {
     if (!_formKey.currentState!.validate()) {
       _showSnackBar(
@@ -206,6 +171,7 @@ class _OnboardingUserDetailsScreenState
           .update({
             "user_type": widget.userMode == "faculty" ? "user" : userType,
             "college": college,
+            "phone": phone,
 
             if (widget.userMode == "student") ...{
               "branch": branch,
@@ -213,7 +179,6 @@ class _OnboardingUserDetailsScreenState
               "graduating_year": graduatingYear,
               "department": null,
               "designation": null,
-              "phone": null,
             },
 
             if (widget.userMode == "faculty") ...{
@@ -222,7 +187,6 @@ class _OnboardingUserDetailsScreenState
               "graduating_year": null,
               "department": department,
               "designation": designation,
-              "phone": phone,
               "faculty_verification_image": facultyVerificationImage,
               "faculty_verified": false,
             },
@@ -251,7 +215,6 @@ class _OnboardingUserDetailsScreenState
     }
   }
 
-  // â”€â”€ Snack bar helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _showSnackBar({
     required IconData icon,
     required String message,
@@ -287,7 +250,6 @@ class _OnboardingUserDetailsScreenState
       );
   }
 
-  // â”€â”€ Input decoration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   InputDecoration _inputDeco(
     String label,
     AppColors colors, {
@@ -323,7 +285,6 @@ class _OnboardingUserDetailsScreenState
     );
   }
 
-  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
@@ -357,6 +318,27 @@ class _OnboardingUserDetailsScreenState
               value: college,
               colors: colors,
             ),
+            const SizedBox(height: 16),
+            TextFormField(
+              keyboardType: TextInputType.phone,
+              maxLength: 10,
+              style: TextStyle(color: colors.primaryText, fontSize: 15),
+              decoration: _inputDeco(
+                "Phone Number",
+                colors,
+                icon: Icons.phone_outlined,
+              ).copyWith(counterText: ""),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return "Phone number is required";
+                }
+                if (v.trim().length != 10 || int.tryParse(v.trim()) == null) {
+                  return "Enter a valid 10-digit phone number";
+                }
+                return null;
+              },
+              onChanged: (v) => setState(() => phone = v),
+            ),
           ],
         ),
       ),
@@ -381,7 +363,7 @@ class _OnboardingUserDetailsScreenState
                     ),
                     validator: (v) =>
                         v == null ? "Please select your branch" : null,
-                    items: branches
+                    items: AppConstants.branches
                         .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                         .toList(),
                     onChanged: (v) => setState(() => branch = v),
@@ -398,7 +380,7 @@ class _OnboardingUserDetailsScreenState
                     ),
                     validator: (v) =>
                         v == null ? "Please select your stream" : null,
-                    items: streams
+                    items: AppConstants.streams
                         .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                         .toList(),
                     onChanged: (v) => setState(() => stream = v),
@@ -466,7 +448,7 @@ class _OnboardingUserDetailsScreenState
                     ),
                     validator: (v) =>
                         v == null ? "Please select department" : null,
-                    items: departments
+                    items: AppConstants.departments
                         .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                         .toList(),
                     onChanged: (v) => setState(() => department = v),
@@ -483,26 +465,6 @@ class _OnboardingUserDetailsScreenState
                         ? "Designation is required"
                         : null,
                     onChanged: (v) => setState(() => designation = v),
-                  ),
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    keyboardType: TextInputType.phone,
-                    style: TextStyle(color: colors.primaryText, fontSize: 15),
-                    decoration: _inputDeco(
-                      "Phone Number",
-                      colors,
-                      icon: Icons.phone_outlined,
-                    ),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return "Phone number is required";
-                      }
-                      if (v.trim().length < 10) {
-                        return "Enter a valid phone number";
-                      }
-                      return null;
-                    },
-                    onChanged: (v) => setState(() => phone = v),
                   ),
                 ],
               ),
@@ -703,10 +665,6 @@ class _OnboardingUserDetailsScreenState
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// 1. Hero Header Card
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 class _HeroCard extends StatelessWidget {
   final bool isFaculty;
   final AppColors colors;
@@ -782,7 +740,6 @@ class _HeroCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Progress bar â€” reflects real field completion
           Row(
             children: [
               Expanded(
@@ -825,10 +782,6 @@ class _HeroCard extends StatelessWidget {
     );
   }
 }
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// 2. Generic Section Card
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SectionCard extends StatelessWidget {
   final String title;
@@ -878,10 +831,6 @@ class _SectionCard extends StatelessWidget {
     );
   }
 }
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// 3. Read-only info tile
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _InfoTile extends StatelessWidget {
   final IconData icon;
@@ -941,10 +890,6 @@ class _InfoTile extends StatelessWidget {
     );
   }
 }
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// 4. Faculty Verification Card
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _FacultyVerificationCard extends StatelessWidget {
   final AppColors colors;
@@ -1089,10 +1034,6 @@ class _FacultyVerificationCard extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// 5. Community Benefits Card
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 class _BenefitsCard extends StatelessWidget {
   final AppColors colors;
 
@@ -1169,10 +1110,6 @@ class _BenefitsCard extends StatelessWidget {
     );
   }
 }
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// 6. Continue Button
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _ContinueButton extends StatelessWidget {
   final bool saving;

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'package:igit_connects/screens/post/edit_post_screen.dart';
+import 'package:igit_connects/screens/profile/profile_screen.dart';
 import 'package:igit_connects/shared_components/hashtag_text.dart';
 import 'package:igit_connects/storage_backend.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,6 +14,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
+import 'package:igit_connects/Screens/Post/components/comment_widgets.dart';
 import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/shared_components/share_card.dart';
 import 'package:igit_connects/utils/share_service.dart';
@@ -23,8 +25,14 @@ import 'package:igit_connects/core/post_provider.dart';
 class PostCard extends ConsumerStatefulWidget {
   final Map post;
   final VoidCallback onRefresh;
+  final bool isFromProfile;
 
-  const PostCard({super.key, required this.post, required this.onRefresh});
+  const PostCard({
+    super.key,
+    required this.post,
+    required this.onRefresh,
+    this.isFromProfile = false,
+  });
 
   @override
   ConsumerState<PostCard> createState() => _PostCardState();
@@ -66,7 +74,9 @@ class _PostCardState extends ConsumerState<PostCard> {
 
     // Parse comments count
     final commentsData = post["post_comments"] as List? ?? [];
-    _commentsCount = commentsData.isNotEmpty ? (commentsData.first["count"] as int? ?? 0) : 0;
+    _commentsCount = commentsData.isNotEmpty
+        ? (commentsData.first["count"] as int? ?? 0)
+        : 0;
   }
 
   Future<void> _toggleLike() async {
@@ -104,7 +114,7 @@ class _PostCardState extends ConsumerState<PostCard> {
           "user_id": currentUserId,
         });
       }
-      
+
       updatedPost["post_likes"] = likesList;
       ref.read(postsProvider.notifier).updatePostLocally(updatedPost);
       // Removed widget.onRefresh() to prevent full refetch
@@ -162,7 +172,7 @@ class _PostCardState extends ConsumerState<PostCard> {
 
   Future<void> deletePost() async {
     try {
-      // 1. Delete images from storage if any
+      // Delete images from storage
       final imageUrls = widget.post["image_urls"];
       if (imageUrls != null && imageUrls is List) {
         for (final url in imageUrls) {
@@ -411,7 +421,8 @@ class _PostCardState extends ConsumerState<PostCard> {
     final isVerified =
         usersData?["is_verified"] == true || post["is_verified"] == true;
     final isFacultyVerified =
-        (usersData?["faculty_verified"] == true || post["faculty_verified"] == true) &&
+        (usersData?["faculty_verified"] == true ||
+            post["faculty_verified"] == true) &&
         userType.toLowerCase() == "faculty";
 
     String userHeadline = department;
@@ -470,13 +481,16 @@ class _PostCardState extends ConsumerState<PostCard> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () {
+                      if (widget.isFromProfile) return;
                       if (post["user_id"] != null) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OtherUserProfileScreen(
-                              userId: post["user_id"].toString(),
-                            ),
+                            builder: (_) => isOwner
+                                ? ProfileScreen()
+                                : OtherUserProfileScreen(
+                                    userId: post["user_id"].toString(),
+                                  ),
                           ),
                         );
                       }
@@ -983,7 +997,10 @@ class _PostCardState extends ConsumerState<PostCard> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => FullPostScreen(post: post),
+                        builder: (_) => FullPostScreen(
+                          post: post,
+                          autoFocusComment: true,
+                        ),
                       ),
                     );
                   },
@@ -1004,29 +1021,6 @@ class _PostCardState extends ConsumerState<PostCard> {
                   label: "",
                   onTap: () async {
                     if (!context.mounted) return;
-
-                    // Show loading indicator
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: colors.cardColor,
-                        content: Row(
-                          children: [
-                            const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            const SizedBox(width: 15),
-                            Text(
-                              "Generating share link...",
-                              style: TextStyle(color: colors.primaryText),
-                            ),
-                          ],
-                        ),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
 
                     final String imageUrl = widget.post["image_url"] ?? "";
 

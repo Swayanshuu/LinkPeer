@@ -18,56 +18,64 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:igit_connects/features/broadcast/screens/broadcast_details_screen.dart';
+import 'package:igit_connects/screens/notifications/notification_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Always call initializeApp() and catch the 'duplicate-app' error that
-  // Flutter Web raises when the Firebase JS SDK is already initialized
-  // (e.g. after a hot-restart). Any other error is rethrown.
-  // Using Firebase.apps.isEmpty is NOT safe on web — accessing that getter
-  // via JS interop before the SDK is ready throws 'Unexpected null value'.
-  try {
-    await Firebase.initializeApp(
+  // Init .env & Theme
+  ThemeMode? initialTheme;
+  await Future.wait([
+    dotenv.load(fileName: ".env").then((_) => debugPrint(".env Loaded")),
+    ThemeNotifier.loadInitial().then((theme) => initialTheme = theme),
+  ]);
+
+  // Init Supabase & Firebase
+  await Future.wait([
+    Supabase.initialize(
+      url: dotenv.env['SUPABASE_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    ).then((_) => debugPrint("Supabase Initialized")),
+
+    Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } on FirebaseException catch (e) {
-    if (e.code != 'duplicate-app') rethrow;
-  }
-  debugPrint("Firebase Initialized");
+    ).catchError((e) {
+      if (e is FirebaseException && e.code == 'duplicate-app') {
+        return Firebase.app();
+      }
+      throw e;
+    }).then((_) => debugPrint("Firebase Initialized")),
+  ]);
 
-  await dotenv.load(fileName: ".env");
-  debugPrint(".env Loaded");
-
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
-
-  debugPrint("Supabase Initialized");
-  
-  if (!kIsWeb) {
-    try {
-      await NotificationService().initialize();
-      debugPrint("NotificationService Initialized");
-    } catch (e) {
-      debugPrint("Error initializing NotificationService: $e");
+  // Background inits (AdMob, Notifications)
+  Future.microtask(() async {
+    if (!kIsWeb) {
+      try {
+        await NotificationService().initialize();
+        debugPrint("NotificationService Initialized");
+      } catch (e) {
+        debugPrint("Error initializing NotificationService: $e");
+      }
     }
-  }
-  if (!kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS)) {
-    await MobileAds.instance.initialize();
-  }
-  debugPrint("AdMob Initialized");
-  final initialTheme = await ThemeNotifier.loadInitial();
 
-  runApp(ProviderScope(child: MyApp(initialTheme: initialTheme)));
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
+      try {
+        await MobileAds.instance.initialize();
+        debugPrint("AdMob Initialized");
+      } catch (e) {
+        debugPrint("Error initializing AdMob: $e");
+      }
+    }
+  });
+
+  runApp(ProviderScope(child: MyApp(initialTheme: initialTheme ?? ThemeMode.system)));
 }
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-/// Global state to handle cold-start deep linking and notification taps
+// Global deep link/notification state
 typedef DeepLinkAction = void Function();
 DeepLinkAction? pendingDeepLinkAction;
 bool isMainScreenReady = false;
@@ -93,7 +101,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   }
 
   Future<void> _initDeepLinks() async {
-    // 1. Handle deep link if app was closed (cold start)
+    // Cold start link
     try {
       final initialUri = await _appLinks.getInitialLink();
       if (initialUri != null) {
@@ -103,7 +111,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       debugPrint("Failed to get initial link: $e");
     }
 
-    // 2. Handle deep link if app is already running in background
+    // Background running link
     _appLinks.uriLinkStream.listen((uri) {
       _handleIncomingUri(uri);
     });
@@ -118,27 +126,14 @@ class _MyAppState extends ConsumerState<MyApp> {
         uri.pathSegments.isNotEmpty) {
       postId = uri.pathSegments.first;
     }
-    // Handle verified App Link (Shortlink): https://go.swynx.dev/xyz
-    else if (uri.host == 'go.swynx.dev' && uri.pathSegments.isNotEmpty) {
-      final slug = uri.pathSegments.first;
-      // Skip API routes
-      if (slug != 'api') {
-        try {
-          final response = await http.get(
-            Uri.parse('https://go.swynx.dev/api/links/$slug'),
-          );
-          if (response.statusCode == 200) {
-            final data = jsonDecode(response.body);
-            final targetUrl = data['targetUrl'] as String?;
-            if (targetUrl != null && targetUrl.startsWith('linkpeer://post/')) {
-              postId = targetUrl.split('/').last;
-            }
-          }
-        } catch (e) {
-          debugPrint('Failed to resolve shortlink: $e');
-        }
-      }
+    // Handle universal link: https://linkpeer.swynx.dev/post/123
+    else if ((uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host == 'linkpeer.swynx.dev' &&
+        uri.pathSegments.length >= 2 &&
+        uri.pathSegments[0] == 'post') {
+      postId = uri.pathSegments[1];
     }
+
 
     if (postId != null) {
       try {
@@ -192,6 +187,32 @@ class _MyAppState extends ConsumerState<MyApp> {
         }
       } catch (e) {
         debugPrint('Error loading deep linked broadcast: $e');
+        // Broadcast was deleted or not found
+        final action = () {
+          if (navigatorKey.currentState != null) {
+            navigatorKey.currentState!.push(
+              MaterialPageRoute(
+                builder: (_) => const NotificationScreen(initialIndex: 1),
+              ),
+            );
+            Future.delayed(const Duration(milliseconds: 300), () {
+              if (navigatorKey.currentContext != null) {
+                ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "This broadcast has been deleted or is no longer available.",
+                    ),
+                  ),
+                );
+              }
+            });
+          }
+        };
+        if (isMainScreenReady) {
+          action();
+        } else {
+          pendingDeepLinkAction = action;
+        }
       }
       return;
     }

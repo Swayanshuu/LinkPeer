@@ -171,7 +171,8 @@ class CommentTile extends ConsumerWidget {
                               size: 14,
                             ),
                           ],
-                          if (comment.isFacultyVerified && comment.userType.toLowerCase() == "faculty") ...[
+                          if (comment.isFacultyVerified &&
+                              comment.userType.toLowerCase() == "faculty") ...[
                             const SizedBox(width: 4),
                             Icon(
                               Icons.gpp_good_rounded,
@@ -284,7 +285,10 @@ class CommentTile extends ConsumerWidget {
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
                   title: const Text(
                     "Delete Comment",
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   onTap: () async {
                     Navigator.pop(ctx);
@@ -305,7 +309,13 @@ class CommentTile extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.bgColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text("Delete Comment", style: TextStyle(color: colors.primaryText, fontWeight: FontWeight.bold)),
+        title: Text(
+          "Delete Comment",
+          style: TextStyle(
+            color: colors.primaryText,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: Text(
           "Are you sure you want to delete this comment?",
           style: TextStyle(color: colors.secondaryText),
@@ -318,11 +328,11 @@ class CommentTile extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              
+
               // Optimistic deletion
               final notifier = ref.read(commentProvider(comment.postId));
               notifier.removeCommentLocally(comment.id);
-              
+
               try {
                 await ref
                     .read(commentServiceProvider)
@@ -334,7 +344,7 @@ class CommentTile extends ConsumerWidget {
               } catch (e) {
                 // Revert optimistic delete if it fails
                 notifier.addCommentLocally(comment);
-                
+
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Error deleting comment: $e")),
@@ -342,7 +352,10 @@ class CommentTile extends ConsumerWidget {
                 }
               }
             },
-            child: const Text("Delete", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            child: const Text(
+              "Delete",
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -352,8 +365,9 @@ class CommentTile extends ConsumerWidget {
 
 class CommentInputBar extends ConsumerStatefulWidget {
   final int postId;
+  final FocusNode? focusNode;
 
-  const CommentInputBar({super.key, required this.postId});
+  const CommentInputBar({super.key, required this.postId, this.focusNode});
 
   @override
   ConsumerState<CommentInputBar> createState() => _CommentInputBarState();
@@ -440,7 +454,9 @@ class _CommentInputBarState extends ConsumerState<CommentInputBar> {
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
+              //maxLength: 300,
               controller: _controller,
+              focusNode: widget.focusNode,
               maxLines: 4,
               minLines: 1,
               decoration: InputDecoration(
@@ -480,4 +496,63 @@ class _CommentInputBarState extends ConsumerState<CommentInputBar> {
       ),
     );
   }
+}
+
+void showCommentsModal(BuildContext context, int postId, AppColors colors) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          maxChildSize: 0.95,
+          minChildSize: 0.4,
+          builder: (_, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: colors.bgColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colors.secondaryText.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Text(
+                    "Comments",
+                    style: TextStyle(
+                      color: colors.primaryText,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  //const Divider(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      child: CommentsSection(postId: postId),
+                    ),
+                  ),
+                  CommentInputBar(postId: postId),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    },
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:igit_connects/core/models/comment_model.dart';
+import 'package:igit_connects/utils/profanity_filter.dart';
 
 class CommentService {
   final SupabaseClient _client = Supabase.instance.client;
@@ -47,6 +48,10 @@ class CommentService {
     required String commentText,
   }) async {
     try {
+      if (ProfanityFilter.hasProfanity(commentText)) {
+        throw Exception("Please remove inappropriate language from your comment.");
+      }
+
       final response = await _client.from('post_comments').insert({
         'post_id': postId,
         'user_id': userId,

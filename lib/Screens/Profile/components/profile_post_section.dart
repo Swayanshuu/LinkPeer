@@ -82,6 +82,7 @@ class _ProfilePostsSectionState extends State<ProfilePostsSection> {
 
               return PostCard(
                 post: myPosts[index],
+                isFromProfile: true,
                 onRefresh: () {
                   widget.ref.invalidate(postsProvider);
                 },

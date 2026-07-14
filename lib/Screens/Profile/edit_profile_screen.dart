@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
+import 'package:igit_connects/core/app_constants.dart';
 import 'package:igit_connects/core/user_provider.dart';
+import 'package:igit_connects/utils/profanity_filter.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -43,6 +45,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     required TextEditingController controller,
     TextInputType keyboard = TextInputType.text,
     int maxLines = 1,
+    int? maxLength,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -50,6 +53,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         controller: controller,
         keyboardType: keyboard,
         maxLines: maxLines,
+        maxLength: maxLength,
         style: TextStyle(color: colors.primaryText, fontSize: 15),
         decoration: InputDecoration(
           labelText: label,
@@ -79,6 +83,63 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget dropdownField({
+    required BuildContext context,
+    required AppColors colors,
+    required String label,
+    required TextEditingController controller,
+    required List<String> items,
+  }) {
+    final validValue = items.contains(controller.text) ? controller.text : null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: DropdownButtonFormField<String>(
+        value: validValue,
+        dropdownColor: colors.cardColor,
+        style: TextStyle(color: colors.primaryText, fontSize: 15),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: colors.secondaryText, fontSize: 14),
+          filled: true,
+          fillColor: Theme.of(context).brightness == Brightness.dark
+              ? colors.bgColor.withValues(alpha: 0.5)
+              : colors.bgColor,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: colors.borderColor.withValues(alpha: 0.3),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: colors.borderColor.withValues(alpha: 0.5),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
+          ),
+        ),
+        items: items
+            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            .toList(),
+        onChanged: (v) {
+          if (v != null) {
+            setState(() {
+              controller.text = v;
+            });
+          }
+        },
       ),
     );
   }
@@ -126,6 +187,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Name and Phone are required"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (phone.length != 10 || int.tryParse(phone) == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Enter a valid 10-digit phone number"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (ProfanityFilter.hasProfanity(nameController.text) ||
+        ProfanityFilter.hasProfanity(descriptionController.text) ||
+        ProfanityFilter.hasProfanity(githubController.text) ||
+        ProfanityFilter.hasProfanity(link2Controller.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Please remove inappropriate language from your profile.",
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -202,7 +288,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               "user_type": getUpdatedUserType(yearController.text.trim()),
             };
 
-      // 1. Update the user table
+      // Update user table
       await Supabase.instance.client.from('users').update(data).eq('id', uid);
 
       // 2. Update the user's posts so their name/branch/user_type is instantly reflected on all their posts
@@ -264,6 +350,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: colors.bgColor,
+        surfaceTintColor: colors.bgColor,
         iconTheme: IconThemeData(color: colors.primaryText),
         title: Text(
           "Edit Profile",
@@ -313,9 +400,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             initialized = true;
 
             // Fetch user type case-insensitively and also check if role is admin
-            final fetchedType = (data["user_type"] ?? "student").toString().toLowerCase();
+            final fetchedType = (data["user_type"] ?? "student")
+                .toString()
+                .toLowerCase();
             final fetchedRole = (data["role"] ?? "").toString().toLowerCase();
-            
+
             if (fetchedRole == "admin" || fetchedType == "admin") {
               userType = "admin";
             } else {
@@ -356,6 +445,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     label: "Phone",
                     controller: phoneController,
                     keyboard: TextInputType.phone,
+                    maxLength: 10,
                   ),
                   field(
                     context: context,
@@ -363,37 +453,42 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     label: "Bio / Description",
                     controller: descriptionController,
                     maxLines: 3,
+                    maxLength: 150,
                   ),
                 ], colors),
 
                 if (userType == "faculty")
                   _buildSection("Academic Details", [
-                    field(
+                    dropdownField(
                       context: context,
                       colors: colors,
                       label: "Department",
                       controller: departmentController,
+                      items: AppConstants.departments,
                     ),
-                    field(
+                    dropdownField(
                       context: context,
                       colors: colors,
                       label: "Designation",
                       controller: designationController,
+                      items: AppConstants.designations,
                     ),
                   ], colors)
                 else
                   _buildSection("Academic Details", [
-                    field(
+                    dropdownField(
                       context: context,
                       colors: colors,
                       label: "Branch",
                       controller: branchController,
+                      items: AppConstants.branches,
                     ),
-                    field(
+                    dropdownField(
                       context: context,
                       colors: colors,
                       label: "Stream",
                       controller: streamController,
+                      items: AppConstants.streams,
                     ),
                     field(
                       context: context,
@@ -414,7 +509,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   field(
                     context: context,
                     colors: colors,
-                    label: "Portfolio / Other Link (Optional)",
+                    label: "Other link starts with http:// or https://",
                     controller: link2Controller,
                     keyboard: TextInputType.url,
                   ),

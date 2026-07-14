@@ -18,8 +18,13 @@ import 'package:igit_connects/Screens/Post/components/comment_widgets.dart';
 
 class FullPostScreen extends ConsumerStatefulWidget {
   final Map post;
+  final bool autoFocusComment;
 
-  const FullPostScreen({super.key, required this.post});
+  const FullPostScreen({
+    super.key,
+    required this.post,
+    this.autoFocusComment = false,
+  });
 
   @override
   ConsumerState<FullPostScreen> createState() => _FullPostScreenState();
@@ -36,6 +41,17 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
   void initState() {
     super.initState();
     _initializeLikesAndSaves();
+    
+    if (widget.autoFocusComment) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showCommentsModal(context, widget.post['id'], AppColors.of(context));
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void _initializeLikesAndSaves() {
@@ -302,22 +318,9 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
         ),
         centerTitle: true,
         actions: [
-          if (_isGeneratingLink)
-            const Padding(
-              padding: EdgeInsets.only(right: 16.0),
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.share_outlined),
-              onPressed: () async {
-                setState(() => _isGeneratingLink = true);
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            onPressed: () async {
 
                 final String imageUrl = (widget.post["image_url"] ?? "")
                     .toString();
@@ -346,26 +349,23 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                   shareUrl: shortUrl,
                   postTitle: title.isNotEmpty ? title : "LinkPeer Post",
                 );
-
-                if (mounted) {
-                  setState(() => _isGeneratingLink = false);
-                }
               },
             ),
         ],
       ),
-      body: Stack(
+      body: Column(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              12,
-              16,
-              110,
-            ), // Extra padding for bottom bar
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                12,
+                16,
+                16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -677,254 +677,128 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
                   const SizedBox(height: 24),
                 ],
 
-                // Link Section
-                // Link Section moved to FAB
+                // Link Secti                // Link Section moved to FAB
               ],
             ),
           ),
+        ),
+          if (FirebaseAuth.instance.currentUser == null)
+            _buildLoginBanner(colors)
+          else
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    _buildActionButton(
+                      icon: _isLiked
+                          ? Icons.favorite
+                          : Icons.favorite_border_rounded,
+                      color: _isLiked ? Colors.red : colors.secondaryText,
+                      label: _likesCount > 0 ? "$_likesCount" : "",
+                      onTap: _toggleLike,
+                      isActive: _isLiked,
+                    ),
+                    _buildActionButton(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      color: colors.secondaryText,
+                      label: _commentsCount > 0 ? "$_commentsCount" : "",
+                      onTap: () {
+                        showCommentsModal(context, widget.post['id'], colors);
+                      },
+                      isActive: false,
+                    ),
+                    _buildActionButton(
+                      icon: _isSaved
+                          ? Icons.bookmark
+                          : Icons.bookmark_border_rounded,
+                      color: _isSaved ? Colors.blue : colors.secondaryText,
+                      label: "",
+                      onTap: _toggleSave,
+                      isActive: _isSaved,
+                    ),
+                    _buildActionButton(
+                      icon: Icons.share_outlined,
+                      color: colors.secondaryText,
+                      label: "",
+                      onTap: () async {
+                        final String imageUrl =
+                            (widget.post["image_url"] ?? "").toString();
+                        final String title =
+                            (widget.post["title"] ?? "").toString();
+                        final String content =
+                            (widget.post["content"] ?? "").toString();
 
-          // Bottom Action Bar or Login Banner
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: FirebaseAuth.instance.currentUser == null
-                ? Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.bgColor.withValues(alpha: 0.95),
-                      border: Border(
-                        top: BorderSide(
-                          color: colors.borderColor.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, -5),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (_) => const LoginScreen2(),
-                            ),
-                            (route) => false,
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: colors
-                                .primaryText, // High contrast button color
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.lock_outline,
-                                color: colors.bgColor,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Login to see more",
-                                style: TextStyle(
-                                  color: colors.bgColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                : Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.bgColor.withValues(alpha: 0.95),
-                      border: Border(
-                        top: BorderSide(
-                          color: colors.borderColor.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, -5),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.start, // Left align
-                        children: [
-                          _buildActionButton(
-                            icon: _isLiked
-                                ? Icons.favorite
-                                : Icons.favorite_border_rounded,
-                            color: _isLiked ? Colors.red : colors.secondaryText,
-                            label: _likesCount > 0 ? "$_likesCount" : "",
-                            onTap: _toggleLike,
-                            isActive: _isLiked,
-                          ),
-                          _buildActionButton(
-                            icon: Icons.chat_bubble_outline_rounded,
-                            color: colors.secondaryText,
-                            label: _commentsCount > 0 ? "$_commentsCount" : "",
-                            onTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                builder: (context) {
-                                  return DraggableScrollableSheet(
-                                    initialChildSize: 0.8,
-                                    maxChildSize: 0.95,
-                                    minChildSize: 0.5,
-                                    builder: (_, scrollController) {
-                                      final sheetColors = AppColors.of(context);
-                                      return AnimatedPadding(
-                                        padding: EdgeInsets.only(
-                                          bottom: MediaQuery.of(
-                                            context,
-                                          ).viewInsets.bottom,
-                                        ),
-                                        duration: const Duration(
-                                          milliseconds: 200,
-                                        ),
-                                        curve: Curves.easeOut,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: sheetColors.bgColor,
-                                            borderRadius:
-                                                const BorderRadius.vertical(
-                                                  top: Radius.circular(20),
-                                                ),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Container(
-                                                margin:
-                                                    const EdgeInsets.symmetric(
-                                                      vertical: 12,
-                                                    ),
-                                                width: 40,
-                                                height: 4,
-                                                decoration: BoxDecoration(
-                                                  color: sheetColors
-                                                      .secondaryText
-                                                      .withValues(alpha: 0.3),
-                                                  borderRadius:
-                                                      BorderRadius.circular(2),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: SingleChildScrollView(
-                                                  controller: scrollController,
-                                                  child: CommentsSection(
-                                                    postId: widget.post['id'],
-                                                  ),
-                                                ),
-                                              ),
-                                              CommentInputBar(
-                                                postId: widget.post['id'],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                            isActive: false,
-                          ),
-                          _buildActionButton(
-                            icon: _isSaved
-                                ? Icons.bookmark
-                                : Icons.bookmark_border_rounded,
-                            color: _isSaved
-                                ? Colors.blue
-                                : colors.secondaryText,
-                            label: "",
-                            onTap: _toggleSave,
-                            isActive: _isSaved,
-                          ),
-                          _buildActionButton(
-                            icon: Icons.share_outlined,
-                            color: colors.secondaryText,
-                            label: _isGeneratingLink ? "..." : "",
-                            onTap: () async {
-                              if (_isGeneratingLink) return;
-                              setState(() => _isGeneratingLink = true);
+                        final shortUrl = await ShareService.generateShortLink(
+                          postId: widget.post['id'].toString(),
+                          title: title.isNotEmpty ? title : 'LinkPeer Post',
+                          imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+                        );
 
-                              final String imageUrl =
-                                  (widget.post["image_url"] ?? "").toString();
-
-                              final shortUrl =
-                                  await ShareService.generateShortLink(
-                                    postId: widget.post['id'].toString(),
-                                    title: title.isNotEmpty
-                                        ? title
-                                        : 'LinkPeer Post',
-                                    imageUrl: imageUrl.isNotEmpty
-                                        ? imageUrl
-                                        : null,
-                                  );
-
-                              await ShareService.shareWidgetAsImage(
-                                widget: ShareCard(
-                                  userName:
-                                      widget.post["user_name"]?.toString() ??
-                                      "Anonymous",
-                                  userRole:
-                                      widget.post["user_type"]?.toString() ??
-                                      "User",
-                                  userAvatar:
-                                      widget.post["user_photo"]?.toString() ??
-                                      "",
-                                  postContent: title.isNotEmpty
-                                      ? title
-                                      : (content.isNotEmpty
-                                            ? content
-                                            : "Check out this post!"),
-                                ),
-                                shareUrl: shortUrl,
-                                postTitle: title.isNotEmpty
-                                    ? title
-                                    : "LinkPeer Post",
-                              );
-
-                              if (mounted) {
-                                setState(() => _isGeneratingLink = false);
-                              }
-                            },
-                            isActive: false,
+                        await ShareService.shareWidgetAsImage(
+                          widget: ShareCard(
+                            userName: widget.post["user_name"]?.toString() ??
+                                "Anonymous",
+                            userRole: widget.post["user_type"]?.toString() ??
+                                "User",
+                            userAvatar: widget.post["user_photo"]?.toString() ??
+                                "",
+                            postContent: title.isNotEmpty
+                                ? title
+                                : (content.isNotEmpty
+                                    ? content
+                                    : "Check out this post!"),
                           ),
-                        ],
-                      ),
+                          shareUrl: shortUrl,
+                          postTitle: title.isNotEmpty ? title : "LinkPeer Post",
+                        );
+                      },
+                      isActive: false,
                     ),
-                  ),
-          ),
+                  ],
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoginBanner(AppColors colors) {
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const LoginScreen2(),
+          ),
+          (route) => false,
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: colors.primaryText,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_outline, color: colors.bgColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                "Login to see more",
+                style: TextStyle(
+                  color: colors.bgColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

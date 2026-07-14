@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:igit_connects/main.dart';
 import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:igit_connects/features/broadcast/screens/broadcast_details_screen.dart';
+import 'package:igit_connects/screens/notifications/notification_screen.dart';
 
 // Top level background handler
 @pragma('vm:entry-point')
@@ -19,9 +20,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
   final NotificationRepository _repository = NotificationRepository();
-  
+
   // Singleton
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
@@ -114,7 +116,9 @@ class NotificationService {
     );
 
     await _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
   }
 
@@ -174,24 +178,39 @@ class NotificationService {
     try {
       final data = jsonDecode(payload);
       debugPrint("Notification Tapped with payload: $data");
-      
+
       if (data['type'] == 'broadcast' && data['broadcast_id'] != null) {
         final broadcastId = data['broadcast_id'];
-        
+
         try {
           final response = await Supabase.instance.client
               .from('broadcasts')
               .select()
               .eq('id', broadcastId)
               .maybeSingle();
-              
+
           if (response == null) {
             // Broadcast was deleted from the admin panel
             final action = () {
-              if (navigatorKey.currentContext != null) {
-                ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-                  const SnackBar(content: Text("This broadcast has been deleted or is no longer available.")),
+              if (navigatorKey.currentState != null) {
+                navigatorKey.currentState!.push(
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationScreen(initialIndex: 1),
+                  ),
                 );
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  if (navigatorKey.currentContext != null) {
+                    ScaffoldMessenger.of(
+                      navigatorKey.currentContext!,
+                    ).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "This broadcast has been deleted or is no longer available.",
+                        ),
+                      ),
+                    );
+                  }
+                });
               }
             };
             if (isMainScreenReady) {
@@ -234,7 +253,10 @@ class NotificationService {
   }
 
   /// Get Paginated Notifications
-  Future<List<NotificationModel>> getNotifications({required int offset, required int limit}) async {
+  Future<List<NotificationModel>> getNotifications({
+    required int offset,
+    required int limit,
+  }) async {
     debugPrint("Fetching notifications (offset: $offset, limit: $limit)...");
     return await _repository.getNotifications(offset: offset, limit: limit);
   }

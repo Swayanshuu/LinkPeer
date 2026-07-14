@@ -11,6 +11,7 @@ import 'package:igit_connects/screens/post/components/create_post_top_section.da
 import 'package:igit_connects/screens/premium/subscription_screen.dart';
 import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/storage_backend.dart';
+import 'package:igit_connects/utils/profanity_filter.dart';
 
 class EditPostScreen extends ConsumerStatefulWidget {
   final Map post;
@@ -137,6 +138,18 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
       return;
     }
 
+    if (ProfanityFilter.hasProfanity(title.text) ||
+        ProfanityFilter.hasProfanity(content.text) ||
+        ProfanityFilter.hasProfanity(link.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please remove inappropriate language from your post."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     try {
       setState(() {
         loading = true;
@@ -162,7 +175,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         }
       }
 
-      // 1. Delete removed images from storage
+      // Delete removed images from storage
       for (String url in imagesToRemove) {
         await StorageBackend().removePostImage(url);
       }
