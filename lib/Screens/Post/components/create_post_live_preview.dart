@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:igit_connects/shared_components/hashtag_text.dart';
+import 'package:igit_connects/shared_components/custom_snackbar.dart';
 import 'package:shimmer/shimmer.dart';
 
 class CreatePostPreviewSection extends StatelessWidget {
@@ -160,37 +161,10 @@ class CreatePostPreviewSection extends StatelessWidget {
     String urlString,
     AppColors colors,
   ) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: colors.cardColor,
-        margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Colors.redAccent, width: 0.8),
-        ),
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 14),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                "Invalid URL: $urlString",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: colors.primaryText,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    CustomSnackBar.show(
+      context,
+      message: "Invalid URL: $urlString",
+      isError: true,
     );
   }
 

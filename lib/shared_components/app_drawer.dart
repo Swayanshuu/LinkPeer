@@ -5,6 +5,8 @@ import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/core/theme_provider.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/screens/profile/settings_screen.dart';
+import 'package:igit_connects/shared_components/custom_snackbar.dart';
+import 'package:igit_connects/features/broadcast/screens/broadcast_tab.dart';
 import 'package:igit_connects/screens/about/about_screen.dart';
 import 'package:igit_connects/screens/premium/subscription_screen.dart';
 import 'package:igit_connects/screens/bookmarks/bookmarks_screen.dart';
@@ -381,11 +383,17 @@ class AppDrawer extends ConsumerWidget {
                       queryParameters: {'subject': 'report a bug'},
                     );
                     try {
-                      await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+                      await launchUrl(
+                        emailUri,
+                        mode: LaunchMode.externalApplication,
+                      );
                     } catch (e) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Could not open email app. Please email swynx.dev@gmail.com manually.")),
+                        CustomSnackBar.show(
+                          context,
+                          message:
+                              "Could not open email app. Please email swynx.dev@gmail.com manually.",
+                          isError: true,
                         );
                       }
                     }
@@ -450,46 +458,50 @@ class AppDrawer extends ConsumerWidget {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.only(bottom: 24.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Built with ",
-                  style: TextStyle(color: colors.secondaryText, fontSize: 13),
-                ),
-                const Icon(
-                  Icons.favorite_rounded,
-                  color: Colors.redAccent,
-                  size: 14,
-                ),
-                Text(
-                  " by ",
-                  style: TextStyle(color: colors.secondaryText, fontSize: 13),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    final url = Uri.parse("https://swynx.dev");
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(
-                        url,
-                        mode: LaunchMode.externalApplication,
-                      );
-                    }
-                  },
-                  child: const Text(
-                    "swynx.dev",
-                    style: TextStyle(
-                      color: Colors.blueAccent,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Built with ",
+                    style: TextStyle(color: colors.secondaryText, fontSize: 13),
+                  ),
+                  const Icon(
+                    Icons.favorite_rounded,
+                    color: Colors.redAccent,
+                    size: 14,
+                  ),
+                  Text(
+                    " by ",
+                    style: TextStyle(color: colors.secondaryText, fontSize: 13),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      final url = Uri.parse("https://swynx.dev");
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      }
+                    },
+                    child: const Text(
+                      "swynx.dev",
+                      style: TextStyle(
+                        color: Colors.blueAccent,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
+
+          const SizedBox(height: 30),
         ],
       ),
     );

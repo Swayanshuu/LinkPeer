@@ -77,7 +77,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: colors.bgColor,
-      drawer: const AppDrawer(),
       floatingActionButton: showFab
           ? Padding(
               padding: const EdgeInsets.only(

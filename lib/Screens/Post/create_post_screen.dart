@@ -18,6 +18,7 @@ import 'package:igit_connects/utils/profanity_filter.dart';
 import 'package:igit_connects/main_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:igit_connects/storage_backend.dart';
+import 'package:igit_connects/shared_components/custom_snackbar.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -146,8 +147,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     if (_selectedXFiles.length >= maxImages) {
       if (isActive && plan == 'premium_pro') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("You can upload up to $maxImages images.")),
+        CustomSnackBar.show(
+          context,
+          message: "You can upload up to $maxImages images.",
+          isError: true,
         );
       } else {
         _showPremiumPrompt(
@@ -166,12 +169,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         if (_selectedXFiles.length + images.length > maxImages) {
           if (mounted) {
             if (isAdmin || (isActive && plan == 'premium_pro')) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    "You can only upload up to $maxImages images per post.",
-                  ),
-                ),
+              CustomSnackBar.show(
+                context,
+                message: "You can only upload up to $maxImages images per post.",
+                isError: true,
               );
             } else {
               _showPremiumPrompt(
@@ -205,8 +206,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         content.text.trim().isEmpty &&
         link.text.trim().isEmpty &&
         _selectedXFiles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You cannot publish an empty post.")),
+      CustomSnackBar.show(
+        context,
+        message: "You cannot publish an empty post.",
+        isError: true,
       );
       return;
     }
@@ -214,11 +217,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     if (ProfanityFilter.hasProfanity(title.text) ||
         ProfanityFilter.hasProfanity(content.text) ||
         ProfanityFilter.hasProfanity(link.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please remove inappropriate language from your post."),
-          backgroundColor: Colors.red,
-        ),
+      CustomSnackBar.show(
+        context,
+        message: "Please remove inappropriate language from your post.",
+        isError: true,
       );
       return;
     }

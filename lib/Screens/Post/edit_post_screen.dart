@@ -12,6 +12,7 @@ import 'package:igit_connects/screens/premium/subscription_screen.dart';
 import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/storage_backend.dart';
 import 'package:igit_connects/utils/profanity_filter.dart';
+import 'package:igit_connects/shared_components/custom_snackbar.dart';
 
 class EditPostScreen extends ConsumerStatefulWidget {
   final Map post;
@@ -132,8 +133,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         link.text.trim().isEmpty &&
         existingImages.isEmpty &&
         _selectedXFiles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You cannot save an empty post.")),
+      CustomSnackBar.show(
+        context,
+        message: "You cannot save an empty post.",
+        isError: true,
       );
       return;
     }
@@ -141,11 +144,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     if (ProfanityFilter.hasProfanity(title.text) ||
         ProfanityFilter.hasProfanity(content.text) ||
         ProfanityFilter.hasProfanity(link.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please remove inappropriate language from your post."),
-          backgroundColor: Colors.red,
-        ),
+      CustomSnackBar.show(
+        context,
+        message: "Please remove inappropriate language from your post.",
+        isError: true,
       );
       return;
     }
@@ -206,7 +208,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
 
       Navigator.pop(context, true);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+      CustomSnackBar.show(context, message: "$e", isError: true);
     } finally {
       if (mounted) {
         setState(() {
@@ -567,12 +569,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                     if (existingImages.length + _selectedXFiles.length >=
                         maxImages) {
                       if (isAdmin || (isActive && plan == 'premium_pro')) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              "You can upload up to $maxImages images.",
-                            ),
-                          ),
+                        CustomSnackBar.show(
+                          context,
+                          message: "You can upload up to $maxImages images.",
+                          isError: true,
                         );
                       } else {
                         _showPremiumPrompt(

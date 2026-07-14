@@ -36,7 +36,8 @@ class HomeHeader extends ConsumerWidget {
           children: [
             GestureDetector(
               onTap: () {
-                Scaffold.of(context).openDrawer();
+                final scaffoldState = context.findRootAncestorStateOfType<ScaffoldState>();
+                scaffoldState?.openDrawer();
               },
               child: Container(
                 decoration: BoxDecoration(

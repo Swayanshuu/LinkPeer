@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/user_provider.dart';
+import 'package:igit_connects/shared_components/custom_snackbar.dart';
 
 class SubscriptionScreen extends ConsumerStatefulWidget {
   const SubscriptionScreen({super.key});
@@ -15,11 +16,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   bool isLoading = false;
 
   Future<void> _processPayment(String planType, double amount) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Premium subscriptions are coming soon! Stay tuned."),
-        duration: Duration(seconds: 3),
-      ),
+    CustomSnackBar.show(
+      context,
+      message: "Premium subscriptions are coming soon! Stay tuned.",
     );
   }
 

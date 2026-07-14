@@ -11,7 +11,7 @@ import 'package:igit_connects/screens/profile/profile_screen.dart';
 import 'package:igit_connects/screens/bookmarks/bookmarks_screen.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/shared_components/app_drawer.dart';
-
+import 'package:igit_connects/shared_components/custom_snackbar.dart';
 import 'package:igit_connects/main.dart'; // Import to access global deep link variables
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -33,7 +33,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   ];
 
   StreamSubscription<InternetStatus>? _internetSubscription;
-  bool _isDisconnected = false;
+  final ValueNotifier<bool> _isDisconnected = ValueNotifier(false);
 
   @override
   void initState() {
@@ -42,10 +42,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       status,
     ) {
       if (status == InternetStatus.disconnected) {
-        setState(() => _isDisconnected = true);
-        _showNoInternetPopup();
-      } else if (status == InternetStatus.connected && _isDisconnected) {
-        setState(() => _isDisconnected = false);
+        if (!_isDisconnected.value) {
+          _isDisconnected.value = true;
+          _showNoInternetPopup();
+        }
+      } else if (status == InternetStatus.connected && _isDisconnected.value) {
+        _isDisconnected.value = false;
         _showBackOnlinePopup();
 
         // Automatically fetch the latest data when internet is restored
@@ -71,54 +73,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   void _showNoInternetPopup() {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            const Text(
-              "No internet connection",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(days: 365), // Persistent until reconnected
-        margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    CustomSnackBar.show(
+      context,
+      message: "No internet connection",
+      isError: true,
     );
   }
 
   void _showBackOnlinePopup() {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.wifi_rounded, color: Colors.white, size: 20),
-            const SizedBox(width: 12),
-            const Text(
-              "Back online",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    CustomSnackBar.show(
+      context,
+      message: "Back online",
+      isError: false,
     );
   }
 
@@ -130,6 +96,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       backgroundColor: colors.bgColor,
+      drawer: const AppDrawer(), // Added drawer here to cover bottom nav bar
       extendBody:
           true, // This makes the notch gap transparent (shows content behind)
       resizeToAvoidBottomInset:

@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:igit_connects/core/app_colors.dart';
+import 'package:igit_connects/shared_components/custom_snackbar.dart';
 import 'package:igit_connects/Screens/Post/components/full_screen_image_viewer.dart';
 import 'package:igit_connects/shared_components/hashtag_text.dart';
 import 'package:igit_connects/core/post_provider.dart';
@@ -203,34 +204,10 @@ class _FullPostScreenState extends ConsumerState<FullPostScreen> {
     String urlString,
     AppColors colors,
   ) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.red.shade600,
-        margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                "Invalid URL: $urlString",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    CustomSnackBar.show(
+      context,
+      message: "Invalid URL: $urlString",
+      isError: true,
     );
   }
 

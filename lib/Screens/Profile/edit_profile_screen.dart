@@ -1,12 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:igit_connects/utils/profanity_filter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/app_constants.dart';
 import 'package:igit_connects/core/user_provider.dart';
-import 'package:igit_connects/utils/profanity_filter.dart';
+import 'package:igit_connects/shared_components/custom_snackbar.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -184,21 +185,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final phone = phoneController.text.trim();
 
     if (name.isEmpty || phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Name and Phone are required"),
-          backgroundColor: Colors.red,
-        ),
+      CustomSnackBar.show(
+        context,
+        message: "Name and Phone are required",
+        isError: true,
       );
       return;
     }
 
     if (phone.length != 10 || int.tryParse(phone) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Enter a valid 10-digit phone number"),
-          backgroundColor: Colors.red,
-        ),
+      CustomSnackBar.show(
+        context,
+        message: "Enter a valid 10-digit phone number",
+        isError: true,
       );
       return;
     }
@@ -207,13 +206,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ProfanityFilter.hasProfanity(descriptionController.text) ||
         ProfanityFilter.hasProfanity(githubController.text) ||
         ProfanityFilter.hasProfanity(link2Controller.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Please remove inappropriate language from your profile.",
-          ),
-          backgroundColor: Colors.red,
-        ),
+      CustomSnackBar.show(
+        context,
+        message: "Please remove inappropriate language from your profile.",
+        isError: true,
       );
       return;
     }
@@ -222,11 +218,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final dept = departmentController.text.trim();
       final desig = designationController.text.trim();
       if (dept.isEmpty || desig.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Department and Designation are required"),
-            backgroundColor: Colors.red,
-          ),
+        CustomSnackBar.show(
+          context,
+          message: "Department and Designation are required",
+          isError: true,
         );
         return;
       }
@@ -235,11 +230,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final stream = streamController.text.trim();
       final year = yearController.text.trim();
       if (branch.isEmpty || stream.isEmpty || year.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Branch, Stream, and Graduating Year are required"),
-            backgroundColor: Colors.red,
-          ),
+        CustomSnackBar.show(
+          context,
+          message: "Branch, Stream, and Graduating Year are required",
+          isError: true,
         );
         return;
       }
@@ -323,12 +317,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       Navigator.pop(context, true);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error saving: $e\nDid you run the SQL command?"),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-        ),
+      CustomSnackBar.show(
+        context,
+        message: "Error saving: $e\nDid you run the SQL command?",
+        isError: true,
       );
     } finally {
       if (mounted) {
