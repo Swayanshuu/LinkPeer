@@ -28,16 +28,17 @@ class _BannerAdWidgetState extends State<BannerAdWidget>
             defaultTargetPlatform == TargetPlatform.iOS);
 
     if (isMobile) {
-      final adUnitId = kDebugMode
-          ? (defaultTargetPlatform == TargetPlatform.android
-                ? 'ca-app-pub-3940256099942544/6300978111'
-                : 'ca-app-pub-3940256099942544/2934735716')
-          : (dotenv.env['ADUNITID'] ??
-                'ca-app-pub-3940256099942544/6300978111');
+      // final adUnitId = kDebugMode
+      //     ? (defaultTargetPlatform == TargetPlatform.android
+      //           ? 'ca-app-pub-3940256099942544/6300978111'
+      //           : 'ca-app-pub-3940256099942544/2934735716')
+      //     : (dotenv.env['ADUNITID'] ??
+      //           'ca-app-pub-3940256099942544/6300978111');
 
+      final adUnitId = dotenv.env['ADUNITID'];
       _bannerAd = BannerAd(
         size: AdSize.banner,
-        adUnitId: adUnitId,
+        adUnitId: adUnitId!,
         request: const AdRequest(),
         listener: BannerAdListener(
           onAdLoaded: (ad) {
@@ -66,7 +67,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget>
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
-    
+
     if (_bannerAd == null || !_isLoaded) {
       return const SizedBox();
     }

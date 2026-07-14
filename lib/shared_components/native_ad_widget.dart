@@ -34,15 +34,16 @@ class _NativeAdWidgetState extends State<NativeAdWidget>
 
     if (!isMobile) return;
 
-    final adUnitId = kDebugMode
-        ? (defaultTargetPlatform == TargetPlatform.android
-              ? 'ca-app-pub-3940256099942544/2247696110'
-              : 'ca-app-pub-3940256099942544/3986624511')
-        : (dotenv.env['NATIVE_AD_UNIT_ID'] ??
-              'a-app-pub-3940256099942544/2247696110');
+    // final adUnitId = kDebugMode
+    //     ? (defaultTargetPlatform == TargetPlatform.android
+    //           ? 'ca-app-pub-3940256099942544/2247696110'
+    //           : 'ca-app-pub-3940256099942544/3986624511')
+    //     : (dotenv.env['NATIVE_AD_UNIT_ID'] ??
+    //           'a-app-pub-3940256099942544/2247696110');
 
+    final adUnitId = dotenv.env['NATIVE_AD_UNIT_ID'];
     _nativeAd = NativeAd(
-      adUnitId: adUnitId,
+      adUnitId: adUnitId!,
       request: const AdRequest(),
       listener: NativeAdListener(
         onAdLoaded: (ad) {
@@ -111,13 +112,13 @@ class _NativeAdWidgetState extends State<NativeAdWidget>
             Container(width: double.infinity, height: 16, color: Colors.white),
             const SizedBox(height: 6),
             Container(
-                width: MediaQuery.of(context).size.width * 0.7,
-                height: 16,
-                color: Colors.white),
+              width: MediaQuery.of(context).size.width * 0.7,
+              height: 16,
+              color: Colors.white,
+            ),
             const SizedBox(height: 16),
             Expanded(
-              child: Container(
-                  width: double.infinity, color: Colors.white),
+              child: Container(width: double.infinity, color: Colors.white),
             ),
           ],
         ),
@@ -132,7 +133,8 @@ class _NativeAdWidgetState extends State<NativeAdWidget>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_nativeAd == null || !_nativeAdIsLoaded) {
-      return _buildPlaceholder(colors, isDark);
+      // return _buildPlaceholder(colors, isDark);
+      return SizedBox(height: 20);
     }
 
     return Container(
@@ -150,7 +152,8 @@ class _NativeAdWidgetState extends State<NativeAdWidget>
         minWidth: 320,
         maxWidth: double.infinity,
         minHeight: 350,
-        maxHeight: 350, // Fixed height to match PostCard and prevent ListView layout errors
+        maxHeight:
+            350, // Fixed height to match PostCard and prevent ListView layout errors
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),

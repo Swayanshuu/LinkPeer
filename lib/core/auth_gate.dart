@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:video_player/video_player.dart';
 
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/post_provider.dart';
@@ -23,6 +24,7 @@ class _AuthGateState extends ConsumerState<AuthGate>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _progressAnimation;
+  VideoPlayerController? _videoController;
   double _progress = 0.0;
   bool _initCompleted = false;
   void Function()? _nextNavigation;
@@ -30,6 +32,14 @@ class _AuthGateState extends ConsumerState<AuthGate>
   @override
   void initState() {
     super.initState();
+
+    _videoController =
+        VideoPlayerController.asset('assets/videos/logoAnimation.mp4')
+          ..initialize().then((_) {
+            setState(() {});
+            _videoController?.play();
+          });
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2500),
@@ -56,6 +66,7 @@ class _AuthGateState extends ConsumerState<AuthGate>
 
   @override
   void dispose() {
+    _videoController?.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -203,34 +214,82 @@ class _AuthGateState extends ConsumerState<AuthGate>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  /// Logo Circle
-                  Container(
-                    height: 110,
-                    width: 110,
-                    decoration: BoxDecoration(
-                      color: colors.cardColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 30,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Image.asset(
-                          'assets/images/LinkPeer.png',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
+                  /// Video Logo
+                  ClipRect(
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 200, // Crop the vertical space
+                      child:
+                          _videoController != null &&
+                              _videoController!.value.isInitialized
+                          ? FittedBox(
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              child: SizedBox(
+                                width: _videoController!.value.size.width,
+                                height: _videoController!.value.size.height,
+                                child: Transform.scale(
+                                  scale: 1.6, // Zoom in the video
+                                  child: ColorFiltered(
+                                    colorFilter: const ColorFilter.matrix([
+                                      1,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      1,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      0,
+                                      1,
+                                      0,
+                                      0,
+                                      1,
+                                      1,
+                                      1,
+                                      0,
+                                      0,
+                                    ]),
+                                    child: VideoPlayer(_videoController!),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Container(
+                                height: 110,
+                                width: 110,
+                                decoration: BoxDecoration(
+                                  color: colors.cardColor,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.08),
+                                      blurRadius: 30,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: ClipOval(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(18),
+                                    child: Image.asset(
+                                      'assets/images/LinkPeer.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                     ),
                   ),
 
-                  const SizedBox(height: 32),
-
+                  const SizedBox(
+                    height: 0,
+                  ), // Reduced space to bring text closer
                   /// Brand
                   Text(
                     "LinkPeer",
@@ -242,14 +301,13 @@ class _AuthGateState extends ConsumerState<AuthGate>
                     ),
                   ),
 
-                  const SizedBox(height: 8),
-
+                  //const SizedBox(height: 8),
                   Text(
                     "One Community. Endless Possibilities.",
                     style: TextStyle(color: colors.secondaryText, fontSize: 14),
                   ),
 
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 20),
 
                   /// Modern Percentage Loading Bar using theme AppColors
                   SizedBox(

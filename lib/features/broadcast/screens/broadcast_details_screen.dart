@@ -187,7 +187,8 @@ class BroadcastDetailsScreen extends StatelessWidget {
                     );
                   },
                   child: Hero(
-                    tag: 'broadcast_details_${broadcast.id}_${broadcast.imageUrl}',
+                    tag:
+                        'broadcast_details_${broadcast.id}_${broadcast.imageUrl}',
                     child: Image.network(
                       broadcast.imageUrl!,
                       width: double.infinity,

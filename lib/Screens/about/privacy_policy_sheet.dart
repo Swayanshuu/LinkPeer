@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/shared_components/policy_section.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PrivacyPolicySheet extends StatelessWidget {
   const PrivacyPolicySheet({super.key});
@@ -214,6 +215,44 @@ class PrivacyPolicySheet extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 24),
+                    Center(
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            "For more details visit ",
+                            style: TextStyle(
+                              color: colors.secondaryText,
+                              fontSize: 14,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              // TODO: Insert your web URL manually here
+                              final Uri url = Uri.parse(
+                                'https://privacy.linkpeer.swynx.dev',
+                              );
+                              if (!await launchUrl(
+                                url,
+                                mode: LaunchMode.externalApplication,
+                              )) {
+                                debugPrint('Could not launch $url');
+                              }
+                            },
+                            child: const Text(
+                              "here",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 14,
+                                decoration: TextDecoration.underline,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
                     Center(
                       child: Image.asset(
@@ -259,6 +298,7 @@ class PrivacyPolicySheet extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 30),
                   ],
                 ),
               ),

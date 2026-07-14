@@ -3,6 +3,7 @@
 <img src="assets/images/LinkPeerFULL.png" alt="LinkPeer Logo" width="220" />
 
 # LinkPeer
+
 <a href="https://play.google.com/store/apps/details?id=com.swynx.linkpeer">
   <img src="https://img.shields.io/badge/Download%20on-Google%20Play-34A853?style=for-the-badge&logo=google-play&logoColor=white" alt="Download on Google Play">
 </a>
@@ -69,6 +70,7 @@ graph TD
 ```
 
 ### How the Architecture Works:
+
 1. **The Client Layer**: The app is built with Flutter, heavily utilizing **Riverpod** as the central nervous system. No UI widget directly contacts the database; everything routes through state providers.
 2. **The Firebase Layer**: Handles Google OAuth 2.0 and stores lightweight user profiles. It's incredibly fast for authentication and guarantees smooth, passwordless logins.
 3. **The Supabase Layer**: The heavy lifter. It handles all relational data (posts, comments, likes) via PostgreSQL and hosts all uploaded media (images/documents) via its global CDN.
@@ -77,6 +79,7 @@ graph TD
 ### Detailed Documentation
 
 For a deep dive into specific systems, refer to our technical documentation:
+
 - [System Design & App Flow](app%20docs/system_design.md): Complete user flow and data sequence diagrams.
 - [Push Notifications Architecture](app%20docs/notifications.md): Secure serverless notification system.
 - [Share & Deep Linking Implementation](app%20docs/SHARE_FEATURE_IMPLEMENTATION.md): How URL shortening and deep linking work.
@@ -418,5 +421,6 @@ Built for the IGIT campus community — Indira Gandhi Institute of Technology, S
 
 Built with ❤️ by <a href="https://swynx.dev">Swynx.dev</a>
 
+**If you like the hard work, please consider giving this repository a ⭐ star!**
 
 </div>
