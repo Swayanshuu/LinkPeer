@@ -82,29 +82,46 @@ class ProfileHeaderSliver extends StatelessWidget {
         ? "ADMIN"
         : (data["user_type"] ?? "Student").toString().toUpperCase();
     final isStudent = userType.contains("STUDENT");
-    final branch = data["branch"] ?? data["department"] ?? "CSE";
+    final isFaculty = (data["user_type"] ?? "").toString().toLowerCase() == "faculty";
     final college = data["college"] ?? "IGIT Sarang";
 
-    final gradYear =
-        data["graduating_year"]?.toString() ?? DateTime.now().year.toString();
-    final now = DateTime.now().year;
-    final gradYearInt = int.tryParse(gradYear) ?? now;
-    final isAlumni = gradYearInt <= now;
+    String metadataText = "";
+    IconData metadataIcon = Icons.school_outlined;
 
-    int yearOfStudy = 4 - (gradYearInt - now);
-    String yearString = "";
-    if (isAlumni) {
-      yearString = "Batch of $gradYear";
-    } else if (yearOfStudy == 1) {
-      yearString = "1st Year";
-    } else if (yearOfStudy == 2) {
-      yearString = "2nd Year";
-    } else if (yearOfStudy == 3) {
-      yearString = "3rd Year";
-    } else if (yearOfStudy == 4) {
-      yearString = "4th Year";
+    if (isFaculty) {
+      metadataIcon = Icons.work_outline_rounded;
+      final designation = data["designation"]?.toString().trim() ?? "";
+      final department = data["department"]?.toString().trim() ?? "";
+      final parts = <String>[];
+      if (designation.isNotEmpty) parts.add(designation);
+      if (department.isNotEmpty) parts.add(department);
+      if (college.toString().isNotEmpty) parts.add(college.toString());
+      metadataText = parts.isNotEmpty ? parts.join(", ") : "Faculty, $college";
     } else {
-      yearString = "Batch of $gradYear";
+      metadataIcon = Icons.school_outlined;
+      final branch = data["branch"]?.toString().trim() ?? "CSE";
+      final gradYear =
+          data["graduating_year"]?.toString() ?? DateTime.now().year.toString();
+      final now = DateTime.now().year;
+      final gradYearInt = int.tryParse(gradYear) ?? now;
+      final isAlumni = gradYearInt <= now;
+
+      int yearOfStudy = 4 - (gradYearInt - now);
+      String yearString = "";
+      if (isAlumni) {
+        yearString = "Batch of $gradYear";
+      } else if (yearOfStudy == 1) {
+        yearString = "1st Year";
+      } else if (yearOfStudy == 2) {
+        yearString = "2nd Year";
+      } else if (yearOfStudy == 3) {
+        yearString = "3rd Year";
+      } else if (yearOfStudy == 4) {
+        yearString = "4th Year";
+      } else {
+        yearString = "Batch of $gradYear";
+      }
+      metadataText = "$branch, $yearString, $college";
     }
 
     // Fallback bio if empty
@@ -486,14 +503,14 @@ class ProfileHeaderSliver extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
-                        Icons.school_outlined,
+                        metadataIcon,
                         size: 16,
                         color: colors.secondaryText,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          "$branch, $yearString, $college",
+                          metadataText,
                           style: TextStyle(
                             color: colors.secondaryText,
                             fontSize: 13,
