@@ -3,7 +3,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shimmer/shimmer.dart';
 
 class NativeAdWidget extends StatefulWidget {
   const NativeAdWidget({super.key});
@@ -34,14 +33,16 @@ class _NativeAdWidgetState extends State<NativeAdWidget>
 
     if (!isMobile) return;
 
-    final adUnitId = kDebugMode
-        ? (defaultTargetPlatform == TargetPlatform.android
-              ? 'ca-app-pub-3940256099942544/2247696110'
-              : 'ca-app-pub-3940256099942544/3986624511')
-        : (dotenv.env['NATIVE_AD_UNIT_ID'] ??
-              'a-app-pub-3940256099942544/2247696110');
+    final String? envAdUnitId = dotenv.env['NATIVE_AD_UNIT_ID']?.trim();
 
-    // final adUnitId = dotenv.env['NATIVE_AD_UNIT_ID'];
+    final String adUnitId = kDebugMode
+        ? (defaultTargetPlatform == TargetPlatform.android
+            ? 'ca-app-pub-3940256099942544/2247696110'
+            : 'ca-app-pub-3940256099942544/3986624511')
+        : ((envAdUnitId != null && envAdUnitId.isNotEmpty)
+            ? envAdUnitId
+            : 'ca-app-pub-5596738423702241/3748194380');
+
     _nativeAd = NativeAd(
       adUnitId: adUnitId,
       request: const AdRequest(),
@@ -72,69 +73,13 @@ class _NativeAdWidgetState extends State<NativeAdWidget>
     super.dispose();
   }
 
-  Widget _buildPlaceholder(AppColors colors, bool isDark) {
-    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
-    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      height: 350,
-      decoration: BoxDecoration(
-        color: colors.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colors.borderColor.withValues(alpha: 0.5),
-          width: 1.0,
-        ),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Shimmer.fromColors(
-        baseColor: baseColor,
-        highlightColor: highlightColor,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const CircleAvatar(radius: 20, backgroundColor: Colors.white),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(width: 120, height: 14, color: Colors.white),
-                    const SizedBox(height: 6),
-                    Container(width: 80, height: 10, color: Colors.white),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(width: double.infinity, height: 16, color: Colors.white),
-            const SizedBox(height: 6),
-            Container(
-              width: MediaQuery.of(context).size.width * 0.7,
-              height: 16,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Container(width: double.infinity, color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     final colors = AppColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_nativeAd == null || !_nativeAdIsLoaded) {
-      // return _buildPlaceholder(colors, isDark);
-      return SizedBox(height: 20);
+      return const SizedBox(height: 20);
     }
 
     return Container(

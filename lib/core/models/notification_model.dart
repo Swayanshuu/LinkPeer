@@ -34,22 +34,28 @@ class NotificationModel {
     String? actorName;
     String? actorPhotoUrl;
 
-    if (json['actor'] != null) {
-      actorName = json['actor']['name'];
-      actorPhotoUrl = json['actor']['photo_url'];
+    if (json['actor'] != null && json['actor'] is Map) {
+      actorName = json['actor']['name']?.toString();
+      actorPhotoUrl = json['actor']['photo_url']?.toString();
     }
 
     return NotificationModel(
-      id: json['id'],
-      userId: json['user_id'],
-      actorUserId: json['actor_user_id'],
-      postId: json['post_id'] is String ? int.tryParse(json['post_id']) : json['post_id'],
-      commentId: json['comment_id'] is String ? int.tryParse(json['comment_id']) : json['comment_id'],
-      type: json['type'],
-      title: json['title'],
-      body: json['body'],
-      isRead: json['is_read'] ?? false,
-      createdAt: DateTime.parse(json['created_at']),
+      id: json['id']?.toString() ?? '',
+      userId: json['user_id']?.toString() ?? '',
+      actorUserId: json['actor_user_id']?.toString(),
+      postId: json['post_id'] is String
+          ? int.tryParse(json['post_id'])
+          : (json['post_id'] as int?),
+      commentId: json['comment_id'] is String
+          ? int.tryParse(json['comment_id'])
+          : (json['comment_id'] as int?),
+      type: json['type']?.toString() ?? 'SYSTEM',
+      title: json['title']?.toString() ?? 'Notification',
+      body: json['body']?.toString() ?? '',
+      isRead: json['is_read'] == true,
+      createdAt: json['created_at'] != null
+          ? (DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now())
+          : DateTime.now(),
       actorName: actorName,
       actorPhotoUrl: actorPhotoUrl,
     );

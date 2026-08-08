@@ -28,17 +28,19 @@ class _BannerAdWidgetState extends State<BannerAdWidget>
             defaultTargetPlatform == TargetPlatform.iOS);
 
     if (isMobile) {
-      // final adUnitId = kDebugMode
-      //     ? (defaultTargetPlatform == TargetPlatform.android
-      //           ? 'ca-app-pub-3940256099942544/6300978111'
-      //           : 'ca-app-pub-3940256099942544/2934735716')
-      //     : (dotenv.env['ADUNITID'] ??
-      //           'ca-app-pub-3940256099942544/6300978111');
+      final String? envAdUnitId = dotenv.env['ADUNITID']?.trim();
 
-      final adUnitId = dotenv.env['ADUNITID'];
+      final String adUnitId = kDebugMode
+          ? (defaultTargetPlatform == TargetPlatform.android
+              ? 'ca-app-pub-3940256099942544/6300978111'
+              : 'ca-app-pub-3940256099942544/2934735716')
+          : ((envAdUnitId != null && envAdUnitId.isNotEmpty)
+              ? envAdUnitId
+              : 'ca-app-pub-5596738423702241/4063432302');
+
       _bannerAd = BannerAd(
         size: AdSize.banner,
-        adUnitId: adUnitId!,
+        adUnitId: adUnitId,
         request: const AdRequest(),
         listener: BannerAdListener(
           onAdLoaded: (ad) {

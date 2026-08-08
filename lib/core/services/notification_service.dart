@@ -266,6 +266,11 @@ class NotificationService {
   Future<void> markAsRead(String notificationId) async {
     await _repository.markAsRead(notificationId);
   }
+
+  /// Mark All Notifications as Read
+  Future<void> markAllAsRead() async {
+    await _repository.markAllAsRead();
+  }
 }
 
 final unreadCountProvider = FutureProvider.autoDispose<int>((ref) async {

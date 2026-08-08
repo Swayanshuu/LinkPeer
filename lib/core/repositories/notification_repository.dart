@@ -38,25 +38,57 @@ class NotificationRepository {
     }
   }
 
-  Future<List<NotificationModel>> getNotifications({required int offset, required int limit}) async {
+  Future<List<NotificationModel>> getNotifications({
+    required int offset,
+    required int limit,
+  }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
 
     try {
-      final data = await _supabase
-          .from('notifications')
-          .select('*, actor:users!notifications_actor_user_id_fkey(name, photo_url)')
-          .eq('user_id', user.uid)
-          .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
-      debugPrint("Supabase query result count: ${(data as List).length}");
-      
-      final parsed = (data).map((json) => NotificationModel.fromJson(json)).toList();
-      debugPrint("Parsed notification count: ${parsed.length}");
-      return parsed;
+      dynamic data;
+      try {
+        data = await _supabase
+            .from('notifications')
+            .select('*, actor:users!actor_user_id(name, photo_url)')
+            .eq('user_id', user.uid)
+            .order('created_at', ascending: false)
+            .range(offset, offset + limit - 1);
+      } catch (_) {
+        try {
+          data = await _supabase
+              .from('notifications')
+              .select(
+                '*, actor:users!notifications_actor_user_id_fkey(name, photo_url)',
+              )
+              .eq('user_id', user.uid)
+              .order('created_at', ascending: false)
+              .range(offset, offset + limit - 1);
+        } catch (_) {
+          data = await _supabase
+              .from('notifications')
+              .select()
+              .eq('user_id', user.uid)
+              .order('created_at', ascending: false)
+              .range(offset, offset + limit - 1);
+        }
+      }
+
+      if (data is List) {
+        final parsed = data.map((json) {
+          if (json is Map<String, dynamic>) {
+            return NotificationModel.fromJson(json);
+          }
+          return NotificationModel.fromJson(
+            Map<String, dynamic>.from(json as Map),
+          );
+        }).toList();
+        return parsed;
+      }
+      return [];
     } catch (e) {
       debugPrint("Error fetching notifications: $e");
-      rethrow;
+      return [];
     }
   }
 
@@ -69,6 +101,20 @@ class NotificationRepository {
     } catch (e) {
       debugPrint("Error marking notification as read: $e");
       rethrow;
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      await _supabase
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('user_id', user.uid)
+          .eq('is_read', false);
+    } catch (e) {
+      debugPrint("Error marking all notifications as read: $e");
     }
   }
 }

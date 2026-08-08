@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/models/notification_model.dart';
 import 'package:igit_connects/core/notification_provider.dart';
+import 'package:igit_connects/core/services/notification_service.dart';
 import 'package:igit_connects/screens/post/full_post_screen.dart';
 import 'package:igit_connects/features/broadcast/screens/broadcast_tab.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -28,6 +29,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         ref.read(notificationProvider.notifier).loadMore();
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(notificationProvider.notifier).markAllAsRead();
+        ref.invalidate(unreadCountProvider);
       }
     });
   }
@@ -244,8 +252,8 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         ),
         body: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
+            const SizedBox(
+              height: 52,
               child: BannerAdWidget(),
             ),
             Expanded(

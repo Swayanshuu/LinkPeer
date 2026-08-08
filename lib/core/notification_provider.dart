@@ -122,6 +122,30 @@ class NotificationNotifier extends AsyncNotifier<List<NotificationModel>> {
     // Call service to update backend
     await _notificationService.markAsRead(notification.id);
   }
+
+  Future<void> markAllAsRead() async {
+    if (state.hasValue) {
+      final updatedList = state.value!.map((n) {
+        if (n.isRead) return n;
+        return NotificationModel(
+          id: n.id,
+          userId: n.userId,
+          type: n.type,
+          title: n.title,
+          body: n.body,
+          isRead: true,
+          createdAt: n.createdAt,
+          actorUserId: n.actorUserId,
+          postId: n.postId,
+          commentId: n.commentId,
+          actorName: n.actorName,
+          actorPhotoUrl: n.actorPhotoUrl,
+        );
+      }).toList();
+      state = AsyncData(updatedList);
+    }
+    await _notificationService.markAllAsRead();
+  }
 }
 
 final notificationProvider = AsyncNotifierProvider<NotificationNotifier, List<NotificationModel>>(
