@@ -26,10 +26,14 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
   }
 
   Future<void> _initPackageInfo() async {
-    final info = await PackageInfo.fromPlatform();
-    setState(() {
-      _packageInfo = info;
-    });
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) {
+        setState(() {
+          _packageInfo = info;
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _launchURL(String urlString) async {
@@ -39,9 +43,9 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Could not open link")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Could not open link")),
+        );
       }
     }
   }
@@ -74,19 +78,18 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
         child: Column(
           children: [
             _buildAppHeader(colors),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
+                  _buildWebVersionCard(colors),
+                  const SizedBox(height: 24),
                   _buildDeveloperCard(colors, devProfileAsync),
                   const SizedBox(height: 24),
-
                   _buildSpecialThanks(colors),
                   const SizedBox(height: 24),
                   _buildAboutLinkPeer(colors),
-                  // const SizedBox(height: 24),
-                  // _buildAppStatistics(colors),
                   const SizedBox(height: 24),
                   _buildCommunitySection(colors),
                   const SizedBox(height: 24),
@@ -172,7 +175,82 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
     );
   }
 
-  //Developer Card
+  // Section 1.5: Web Version Featured Card
+  Widget _buildWebVersionCard(AppColors colors) {
+    return GestureDetector(
+      onTap: () => _launchURL("https://linkpeer.swynx.dev"),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              colors.primaryAccent,
+              colors.primaryAccent.withValues(alpha: 0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: colors.primaryAccent.withValues(alpha: 0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.language_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    "LinkPeer Web Version",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Visit linkpeer.swynx.dev in browser",
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.open_in_new_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Developer Card
   Widget _buildDeveloperCard(
     AppColors colors,
     AsyncValue<DeveloperProfileModel?> asyncProfile,
@@ -182,7 +260,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
         final name = profile?.name.isNotEmpty == true
             ? profile!.name
             : "Swayanshu Sarthak Sadangi";
-        final role = "Mobile & Backend Developer";
+        const role = "Mobile & Backend Developer";
 
         return Container(
           width: double.infinity,
@@ -461,7 +539,10 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
             ),
             const SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
@@ -626,48 +707,6 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
     );
   }
 
-  // // Section 6: App Statistics
-  // Widget _buildAppStatistics(AppColors colors) {
-  //   return Row(
-  //     children: [
-  //       Expanded(child: _statCard(colors, "3000+", "Users")),
-  //       const SizedBox(width: 12),
-  //       Expanded(child: _statCard(colors, "10000+", "Posts")),
-  //       const SizedBox(width: 12),
-  //       Expanded(child: _statCard(colors, "100+", "Communities")),
-  //     ],
-  //   );
-  // }
-
-  // Widget _statCard(AppColors colors, String value, String label) {
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
-  //     decoration: _cardDecoration(colors),
-  //     child: Column(
-  //       children: [
-  //         Text(
-  //           value,
-  //           style: TextStyle(
-  //             color: colors.primaryText,
-  //             fontSize: 18,
-  //             fontWeight: FontWeight.bold,
-  //           ),
-  //         ),
-  //         const SizedBox(height: 4),
-  //         Text(
-  //           label,
-  //           style: TextStyle(
-  //             color: colors.secondaryText,
-  //             fontSize: 12,
-  //             fontWeight: FontWeight.w500,
-  //           ),
-  //           textAlign: TextAlign.center,
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   // Section 7: Built for the Community
   Widget _buildCommunitySection(AppColors colors) {
     return Container(
@@ -729,6 +768,12 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+              ),
+              _linkTile(
+                colors,
+                "Web Version",
+                Icons.language_rounded,
+                "https://linkpeer.swynx.dev",
               ),
               if (links.privacyPolicy.isNotEmpty)
                 _linkTile(
@@ -805,39 +850,22 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
           children: [
             Text(
               "Made with ",
-              style: TextStyle(color: colors.secondaryText, fontSize: 14),
+              style: TextStyle(color: colors.secondaryText, fontSize: 13),
             ),
-            const Icon(
-              Icons.favorite_rounded,
-              color: Colors.redAccent,
-              size: 16,
-            ),
+            const Icon(Icons.favorite, color: Colors.redAccent, size: 14),
             Text(
-              " in Odisha, India",
-              style: TextStyle(color: colors.secondaryText, fontSize: 14),
+              " at IGIT Sarang",
+              style: TextStyle(color: colors.secondaryText, fontSize: 13),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Powered by ",
-              style: TextStyle(color: colors.secondaryText, fontSize: 13),
-            ),
-            GestureDetector(
-              onTap: () => _launchURL("https://swynx.dev"),
-              child: Text(
-                "swynx.dev",
-                style: TextStyle(
-                  color: colors.primaryAccent,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+        Text(
+          "© ${DateTime.now().year} LinkPeer. All rights reserved.",
+          style: TextStyle(
+            color: colors.secondaryText.withValues(alpha: 0.7),
+            fontSize: 12,
+          ),
         ),
       ],
     );
@@ -847,10 +875,13 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
     return BoxDecoration(
       color: colors.cardColor,
       borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: colors.borderColor.withValues(alpha: 0.5)),
+      border: Border.all(
+        color: colors.borderColor.withValues(alpha: 0.5),
+        width: 1,
+      ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.02),
+          color: Colors.black.withValues(alpha: 0.03),
           blurRadius: 10,
           offset: const Offset(0, 4),
         ),
@@ -859,16 +890,18 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
   }
 
   Widget _shimmerBox(AppColors colors, {required double height}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Shimmer.fromColors(
-      baseColor: isDark ? Colors.grey[850]! : Colors.grey[300]!,
-      highlightColor: isDark ? Colors.grey[800]! : Colors.grey[100]!,
-      child: Container(
-        height: height,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: colors.cardColor,
-          borderRadius: BorderRadius.circular(24),
+    return Container(
+      width: double.infinity,
+      height: height,
+      decoration: _cardDecoration(colors),
+      child: Shimmer.fromColors(
+        baseColor: colors.borderColor,
+        highlightColor: colors.bgColor,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
         ),
       ),
     );
