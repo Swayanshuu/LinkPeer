@@ -28,10 +28,12 @@ class _AuthGateState extends ConsumerState<AuthGate>
   double _progress = 0.0;
   bool _initCompleted = false;
   void Function()? _nextNavigation;
+  String _effectiveUserMode = "student";
 
   @override
   void initState() {
     super.initState();
+    _effectiveUserMode = widget.userMode;
 
     _videoController =
         VideoPlayerController.asset('assets/videos/logoAnimation.mp4')
@@ -95,6 +97,14 @@ class _AuthGateState extends ConsumerState<AuthGate>
         final uid = user.uid;
         final prefs = await SharedPreferences.getInstance();
 
+        // Retrieve persisted userMode if app was closed on onboarding
+        final savedMode = prefs.getString('pending_user_mode_$uid') ??
+            prefs.getString('pending_user_mode');
+
+        if (savedMode != null && savedMode.isNotEmpty) {
+          _effectiveUserMode = savedMode;
+        }
+
         // Local quick check
         final localCompleted = prefs.getBool('profile_completed_$uid') ?? false;
 
@@ -111,6 +121,11 @@ class _AuthGateState extends ConsumerState<AuthGate>
             );
             final userData = await ref.read(userProvider.future);
             final isProfileCompleted = userData['profile_completed'] == true;
+            final dbUserMode = userData['user_mode'] ?? userData['user_type'];
+
+            if (dbUserMode == "faculty") {
+              _effectiveUserMode = "faculty";
+            }
 
             if (isProfileCompleted) {
               await prefs.setBool('profile_completed_$uid', true);
@@ -120,7 +135,7 @@ class _AuthGateState extends ConsumerState<AuthGate>
               _nextNavigation = _openMainScreen;
             } else {
               debugPrint(
-                "AuthGate: DB profile not completed, redirecting to onboarding.",
+                "AuthGate: DB profile not completed, redirecting to onboarding with mode: $_effectiveUserMode.",
               );
               _nextNavigation = _openOnboarding;
             }
@@ -163,7 +178,7 @@ class _AuthGateState extends ConsumerState<AuthGate>
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => OnBoardingscreen(userMode: widget.userMode),
+        builder: (_) => OnBoardingscreen(userMode: _effectiveUserMode),
       ),
     );
   }

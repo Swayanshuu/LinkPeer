@@ -1,10 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/auth_gate.dart';
 import 'package:igit_connects/core/google_auth_controller.dart';
 import 'package:igit_connects/screens/about/privacy_policy_sheet.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen2 extends StatefulWidget {
   const LoginScreen2({super.key});
@@ -31,12 +34,20 @@ class _LoginScreen2State extends State<LoginScreen2> {
           context: context,
           icon: Icons.info_outline_rounded,
           message: "Sign in cancelled",
-          backgroundColor: const Color(0xFFF5F5F5),
-          textColor: Colors.black87,
-          iconColor: Colors.black87,
+          backgroundColor: AppColors.of(context).cardColor,
+          textColor: AppColors.of(context).primaryText,
+          iconColor: AppColors.of(context).primaryAccent,
         );
         return;
       }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pending_user_mode', mode);
+      if (credential.user != null) {
+        await prefs.setString('pending_user_mode_${credential.user!.uid}', mode);
+      }
+
+      if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
@@ -49,14 +60,14 @@ class _LoginScreen2State extends State<LoginScreen2> {
         context: context,
         icon: Icons.error_outline_rounded,
         message: "Unable to sign in. Please try again.",
-        backgroundColor: const Color(0xFFD32F2F),
+        backgroundColor: Theme.of(context).colorScheme.error,
         textColor: Colors.white,
         iconColor: Colors.white,
       );
     } finally {
       if (mounted) {
         setState(() {
-          loadingMode = null; // Reset loading
+          loadingMode = null;
         });
       }
     }
@@ -68,7 +79,15 @@ class _LoginScreen2State extends State<LoginScreen2> {
         loadingMode = "guest";
       });
 
-      await FirebaseAuth.instance.signInAnonymously();
+      final userCred = await FirebaseAuth.instance.signInAnonymously();
+
+      if (!mounted) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pending_user_mode', 'guest');
+      if (userCred.user != null) {
+        await prefs.setString('pending_user_mode_${userCred.user!.uid}', 'guest');
+      }
 
       if (!mounted) return;
 
@@ -83,8 +102,8 @@ class _LoginScreen2State extends State<LoginScreen2> {
       showAppSnackBar(
         context: context,
         icon: Icons.error_outline_rounded,
-        message: "Unable to continue: ${e.toString()}",
-        backgroundColor: const Color(0xFFD32F2F),
+        message: "Unable to continue. Please try again.",
+        backgroundColor: Theme.of(context).colorScheme.error,
         textColor: Colors.white,
         iconColor: Colors.white,
       );
@@ -101,342 +120,216 @@ class _LoginScreen2State extends State<LoginScreen2> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
 
-    Widget buildIllustration() {
+    Widget buildLoginForm() {
       return Container(
         width: double.infinity,
-        color: Colors.white,
-        child: Image.asset("assets/images/loginscreen.png", fit: BoxFit.cover),
-      );
-    }
-
-    Widget buildLoginForm(bool isDesktop) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+        padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
         decoration: BoxDecoration(
           color: colors.cardColor,
-          borderRadius: isDesktop
-              ? BorderRadius.zero
-              : const BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: colors.borderColor),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        child: SafeArea(
-          top: false,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 450),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Brand Logo & Name Header
+            Row(
+              children: [
+                ClipOval(
+                  child: Image.asset(
+                    'assets/images/LinkPeer.png',
+                    height: 38,
+                    width: 38,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                AutoSizeText(
+                  "LinkPeer",
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 28),
+
+            AutoSizeText(
+              "Welcome back",
+              maxLines: 1,
+              style: TextStyle(
+                color: colors.primaryText,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            AutoSizeText(
+              "Connect with students, alumni & faculty in one space.",
+              maxLines: 2,
+              minFontSize: 12,
+              maxFontSize: 14,
+              style: TextStyle(color: colors.secondaryText, height: 1.4),
+            ),
+
+            const SizedBox(height: 32),
+
+            /// Unified Google Sign-in CTA
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: loadingMode != null ? null : () => login("user"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primaryAccent,
+                  foregroundColor: colors.onPrimaryAccent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: loadingMode != null
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              color: colors.onPrimaryAccent,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          AutoSizeText(
+                            "Signing in...",
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: colors.onPrimaryAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AutoSizeText(
+                            "Continue with Google",
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                              color: colors.onPrimaryAccent,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 18,
+                            color: colors.onPrimaryAccent,
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // Terms & Privacy Note
+            Center(
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: TextStyle(
+                    color: colors.secondaryText,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
                   children: [
-                    // Logo + brand row
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/LinkPeer.png',
-                          height: 40,
-                          width: 40,
-                          fit: BoxFit.contain,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          "LinkPeer",
-                          style: TextStyle(
-                            color: colors.primaryText,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Text(
-                      "Welcome back 👋",
+                    const TextSpan(text: "By continuing, you agree to our "),
+                    TextSpan(
+                      text: "Privacy Policy",
                       style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 15,
+                        color: colors.primaryAccent,
+                        fontWeight: FontWeight.w600,
                       ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const PrivacyPolicySheet(),
+                          );
+                        },
                     ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      "One Community. Endless Possibilities.",
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 13,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: const [
-                        FeatureChip(
-                          icon: Icons.people_outline,
-                          text: "Network",
-                        ),
-                        FeatureChip(icon: Icons.work_outline, text: "Career"),
-                        FeatureChip(
-                          icon: Icons.school_outlined,
-                          text: "Campus",
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    /// Student Login
-                    SizedBox(
-                      width: double.infinity,
-                      height: 58,
-                      child: ElevatedButton(
-                        onPressed: loadingMode != null
-                            ? null
-                            : () => login("student"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        child: loadingMode == "student"
-                            ? const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text("Signing in..."),
-                                ],
-                              )
-                            : const Text(
-                                "Continue as Student / Alumni",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
-                                ),
-                              ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    /// Faculty Card
-                    InkWell(
-                      borderRadius: BorderRadius.circular(18),
-                      onTap: loadingMode != null
-                          ? null
-                          : () => login("faculty"),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: colors.borderColor),
-                        ),
-                        child: loadingMode == "faculty"
-                            ? const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text("Verifying faculty..."),
-                                ],
-                              )
-                            : Row(
-                                children: [
-                                  Icon(
-                                    Icons.verified_user_outlined,
-                                    color: colors.primaryText,
-                                  ),
-
-                                  const SizedBox(width: 12),
-
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Faculty Login",
-                                          style: TextStyle(
-                                            color: colors.primaryText,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          "Verification Required",
-                                          style: TextStyle(
-                                            color: colors.secondaryText,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 16,
-                                    color: colors.secondaryText,
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Center(
-                    //   child: OutlinedButton.icon(
-                    //     onPressed: loadingMode != null ? null : loginAsGuest,
-                    //     icon: loadingMode == "guest"
-                    //         ? const SizedBox.shrink()
-                    //         : Icon(
-                    //             Icons.explore_outlined,
-                    //             size: 18,
-                    //             color: colors.primaryText,
-                    //           ),
-                    //     label: loadingMode == "guest"
-                    //         ? const SizedBox(
-                    //             width: 16,
-                    //             height: 16,
-                    //             child: CircularProgressIndicator(
-                    //               strokeWidth: 2,
-                    //             ),
-                    //           )
-                    //         : Text(
-                    //             "Continue as Guest",
-                    //             style: TextStyle(
-                    //               fontWeight: FontWeight.w600,
-                    //               fontSize: 14,
-                    //               color: colors.primaryText,
-                    //             ),
-                    //           ),
-                    //     style: OutlinedButton.styleFrom(
-                    //       foregroundColor: colors.primaryText,
-                    //       side: BorderSide(
-                    //         color: colors.borderColor,
-                    //         width: 1.5,
-                    //       ),
-                    //       padding: const EdgeInsets.symmetric(
-                    //         horizontal: 24,
-                    //         vertical: 12,
-                    //       ),
-                    //       shape: RoundedRectangleBorder(
-                    //         borderRadius: BorderRadius.circular(20),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-
-                    // const SizedBox(height: 24),
-                    Center(
-                      child: RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 12,
-                            height: 1.5,
-                          ),
-                          children: [
-                            const TextSpan(
-                              text: "By continuing, you agree to our ",
-                            ),
-                            TextSpan(
-                              text: "Privacy Policy",
-                              style: const TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => const PrivacyPolicySheet(),
-                                  );
-                                },
-                            ),
-                            const TextSpan(text: " and Community Guidelines."),
-                          ],
-                        ),
-                      ),
-                    ),
+                    const TextSpan(text: " and Community Guidelines."),
                   ],
                 ),
               ),
             ),
-          ),
+          ],
         ),
       );
     }
 
     return Scaffold(
       backgroundColor: colors.bgColor,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isDesktop = constraints.maxWidth > 800;
-          if (isDesktop) {
-            return Row(
-              children: [
-                Expanded(flex: 6, child: buildIllustration()),
-                Expanded(flex: 5, child: buildLoginForm(true)),
-              ],
-            );
-          }
-          return Column(
-            children: [
-              Expanded(flex: 6, child: buildIllustration()),
-              Expanded(flex: 5, child: buildLoginForm(false)),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
+      body: Stack(
+        children: [
+          /// Full-Screen Background Image (Consistent Center Focus across all Mobile Screens)
+          Positioned.fill(
+            child: ClipRect(
+              child: Transform.scale(
+                scale: 1,
+                alignment: Alignment.center,
+                child: Image.asset(
+                  "assets/images/loginscreen.png",
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                ),
+              ),
+            ),
+          ),
 
-class FeatureChip extends StatelessWidget {
-  final IconData icon;
-  final String text;
+          /// Background Tint Overlay for Optimal Contrast
+          Positioned.fill(
+            child: Container(color: colors.bgColor.withValues(alpha: 0.72)),
+          ),
 
-  const FeatureChip({super.key, required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: colors.bgColor,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [Icon(icon, size: 14), const SizedBox(width: 6), Text(text)],
+          /// Floating Overlaid Login Card Above
+          SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 460),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 24,
+                  ),
+                  child: buildLoginForm(),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -455,19 +348,19 @@ void showAppSnackBar({
     ..showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        //width: 300,
         elevation: 0,
         backgroundColor: backgroundColor,
-        margin: const EdgeInsets.only(left: 24, right: 24, bottom: 90),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.only(left: 24, right: 24, bottom: 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        duration: const Duration(seconds: 3),
         content: Row(
           children: [
             Icon(icon, color: iconColor, size: 20),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
+              child: AutoSizeText(
                 message,
+                maxLines: 2,
                 style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
               ),
             ),

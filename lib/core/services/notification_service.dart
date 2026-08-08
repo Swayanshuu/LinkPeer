@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:igit_connects/core/models/notification_model.dart';
 import 'package:igit_connects/core/repositories/notification_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/main.dart';
 import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:igit_connects/features/broadcast/screens/broadcast_details_screen.dart';
@@ -266,3 +267,7 @@ class NotificationService {
     await _repository.markAsRead(notificationId);
   }
 }
+
+final unreadCountProvider = FutureProvider.autoDispose<int>((ref) async {
+  return await NotificationService().getUnreadCount();
+});

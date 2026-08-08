@@ -1,6 +1,6 @@
 class AppConstants {
   static const List<String> branches = [
-    "CSE",
+    "CSEA",
     "ECE",
     "EE",
     "Mechanical",
@@ -13,7 +13,7 @@ class AppConstants {
   static const List<String> streams = ["BTech", "MTech", "MCA"];
 
   static const List<String> departments = [
-    "CSE",
+    "CSEA",
     "ECE",
     "EE",
     "MME",

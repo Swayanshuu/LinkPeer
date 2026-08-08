@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/core/app_constants.dart';
 import 'package:igit_connects/core/user_provider.dart';
+import 'package:igit_connects/shared_components/app_dropdown_field.dart';
 import 'package:igit_connects/shared_components/custom_snackbar.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -94,46 +95,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     required String label,
     required TextEditingController controller,
     required List<String> items,
+    IconData? icon,
   }) {
-    final validValue = items.contains(controller.text) ? controller.text : null;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: DropdownButtonFormField<String>(
-        value: validValue,
-        dropdownColor: colors.cardColor,
-        style: TextStyle(color: colors.primaryText, fontSize: 15),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: colors.secondaryText, fontSize: 14),
-          filled: true,
-          fillColor: Theme.of(context).brightness == Brightness.dark
-              ? colors.bgColor.withValues(alpha: 0.5)
-              : colors.bgColor,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: colors.borderColor.withValues(alpha: 0.3),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: colors.borderColor.withValues(alpha: 0.5),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
-          ),
-        ),
-        items: items
-            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-            .toList(),
+      child: AppDropdownFormField<String>(
+        value: controller.text.isNotEmpty ? controller.text : null,
+        label: label,
+        icon: icon,
+        items: items,
         onChanged: (v) {
           if (v != null) {
             setState(() {
@@ -404,15 +374,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             }
 
             nameController.text = (data["name"] ?? "").toString();
-
             phoneController.text = (data["phone"] ?? "").toString();
-
             branchController.text = (data["branch"] ?? "").toString();
-
             streamController.text = (data["stream"] ?? "").toString();
-
             yearController.text = (data["graduating_year"] ?? "").toString();
-
             departmentController.text = (data["department"] ?? "").toString();
             designationController.text = (data["designation"] ?? "").toString();
             githubController.text = (data["github"] ?? "").toString();
@@ -455,6 +420,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       context: context,
                       colors: colors,
                       label: "Department",
+                      icon: Icons.corporate_fare_outlined,
                       controller: departmentController,
                       items: AppConstants.departments,
                     ),
@@ -462,6 +428,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       context: context,
                       colors: colors,
                       label: "Designation",
+                      icon: Icons.badge_outlined,
                       controller: designationController,
                       items: AppConstants.designations,
                     ),
@@ -472,6 +439,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       context: context,
                       colors: colors,
                       label: "Branch",
+                      icon: Icons.account_tree_outlined,
                       controller: branchController,
                       items: AppConstants.branches,
                     ),
@@ -479,6 +447,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       context: context,
                       colors: colors,
                       label: "Stream",
+                      icon: Icons.layers_outlined,
                       controller: streamController,
                       items: AppConstants.streams,
                     ),

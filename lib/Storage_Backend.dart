@@ -34,6 +34,21 @@ class StorageBackend {
     debugPrint("Image Removed Successfully");
   }
 
+  Future<void> removeFacultyImage(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      final segments = uri.pathSegments;
+      final bucketIndex = segments.indexOf('images');
+      if (bucketIndex != -1 && bucketIndex + 1 < segments.length) {
+        final path = segments.sublist(bucketIndex + 1).join('/');
+        await supabase.storage.from('images').remove([path]);
+        debugPrint("Deleted faculty verification image from storage: $path");
+      }
+    } catch (e) {
+      debugPrint("Error removing faculty image: $e");
+    }
+  }
+
   Future<void> removePostImage(String url) async {
     try {
       // The public URL looks like: https://.../storage/v1/object/public/post_images/posts/filename.ext

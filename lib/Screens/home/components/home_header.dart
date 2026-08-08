@@ -174,10 +174,11 @@ class HomeHeader extends ConsumerWidget {
                   ),
                 ],
               ),
-              child: FutureBuilder<int>(
-                future: NotificationService().getUnreadCount(),
-                builder: (context, snapshot) {
-                  final unreadCount = snapshot.data ?? 0;
+              child: Builder(
+                builder: (context) {
+                  final unreadAsync = ref.watch(unreadCountProvider);
+                  final unreadCount = unreadAsync.value ?? 0;
+
                   return Stack(
                     alignment: Alignment.center,
                     children: [
@@ -190,10 +191,13 @@ class HomeHeader extends ConsumerWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationScreen(),
+                            ),
                           );
                         },
-                        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                        constraints:
+                            const BoxConstraints(minWidth: 40, minHeight: 40),
                         padding: EdgeInsets.zero,
                       ),
                       if (unreadCount > 0)
@@ -218,7 +222,7 @@ class HomeHeader extends ConsumerWidget {
                         ),
                     ],
                   );
-                }
+                },
               ),
             ),
           ],
