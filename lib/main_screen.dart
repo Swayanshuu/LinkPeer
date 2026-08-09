@@ -1,18 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:igit_connects/Screens/bookmarks/bookmarks_screen.dart';
+import 'package:igit_connects/Screens/search/search_screen.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/core/user_provider.dart';
 import 'package:igit_connects/core/post_provider.dart';
 import 'package:igit_connects/screens/home/home_screen.dart';
-import 'package:igit_connects/screens/search/search_screen.dart';
-import 'package:igit_connects/screens/post/create_post_screen.dart';
 import 'package:igit_connects/screens/profile/profile_screen.dart';
-import 'package:igit_connects/screens/bookmarks/bookmarks_screen.dart';
+import 'package:igit_connects/features/notices/screens/notice_board_screen.dart';
 import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/shared_components/app_drawer.dart';
-import 'package:igit_connects/shared_components/custom_snackbar.dart';
 import 'package:igit_connects/main.dart'; // Import to access global deep link variables
+
+final isOfflineProvider = StateProvider<bool>((ref) => false);
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -22,18 +24,17 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  int currentIndex = 0;
+  int currentIndex = 2;
 
   final screens = const [
-    HomeScreen(),
-    Searchscreen(),
-    CreatePostScreen(),
     BookmarksScreen(),
+    SearchScreen(),
+    HomeScreen(),
+    NoticeBoardScreen(),
     ProfileScreen(),
   ];
 
   StreamSubscription<InternetStatus>? _internetSubscription;
-  final ValueNotifier<bool> _isDisconnected = ValueNotifier(false);
 
   @override
   void initState() {
@@ -41,18 +42,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     _internetSubscription = InternetConnection().onStatusChange.listen((
       status,
     ) {
-      if (status == InternetStatus.disconnected) {
-        if (!_isDisconnected.value) {
-          _isDisconnected.value = true;
-          _showNoInternetPopup();
+      final isOffline = status == InternetStatus.disconnected;
+      if (ref.read(isOfflineProvider) != isOffline) {
+        ref.read(isOfflineProvider.notifier).state = isOffline;
+        if (!isOffline) {
+          // Automatically fetch latest data when connection is restored
+          ref.invalidate(userProvider);
+          ref.invalidate(postsProvider);
         }
-      } else if (status == InternetStatus.connected && _isDisconnected.value) {
-        _isDisconnected.value = false;
-        _showBackOnlinePopup();
-
-        // Automatically fetch the latest data when internet is restored
-        ref.invalidate(userProvider);
-        ref.invalidate(postsProvider);
       }
     });
 
@@ -70,22 +67,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void dispose() {
     _internetSubscription?.cancel();
     super.dispose();
-  }
-
-  void _showNoInternetPopup() {
-    CustomSnackBar.show(
-      context,
-      message: "No internet connection",
-      isError: true,
-    );
-  }
-
-  void _showBackOnlinePopup() {
-    CustomSnackBar.show(
-      context,
-      message: "Back online",
-      isError: false,
-    );
   }
 
   @override
@@ -115,8 +96,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         children: screens,
                       ),
                     ),
-                    if (currentIndex != 2)
-                      const SizedBox(width: 350, child: CreatePostScreen()),
                   ],
                 )
               : IndexedStack(index: currentIndex, children: screens);
@@ -124,24 +103,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           return content;
         },
       ),
-      floatingActionButton: _buildFab(colors),
+      floatingActionButton: null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _buildBottomNav(colors, photoUrl),
-    );
-  }
-
-  Widget _buildFab(AppColors colors) {
-    return Container(
-      margin: const EdgeInsets.only(top: 30), // Lowers the FAB slightly
-      child: FloatingActionButton(
-        onPressed: () {
-          setState(() => currentIndex = 2);
-        },
-        backgroundColor: colors.primaryAccent,
-        elevation: 4,
-        shape: const CircleBorder(),
-        child: Icon(Icons.add, color: colors.onPrimaryAccent, size: 28),
-      ),
     );
   }
 
@@ -165,13 +129,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            // Bookmark tab
             _buildNavItem(
-              Icons.home_filled,
-              Icons.home_outlined,
+              Icons.bookmark,
+              Icons.bookmark_border,
               0,
-              "Home",
+              "Bookmark",
               colors,
             ),
+            // Explore tab
             _buildNavItem(
               Icons.search,
               Icons.search_outlined,
@@ -179,14 +145,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               "Explore",
               colors,
             ),
-            const SizedBox(width: 48), // Space for FAB
+            // Home tab
+            _buildNavItem(Icons.home, Icons.home_outlined, 2, "Home", colors),
+            // Notices tab
             _buildNavItem(
-              Icons.bookmark,
-              Icons.bookmark_outline,
+              Icons.campaign,
+              Icons.campaign_outlined,
               3,
-              "Bookmarks",
+              "Notices",
               colors,
             ),
+            // Profile tab
             _buildProfileNavItem(photoUrl, 4, "Profile", colors),
           ],
         ),

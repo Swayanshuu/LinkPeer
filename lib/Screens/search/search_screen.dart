@@ -5,14 +5,14 @@ import 'package:igit_connects/core/app_colors.dart';
 import 'package:igit_connects/screens/home/components/post_card.dart';
 import 'package:igit_connects/core/post_provider.dart';
 
-class Searchscreen extends ConsumerStatefulWidget {
-  const Searchscreen({super.key});
+class SearchScreen extends ConsumerStatefulWidget {
+  const SearchScreen({super.key});
 
   @override
-  ConsumerState<Searchscreen> createState() => _SearchscreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchscreenState extends ConsumerState<Searchscreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController searchController = TextEditingController();
   String query = "";
 

@@ -20,41 +20,45 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: colors.bgColor,
       appBar: AppBar(
+        backgroundColor: colors.bgColor,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, color: colors.primaryText),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           "Settings",
           style: TextStyle(
             color: colors.primaryText,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: colors.bgColor,
-        iconTheme: IconThemeData(color: colors.primaryText),
-        elevation: 0,
+        centerTitle: false,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: [
           ListTile(
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-              ).then((updated) {
-                if (updated == true) {
-                  ref.invalidate(userProvider);
-                }
-              });
+                MaterialPageRoute(
+                  builder: (_) => const EditProfileScreen(),
+                ),
+              );
             },
             leading: Icon(Icons.person_outline, color: colors.primaryText),
             title: Text(
-              "Personal Data",
+              "Edit Profile",
               style: TextStyle(
                 color: colors.primaryText,
                 fontWeight: FontWeight.w600,
               ),
             ),
             subtitle: Text(
-              "Update your profile info",
+              "Update your personal information",
               style: TextStyle(color: colors.secondaryText, fontSize: 12),
             ),
             trailing: Icon(
@@ -68,35 +72,37 @@ class SettingsScreen extends ConsumerWidget {
             tileColor: colors.cardColor,
           ),
           const SizedBox(height: 12),
-          ListTile(
-            leading: Icon(Icons.dark_mode_outlined, color: colors.primaryText),
-            title: Text(
-              "App Theme",
-              style: TextStyle(
-                color: colors.primaryText,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            subtitle: Text(
-              Theme.of(context).brightness == Brightness.dark
-                  ? "Dark Mode"
-                  : "Light Mode",
-              style: TextStyle(color: colors.secondaryText, fontSize: 12),
-            ),
-            trailing: Switch(
-              value: Theme.of(context).brightness == Brightness.dark,
-              onChanged: (isDark) {
-                ref
-                    .read(themeProvider.notifier)
-                    .setMode(isDark ? ThemeMode.dark : ThemeMode.light);
-              },
-              activeThumbColor: colors.bgColor,
-              activeTrackColor: colors.primaryText,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            tileColor: colors.cardColor,
+          Consumer(
+            builder: (context, ref, child) {
+              final isDark = ref.watch(themeProvider) == ThemeMode.dark;
+              return ListTile(
+                leading: Icon(
+                  isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+                  color: colors.primaryText,
+                ),
+                title: Text(
+                  "Dark Mode",
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                trailing: Switch(
+                  value: isDark,
+                  onChanged: (val) {
+                    ref
+                        .read(themeProvider.notifier)
+                        .setMode(val ? ThemeMode.dark : ThemeMode.light);
+                  },
+                  activeThumbColor: colors.bgColor,
+                  activeTrackColor: colors.primaryText,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                tileColor: colors.cardColor,
+              );
+            },
           ),
           const SizedBox(height: 12),
           Consumer(

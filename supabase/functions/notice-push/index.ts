@@ -23,46 +23,77 @@ serve(async (req: Request) => {
     const payload = await req.json();
     const { record } = payload;
     
-    if (!record) return new Response("No record found", { status: 400 });
+    if (!record) return new Response("No notice record found", { status: 400 });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    // Fetch tokens based on audience
-    let query = supabase.from("users").select("fcm_token").not("fcm_token", "is", null);
-    
-    if (record.audience !== "all") {
-      query = query.eq("user_type", record.audience);
-    }
-
-    const { data: users } = await query;
+    // Fetch all active users with FCM tokens and IDs
+    const { data: users } = await supabase
+      .from("users")
+      .select("id, fcm_token")
+      .not("fcm_token", "is", null);
+      
     if (!users || users.length === 0) return new Response("No users found");
 
+    const isImportant = record.is_important === true;
+    const notificationTitle = isImportant
+      ? `📌 IMPORTANT NOTICE: ${record.title || "New Announcement"}`
+      : `📌 New Notice: ${record.title || "College Announcement"}`;
+
+    const notificationBody = record.content
+      ? record.content.substring(0, 120)
+      : "Tap to view full details on LinkPeer Notice Board.";
+
+    // 1. Insert In-App Notifications into `notifications` table for every user
+    try {
+      const notificationRows = users.map((u) => ({
+        user_id: u.id,
+        actor_user_id: record.publisher_id || null,
+        type: "NOTICE",
+        title: notificationTitle,
+        body: notificationBody,
+        is_read: false,
+      }));
+
+      const chunkSize = 100;
+      for (let i = 0; i < notificationRows.length; i += chunkSize) {
+        const chunk = notificationRows.slice(i, i + chunkSize);
+        await supabase.from("notifications").insert(chunk);
+      }
+    } catch (dbErr) {
+      console.error("Error inserting in-app notifications:", dbErr);
+    }
+
+    // 2. Dispatch FCM Push Notifications
     const tokens = users.map((u) => u.fcm_token).filter(Boolean);
     const accessToken = await getAccessToken();
     const projectId = serviceAccountKey.project_id;
-    
-    // We send individual requests or a loop because the v1 API requires individual messages
-    // unless using batching, which fetch() doesn't directly support easily.
+
     const promises = tokens.map((token) => {
       const fcmMessage = {
         message: {
           token: token,
           notification: {
-            title: record.title,
-            body: record.message.substring(0, 100),
-            ...(record.image_url ? { image: record.image_url } : {})
+            title: notificationTitle,
+            body: notificationBody,
           },
-          data: record.type === "notice" 
-            ? { type: "notice", notice_id: String(record.id) }
-            : { type: "broadcast", broadcast_id: String(record.id) },
+          data: {
+            type: "notice",
+            notice_id: String(record.id),
+          },
           android: {
             priority: "high",
-            notification: { sound: "default", channel_id: "high_importance_channel" }
+            notification: {
+              sound: "default",
+              channel_id: "high_importance_channel"
+            }
           },
           apns: {
-            payload: { aps: { sound: "default" } }
+            payload: {
+              aps: { sound: "default" }
+            }
           }
         }
       };
@@ -79,11 +110,12 @@ serve(async (req: Request) => {
 
     await Promise.all(promises);
 
-    return new Response(JSON.stringify({ success: true, count: tokens.length }), { 
-      headers: { "Content-Type": "application/json" } 
-    });
+    return new Response(
+      JSON.stringify({ success: true, notice_id: record.id, recipient_count: tokens.length }),
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (error: any) {
-    console.error("Error sending push:", error);
+    console.error("Error sending notice push notification:", error);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 500, 
       headers: { "Content-Type": "application/json" } 

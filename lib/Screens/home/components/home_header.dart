@@ -6,6 +6,7 @@ import 'package:igit_connects/Screens/notifications/notification_screen.dart';
 import 'package:igit_connects/core/update/update_provider.dart';
 import 'package:igit_connects/features/update/screens/app_update_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:igit_connects/screens/post/create_post_screen.dart';
 
 class HomeHeader extends ConsumerWidget {
   final Map me;
@@ -36,7 +37,8 @@ class HomeHeader extends ConsumerWidget {
           children: [
             GestureDetector(
               onTap: () {
-                final scaffoldState = context.findRootAncestorStateOfType<ScaffoldState>();
+                final scaffoldState = context
+                    .findRootAncestorStateOfType<ScaffoldState>();
                 scaffoldState?.openDrawer();
               },
               child: Container(
@@ -113,7 +115,8 @@ class HomeHeader extends ConsumerWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => AppUpdateScreen(updateInfo: updateInfo),
+                              builder: (_) =>
+                                  AppUpdateScreen(updateInfo: updateInfo),
                             ),
                           );
                         }
@@ -125,9 +128,13 @@ class HomeHeader extends ConsumerWidget {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: colors.primaryAccent.withValues(alpha: 0.1),
+                              color: colors.primaryAccent.withValues(
+                                alpha: 0.1,
+                              ),
                               border: Border.all(
-                                color: colors.primaryAccent.withValues(alpha: 0.3),
+                                color: colors.primaryAccent.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: Icon(
@@ -196,8 +203,10 @@ class HomeHeader extends ConsumerWidget {
                             ),
                           );
                         },
-                        constraints:
-                            const BoxConstraints(minWidth: 40, minHeight: 40),
+                        constraints: const BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 40,
+                        ),
                         padding: EdgeInsets.zero,
                       ),
                       if (unreadCount > 0)
@@ -223,6 +232,35 @@ class HomeHeader extends ConsumerWidget {
                     ],
                   );
                 },
+              ),
+            ),
+            SizedBox(width: 5),
+            Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: colors.primaryAccent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const CreatePostScreen()),
+                  );
+                },
+                icon: const Icon(Icons.add, size: 18, color: Colors.white),
+                label: const Text(
+                  'Post',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],

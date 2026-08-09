@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:igit_connects/Screens/Post/create_post_screen.dart';
 import 'package:igit_connects/Screens/Post/full_post_screen.dart';
 import 'package:igit_connects/shared_components/native_ad_widget.dart';
 import 'package:igit_connects/utils/ad_position.dart';
@@ -11,6 +12,7 @@ import 'package:igit_connects/screens/home/components/home_header.dart';
 import 'package:igit_connects/screens/home/components/post_card.dart';
 import 'package:igit_connects/core/post_provider.dart';
 import 'package:igit_connects/core/user_provider.dart';
+import 'package:igit_connects/main_screen.dart';
 import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -75,6 +77,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final posts = ref.watch(postsProvider);
 
+    final isOffline = ref.watch(isOfflineProvider);
+
     return Scaffold(
       backgroundColor: colors.bgColor,
       floatingActionButton: showFab
@@ -125,8 +129,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-                      sliver: SliverToBoxAdapter(child: HomeHeader(me: me)),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            HomeHeader(me: me),
+                            if (isOffline) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.shade800.withValues(
+                                    alpha: 0.12,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.amber.shade700.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.wifi_off_rounded,
+                                      size: 15,
+                                      color: Colors.amber.shade700,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "Offline Mode • Showing Cached Content",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.amber.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
                     SliverPersistentHeader(
                       pinned: true,
@@ -145,30 +196,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(16, 20, 16, 14),
                       sliver: SliverToBoxAdapter(
-                        child: Text(
-                          "Latest Posts",
-                          style: TextStyle(
-                            color: colors.primaryText,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Latest Posts",
+                              style: TextStyle(
+                                color: colors.primaryText,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            FilledButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const CreatePostScreen(),
+                                  ),
+                                );
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: colors.primaryAccent,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: const Text(
+                                'Create Post',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
 
-                      posts.when(
-                        loading: () => SliverPadding(
-                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 100),
-                          sliver: SliverList.builder(
-                            itemCount: 3,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: _buildShimmerPost(colors),
-                              );
-                            },
-                          ),
+                    posts.when(
+                      loading: () => SliverPadding(
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          bottom: 100,
                         ),
+                        sliver: SliverList.builder(
+                          itemCount: 3,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildShimmerPost(colors),
+                            );
+                          },
+                        ),
+                      ),
 
                       error: (e, s) => SliverToBoxAdapter(
                         child: Padding(
@@ -272,6 +362,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+
   Widget _buildShimmerPost(AppColors colors) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
@@ -307,7 +398,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 16),
             Container(width: double.infinity, height: 16, color: Colors.white),
             const SizedBox(height: 6),
-            Container(width: MediaQuery.of(context).size.width * 0.7, height: 16, color: Colors.white),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.7,
+              height: 16,
+              color: Colors.white,
+            ),
             const SizedBox(height: 16),
             Container(width: double.infinity, height: 150, color: Colors.white),
           ],

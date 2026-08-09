@@ -246,6 +246,12 @@ class _MyAppState extends ConsumerState<MyApp> {
     return base.copyWith(
       textTheme: _poppins(base.textTheme),
       scaffoldBackgroundColor: const Color(0xff141413),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xff1E1E1C),
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0.5,
+        elevation: 0,
+      ),
       colorScheme: base.colorScheme.copyWith(
         surface: const Color(0xff141413),
         surfaceContainer: const Color(0xff1E1E1C),
@@ -259,6 +265,12 @@ class _MyAppState extends ConsumerState<MyApp> {
     return base.copyWith(
       textTheme: _poppins(base.textTheme),
       scaffoldBackgroundColor: const Color(0xffF5F5F3),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xffFFFFFF),
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0.5,
+        elevation: 0,
+      ),
       colorScheme: base.colorScheme.copyWith(
         surface: const Color(0xffF5F5F3),
         surfaceContainer: const Color(0xffFFFFFF),

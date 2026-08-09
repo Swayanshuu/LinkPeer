@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:igit_connects/main.dart';
 import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:igit_connects/features/broadcast/screens/broadcast_details_screen.dart';
+import 'package:igit_connects/features/notices/screens/notice_details_screen.dart';
 import 'package:igit_connects/screens/notifications/notification_screen.dart';
 
 // Top level background handler
@@ -238,6 +239,20 @@ class NotificationService {
           }
         } catch (e) {
           debugPrint('Error loading broadcast from notification: $e');
+        }
+      } else if (data['type'] == 'notice' && data['notice_id'] != null) {
+        final noticeId = data['notice_id'].toString();
+        final action = () {
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (_) => NoticeDetailsScreen(noticeId: noticeId),
+            ),
+          );
+        };
+        if (isMainScreenReady) {
+          action();
+        } else {
+          pendingDeepLinkAction = action;
         }
       }
     } catch (e) {

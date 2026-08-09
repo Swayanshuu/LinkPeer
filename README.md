@@ -80,11 +80,12 @@ graph TD
 
 For a deep dive into specific systems, refer to our technical documentation:
 
+- [Official Notice Board System](app%20docs/notice_board_system.md): Verified publisher architecture, cache-first notice feed, streaming PDF reader, and attachment layouts.
 - [System Design & App Flow](app%20docs/system_design.md): Complete user flow and data sequence diagrams.
 - [Push Notifications Architecture](app%20docs/notifications.md): Secure serverless notification system.
 - [Share & Deep Linking Implementation](app%20docs/SHARE_FEATURE_IMPLEMENTATION.md): How URL shortening and deep linking work.
 - [Cache-First Strategy](app%20docs/cache_first_strategy.md): Background fetch pattern for zero-wait UX.
-- [Subscription Tiers](app%20docs/subscription.md): Breakdown of user tiers and limits.
+- [Subscription Tiers](app%20docs/subscription.md): Breakdown of user tiers and limits (Free, Premium Lite, Premium Pro).
 
 ---
 
@@ -93,6 +94,7 @@ For a deep dive into specific systems, refer to our technical documentation:
 | Feature              | Description                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------- |
 | Google Sign-In       | One-tap OAuth 2.0 authentication — no password required                                      |
+| Official Notice Board| Verified announcements with priority alerts, multi-image galleries, and in-app streaming PDF reader |
 | Push Notifications   | Event-driven, secure serverless push notifications via FCM and Supabase Edge Functions       |
 | Campus Feed          | Real-time post feed with filter tabs: All, Jobs, Announcements, Internships                  |
 | Post Composer        | Rich post creation — title, content, hashtag support, external links, file/image attachments |
@@ -103,7 +105,7 @@ For a deep dive into specific systems, refer to our technical documentation:
 | Premium UI Design    | Beautiful and modern card-based layouts, dynamic headers, and refined component spacing      |
 | Dark / Light Theme   | Full dual-theme with OS sync on first launch and persistent user preference                  |
 | Admin Panel          | Hidden App Manager route accessible only to users with `role == "admin"`                     |
-| File Attachments     | Images rendered inline; documents open externally via Supabase CDN                           |
+| File Attachments     | Images rendered inline; documents open externally or via in-app PDF viewer                   |
 
 ---
 
