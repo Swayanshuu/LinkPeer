@@ -85,5 +85,31 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byType(RichText), findsWidgets);
     });
+
+    testWidgets('renders HTTP, HTTPS, and www links', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const HashtagText(
+            text:
+                'Check out https://flutter.dev and http://example.com or www.google.com!',
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(
+        find.textContaining('https://flutter.dev', findRichText: true),
+        findsWidgets,
+      );
+      expect(
+        find.textContaining('http://example.com', findRichText: true),
+        findsWidgets,
+      );
+      expect(
+        find.textContaining('www.google.com', findRichText: true),
+        findsWidgets,
+      );
+    });
   });
 }
+
