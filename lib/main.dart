@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -90,14 +91,23 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> {
   final _appLinks = AppLinks();
+  StreamSubscription<Uri>? _linkSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(themeProvider.notifier).init(widget.initialTheme);
+      if (mounted) {
+        ref.read(themeProvider.notifier).init(widget.initialTheme);
+      }
     });
     _initDeepLinks();
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _initDeepLinks() async {
@@ -112,9 +122,14 @@ class _MyAppState extends ConsumerState<MyApp> {
     }
 
     // Background running link
-    _appLinks.uriLinkStream.listen((uri) {
-      _handleIncomingUri(uri);
-    });
+    _linkSubscription = _appLinks.uriLinkStream.listen(
+      (uri) {
+        _handleIncomingUri(uri);
+      },
+      onError: (err) {
+        debugPrint("Deep link stream error: $err");
+      },
+    );
   }
 
   Future<void> _handleIncomingUri(Uri uri) async {

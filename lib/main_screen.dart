@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:igit_connects/Screens/bookmarks/bookmarks_screen.dart';
+import 'package:igit_connects/features/alumni/screens/alumni_opportunities_screen.dart';
 import 'package:igit_connects/Screens/search/search_screen.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +27,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   int currentIndex = 2;
 
   final screens = const [
-    BookmarksScreen(),
+    AlumniOpportunitiesScreen(),
     SearchScreen(),
     HomeScreen(),
     NoticeBoardScreen(),
@@ -129,12 +129,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // Bookmark tab
+            // Alumni Opportunities tab
             _buildNavItem(
-              Icons.bookmark,
-              Icons.bookmark_border,
+              Icons.work_rounded,
+              Icons.work_outline_rounded,
               0,
-              "Bookmark",
+              "Alumni",
               colors,
             ),
             // Explore tab

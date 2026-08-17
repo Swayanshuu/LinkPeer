@@ -6,8 +6,10 @@ class CustomSnackBar {
     required String message,
     bool isError = false,
   }) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           message,
@@ -23,13 +25,11 @@ class CustomSnackBar {
           borderRadius: BorderRadius.circular(12),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
         action: SnackBarAction(
           label: 'OK',
           textColor: Colors.white70,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
+          onPressed: () {},
         ),
       ),
     );

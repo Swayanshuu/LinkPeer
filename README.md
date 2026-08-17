@@ -80,6 +80,7 @@ graph TD
 
 For a deep dive into specific systems, refer to our technical documentation:
 
+- [Alumni Opportunities Hub](app%20docs/alumni_opportunities.md): Native career hub, job listings, upcoming/past alumni events, agenda viewer, and recruiter launcher.
 - [Official Notice Board System](app%20docs/notice_board_system.md): Verified publisher architecture, cache-first notice feed, streaming PDF reader, and attachment layouts.
 - [System Design & App Flow](app%20docs/system_design.md): Complete user flow and data sequence diagrams.
 - [Push Notifications Architecture](app%20docs/notifications.md): Secure serverless notification system.
@@ -94,6 +95,7 @@ For a deep dive into specific systems, refer to our technical documentation:
 | Feature              | Description                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------- |
 | Google Sign-In       | One-tap OAuth 2.0 authentication — no password required                                      |
+| Alumni Opportunities | Native hub for Jobs & Internships + Alumni Events (Upcoming & Past archives)                 |
 | Official Notice Board| Verified announcements with priority alerts, multi-image galleries, and in-app streaming PDF reader |
 | Push Notifications   | Event-driven, secure serverless push notifications via FCM and Supabase Edge Functions       |
 | Campus Feed          | Real-time post feed with filter tabs: All, Jobs, Announcements, Internships                  |
@@ -220,6 +222,17 @@ lib/
 │   ├── post_provider.dart                # FutureProvider for Supabase posts
 │   ├── theme_provider.dart               # Riverpod NotifierProvider for ThemeMode
 │   └── user_provider.dart                # AsyncNotifierProvider for Firestore user
+│
+├── features/                             # Modular feature domains
+│   ├── alumni/                           # Alumni Opportunities & Events module
+│   │   ├── config/                       # Endpoint & Bearer token configuration
+│   │   ├── models/                       # AlumniJob & AlumniEvent models
+│   │   ├── services/                     # AlumniService with fallback endpoints
+│   │   ├── providers/                    # Riverpod providers
+│   │   └── screens/                      # Opportunities, Jobs, Events & Details UI
+│   ├── broadcast/                        # Department broadcast notifications
+│   ├── notices/                          # Official Notice Board system
+│   └── update/                           # App update checker
 │
 ├── Screens/                              # UI layer organized by feature
 │   ├── about/
