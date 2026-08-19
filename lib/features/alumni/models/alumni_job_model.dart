@@ -8,6 +8,7 @@ class AlumniJob {
   final String description;
   final String? salaryRange;
   final String? contactEmail;
+  final String? createdAt;
 
   AlumniJob({
     this.id,
@@ -19,6 +20,7 @@ class AlumniJob {
     required this.description,
     this.salaryRange,
     this.contactEmail,
+    this.createdAt,
   });
 
   factory AlumniJob.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class AlumniJob {
       description: json['description']?.toString() ?? '',
       salaryRange: json['salaryRange']?.toString() ?? json['salary']?.toString(),
       contactEmail: json['contactEmail']?.toString() ?? json['email']?.toString(),
+      createdAt: json['createdAt']?.toString() ?? json['created_at']?.toString(),
     );
   }
 
@@ -48,6 +51,7 @@ class AlumniJob {
       'description': description,
       'salaryRange': salaryRange,
       'contactEmail': contactEmail,
+      if (createdAt != null) 'createdAt': createdAt,
     };
   }
 

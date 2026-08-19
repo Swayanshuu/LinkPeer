@@ -37,32 +37,39 @@ class JobsListScreen extends ConsumerWidget {
   }
 
   Future<void> _applyToJob(BuildContext context, AlumniJob job) async {
-    final email = job.contactEmail ?? 'alumni@igitalumni.in';
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: email,
-      queryParameters: {
-        'subject': 'Application for ${job.title} via Alumni Network',
-      },
-    );
+    final email = (job.contactEmail != null && job.contactEmail!.trim().isNotEmpty)
+        ? job.contactEmail!.trim()
+        : 'alumni@igitalumni.in';
+    final subject = 'Application for ${job.title} via Alumni Network';
+
+    final String mailtoUrl =
+        'mailto:$email?subject=${Uri.encodeComponent(subject)}';
+    final Uri mailtoUri = Uri.parse(mailtoUrl);
 
     try {
-      if (await canLaunchUrl(emailUri)) {
-        await launchUrl(emailUri, mode: LaunchMode.externalApplication);
-      } else {
-        if (context.mounted) {
-          CustomSnackBar.show(
-            context,
-            message: 'Could not launch email app for $email',
-            isError: true,
-          );
-        }
-      }
+      final bool launched = await launchUrl(
+        mailtoUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) return;
+    } catch (_) {}
+
+    try {
+      final bool launchedDefault = await launchUrl(mailtoUri);
+      if (launchedDefault) return;
+    } catch (_) {}
+
+    // Fallback: Launch Gmail web composer matching web portal behavior
+    try {
+      final Uri gmailWebUri = Uri.parse(
+        'https://mail.google.com/mail/?view=cm&fs=1&tf=cm&source=mailto&to=${Uri.encodeComponent(email)}&su=${Uri.encodeComponent(subject)}',
+      );
+      await launchUrl(gmailWebUri, mode: LaunchMode.externalApplication);
     } catch (e) {
       if (context.mounted) {
         CustomSnackBar.show(
           context,
-          message: 'Unable to open mail app: $e',
+          message: 'Unable to open mail app for $email',
           isError: true,
         );
       }

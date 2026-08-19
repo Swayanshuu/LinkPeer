@@ -15,8 +15,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:igit_connects/core/services/notification_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:app_links/app_links.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:igit_connects/features/broadcast/models/broadcast_model.dart';
 import 'package:igit_connects/features/broadcast/screens/broadcast_details_screen.dart';
 import 'package:igit_connects/screens/notifications/notification_screen.dart';

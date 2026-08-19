@@ -12,6 +12,7 @@ import 'package:igit_connects/features/notices/screens/notice_pdf_viewer_screen.
 import 'package:igit_connects/features/notices/screens/notice_image_viewer_screen.dart';
 import 'package:igit_connects/features/notices/screens/edit_notice_screen.dart';
 import 'package:igit_connects/shared_components/custom_snackbar.dart';
+import 'package:igit_connects/shared_components/hashtag_text.dart';
 
 class NoticeDetailsScreen extends ConsumerStatefulWidget {
   final String noticeId;
@@ -563,8 +564,9 @@ class _NoticeDetailsScreenState extends ConsumerState<NoticeDetailsScreen> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: colors.borderColor),
                     ),
-                    child: SelectableText(
-                      _notice!.content,
+                    child: HashtagText(
+                      text: _notice!.content,
+                      fontSize: 15,
                       style: TextStyle(
                         color: colors.primaryText,
                         fontSize: 15,

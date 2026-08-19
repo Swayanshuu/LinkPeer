@@ -95,8 +95,8 @@ For a deep dive into specific systems, refer to our technical documentation:
 | Feature              | Description                                                                                  |
 | -------------------- | -------------------------------------------------------------------------------------------- |
 | Google Sign-In       | One-tap OAuth 2.0 authentication — no password required                                      |
-| Alumni Opportunities | Native hub for Jobs & Internships + Alumni Events (Upcoming & Past archives)                 |
-| Official Notice Board| Verified announcements with priority alerts, multi-image galleries, and in-app streaming PDF reader |
+| Alumni Opportunities | Redesigned M3 CSE Alumni hub with cache-first architecture, live metrics, spotlight cards (Latest Opportunity & Upcoming Event), IGIT CSEA website banner, bottom AdMob banner, recent-first sorting, and pre-filled mail application launcher |
+| Official Notice Board| Verified announcements with cache-first feed, hashtag & URL link recognition (`HashtagText`), priority alerts, multi-image galleries, and in-app streaming PDF reader |
 | Push Notifications   | Event-driven, secure serverless push notifications via FCM and Supabase Edge Functions       |
 | Campus Feed          | Real-time post feed with filter tabs: All, Jobs, Announcements, Internships                  |
 | Post Composer        | Rich post creation — title, content, hashtag support, external links, file/image attachments |

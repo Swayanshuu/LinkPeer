@@ -8,12 +8,16 @@ class HashtagText extends StatefulWidget {
   final String text;
   final double fontSize;
   final TextStyle? style;
+  final int? maxLines;
+  final TextOverflow? overflow;
 
   const HashtagText({
     super.key,
     required this.text,
     this.fontSize = 14,
     this.style,
+    this.maxLines,
+    this.overflow,
   });
 
   @override
@@ -147,6 +151,8 @@ class _HashtagTextState extends State<HashtagText> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     return RichText(
+      maxLines: widget.maxLines,
+      overflow: widget.overflow ?? TextOverflow.clip,
       text: TextSpan(
         children: _buildSpans(colors),
       ),

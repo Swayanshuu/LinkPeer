@@ -13,6 +13,7 @@ import 'package:igit_connects/features/notices/services/notice_service.dart';
 import 'package:igit_connects/shared_components/custom_app_bar.dart';
 import 'package:igit_connects/shared_components/custom_snackbar.dart';
 import 'package:igit_connects/shared_components/custom_state_widgets.dart';
+import 'package:igit_connects/shared_components/hashtag_text.dart';
 
 class NoticeBoardScreen extends ConsumerStatefulWidget {
   const NoticeBoardScreen({super.key});
@@ -578,8 +579,9 @@ class _NoticeBoardScreenState extends ConsumerState<NoticeBoardScreen> {
                 const SizedBox(height: 8),
 
                 // Description Preview
-                Text(
-                  notice.content,
+                HashtagText(
+                  text: notice.content,
+                  fontSize: 14,
                   style: TextStyle(
                     color: colors.secondaryText,
                     fontSize: 14,

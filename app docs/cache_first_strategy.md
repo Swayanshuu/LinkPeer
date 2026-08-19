@@ -45,5 +45,7 @@ sequenceDiagram
 ## Applied Screens
 
 - **Home Screen (Posts)**: Loads last known feed immediately. Local state updates handle likes and bookmarks.
+- **Alumni Opportunities (Jobs & Events)**: `AlumniService` loads `cached_alumni_jobs` and `cached_alumni_events` from `SharedPreferences` for 0ms start & offline fallback.
+- **Notice Board System**: `NoticeService` loads `cached_notices_$catKey` from `SharedPreferences` for immediate notice list & detail rendering.
 - **Profile Screen**: Instantly shows user details before syncing with the backend.
 - **Notifications Screen**: Caches unread/read states locally, fetching new ones in the background.

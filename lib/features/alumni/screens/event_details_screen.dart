@@ -46,32 +46,40 @@ class EventDetailsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _contactOrganizer(BuildContext context, String email) async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: email,
-      queryParameters: {
-        'subject': 'Inquiry regarding Alumni Event: ${event.title}',
-      },
-    );
+  Future<void> _contactOrganizer(BuildContext context, String rawEmail) async {
+    final email = rawEmail.trim().isNotEmpty ? rawEmail.trim() : 'alumni@igitalumni.in';
+    final subject = 'Inquiry regarding Alumni Event: ${event.title}';
+    final body =
+        'Dear ${event.organizer},\n\nI am reaching out regarding the "${event.title}" event scheduled for ${event.formattedFullDate}.\n\nBest regards,';
+
+    final String mailtoUrl =
+        'mailto:$email?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
+    final Uri mailtoUri = Uri.parse(mailtoUrl);
 
     try {
-      if (await canLaunchUrl(emailUri)) {
-        await launchUrl(emailUri, mode: LaunchMode.externalApplication);
-      } else {
-        if (context.mounted) {
-          CustomSnackBar.show(
-            context,
-            message: 'Could not launch email app for $email',
-            isError: true,
-          );
-        }
-      }
+      final bool launched = await launchUrl(
+        mailtoUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) return;
+    } catch (_) {}
+
+    try {
+      final bool launchedDefault = await launchUrl(mailtoUri);
+      if (launchedDefault) return;
+    } catch (_) {}
+
+    // Fallback: Launch Gmail web composer in browser
+    try {
+      final Uri gmailWebUri = Uri.parse(
+        'https://mail.google.com/mail/?view=cm&fs=1&to=${Uri.encodeComponent(email)}&su=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
+      );
+      await launchUrl(gmailWebUri, mode: LaunchMode.externalApplication);
     } catch (e) {
       if (context.mounted) {
         CustomSnackBar.show(
           context,
-          message: 'Unable to open mail app: $e',
+          message: 'Unable to open mail app for $email',
           isError: true,
         );
       }

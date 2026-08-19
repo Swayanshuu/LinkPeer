@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:igit_connects/features/alumni/config/alumni_config.dart';
 import 'package:igit_connects/features/alumni/models/alumni_job_model.dart';
 import 'package:igit_connects/features/alumni/models/alumni_event_model.dart';
@@ -22,13 +23,78 @@ class AlumniService {
 
   AlumniService({http.Client? client}) : _client = client ?? http.Client();
 
-  /// Fetch all alumni jobs & internships purely from backend endpoints
+  /// Read cached alumni jobs immediately for instant UI display
+  Future<List<AlumniJob>> getCachedJobs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedStr = prefs.getString('cached_alumni_jobs');
+      if (cachedStr != null && cachedStr.isNotEmpty) {
+        final decoded = jsonDecode(cachedStr);
+        final jobs = AlumniJob.fromJsonList(decoded);
+        jobs.sort((a, b) {
+          if (a.createdAt != null && b.createdAt != null) {
+            try {
+              final dateA = DateTime.parse(a.createdAt!);
+              final dateB = DateTime.parse(b.createdAt!);
+              return dateB.compareTo(dateA);
+            } catch (_) {}
+          }
+          if (a.id != null && b.id != null) {
+            return b.id!.compareTo(a.id!);
+          }
+          return 0;
+        });
+        return jobs;
+      }
+    } catch (e) {
+      debugPrint('Cache read error for alumni jobs: $e');
+    }
+    return [];
+  }
+
+  /// Read cached alumni events immediately for instant UI display
+  Future<List<AlumniEvent>> getCachedEvents({bool isPast = false}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedStr = prefs.getString('cached_alumni_events');
+      if (cachedStr != null && cachedStr.isNotEmpty) {
+        final decoded = jsonDecode(cachedStr);
+        final events = AlumniEvent.fromJsonList(decoded);
+        final now = DateTime.now();
+        final todayStart = DateTime(now.year, now.month, now.day);
+        final filtered = events.where((e) {
+          if (e.date.isEmpty) return !isPast;
+          try {
+            final eventDate = DateTime.parse(e.date);
+            return isPast ? eventDate.isBefore(todayStart) : !eventDate.isBefore(todayStart);
+          } catch (_) {
+            return !isPast;
+          }
+        }).toList();
+
+        filtered.sort((a, b) {
+          if (a.date.isNotEmpty && b.date.isNotEmpty) {
+            try {
+              final dateA = DateTime.parse(a.date);
+              final dateB = DateTime.parse(b.date);
+              return isPast ? dateB.compareTo(dateA) : dateA.compareTo(dateB);
+            } catch (_) {}
+          }
+          return 0;
+        });
+        return filtered;
+      }
+    } catch (e) {
+      debugPrint('Cache read error for alumni events: $e');
+    }
+    return [];
+  }
+
+  /// Fetch all alumni jobs & internships with cache persistence and offline fallback
   Future<List<AlumniJob>> fetchJobs() async {
     final candidateEndpoints = [
       AlumniConfig.jobEndpoint,
       '${AlumniConfig.baseUrl}/jobs',
-      'https://cse-alumni-backend-ll88.onrender.com/api/jobs',
-      'https://cse-alumni-backend-ll88.onrender.com/api/projects/all',
     ];
 
     AlumniApiException? lastException;
@@ -47,9 +113,30 @@ class AlumniService {
         if (response.statusCode == 200) {
           final decoded = jsonDecode(response.body);
           final jobs = AlumniJob.fromJsonList(decoded);
-          if (jobs.isNotEmpty || url == candidateEndpoints.last) {
-            return jobs;
+          
+          // Persist to local cache for instant load
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('cached_alumni_jobs', response.body);
+          } catch (e) {
+            debugPrint('Cache write error for alumni jobs: $e');
           }
+
+          // Sort most recent jobs first (by createdAt descending or id descending)
+          jobs.sort((a, b) {
+            if (a.createdAt != null && b.createdAt != null) {
+              try {
+                final dateA = DateTime.parse(a.createdAt!);
+                final dateB = DateTime.parse(b.createdAt!);
+                return dateB.compareTo(dateA);
+              } catch (_) {}
+            }
+            if (a.id != null && b.id != null) {
+              return b.id!.compareTo(a.id!);
+            }
+            return 0;
+          });
+          return jobs;
         } else if (response.statusCode == 401 && url == candidateEndpoints.first) {
           lastException = AlumniApiException(
             'Unauthorized access. Please check key configuration.',
@@ -61,7 +148,7 @@ class AlumniService {
           'Backend server response timed out. The server on Render may be waking up, please tap retry.',
         );
       } on SocketException {
-        throw AlumniApiException(
+        lastException = AlumniApiException(
           'No internet connection. Please check your network and try again.',
         );
       } on FormatException catch (e) {
@@ -69,6 +156,13 @@ class AlumniService {
       } catch (e) {
         debugPrint('Error fetching jobs from ($url): $e');
       }
+    }
+
+    // Attempt cache fallback if network request fails or times out
+    final cached = await getCachedJobs();
+    if (cached.isNotEmpty) {
+      debugPrint('Returning ${cached.length} cached alumni jobs fallback');
+      return cached;
     }
 
     if (lastException != null) throw lastException;
@@ -129,19 +223,12 @@ class AlumniService {
     }
   }
 
-  /// Fetch alumni events (Upcoming or Past) purely from backend endpoints
+  /// Fetch alumni events (Upcoming or Past) with cache persistence and offline fallback
   Future<List<AlumniEvent>> fetchEvents({bool isPast = false}) async {
-    final candidateEndpoints = isPast
-        ? [
-            'https://cse-alumni-backend-ll88.onrender.com/api/events/past',
-            '${AlumniConfig.baseUrl}/events/past',
-          ]
-        : [
-            'https://cse-alumni-backend-ll88.onrender.com/api/events/upcoming',
-            AlumniConfig.eventEndpoint,
-            'https://cse-alumni-backend-ll88.onrender.com/api/events',
-            '${AlumniConfig.baseUrl}/events',
-          ];
+    final candidateEndpoints = [
+      AlumniConfig.eventEndpoint,
+      '${AlumniConfig.baseUrl}/events',
+    ];
 
     AlumniApiException? lastException;
 
@@ -159,9 +246,49 @@ class AlumniService {
         if (response.statusCode == 200) {
           final decoded = jsonDecode(response.body);
           final events = AlumniEvent.fromJsonList(decoded);
-          if (events.isNotEmpty || url == candidateEndpoints.last) {
-            return events;
+
+          // Persist to local cache for instant load
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('cached_alumni_events', response.body);
+          } catch (e) {
+            debugPrint('Cache write error for alumni events: $e');
           }
+
+          if (url == AlumniConfig.eventEndpoint) {
+            final now = DateTime.now();
+            final todayStart = DateTime(now.year, now.month, now.day);
+            final filtered = events.where((e) {
+              if (e.date.isEmpty) return !isPast;
+              try {
+                final eventDate = DateTime.parse(e.date);
+                if (isPast) {
+                  return eventDate.isBefore(todayStart);
+                } else {
+                  return !eventDate.isBefore(todayStart);
+                }
+              } catch (_) {
+                return !isPast;
+              }
+            }).toList();
+
+            filtered.sort((a, b) {
+              if (a.date.isNotEmpty && b.date.isNotEmpty) {
+                try {
+                  final dateA = DateTime.parse(a.date);
+                  final dateB = DateTime.parse(b.date);
+                  return isPast
+                      ? dateB.compareTo(dateA)
+                      : dateA.compareTo(dateB);
+                } catch (_) {}
+              }
+              return 0;
+            });
+
+            return filtered;
+          }
+
+          return events;
         } else if (response.statusCode == 401 && url == candidateEndpoints.first) {
           lastException = AlumniApiException(
             'Unauthorized access. Please check key configuration.',
@@ -173,7 +300,7 @@ class AlumniService {
           'Backend server response timed out. The server on Render may be waking up, please tap retry.',
         );
       } on SocketException {
-        throw AlumniApiException(
+        lastException = AlumniApiException(
           'No internet connection. Please check your network and try again.',
         );
       } on FormatException catch (e) {
@@ -181,6 +308,13 @@ class AlumniService {
       } catch (e) {
         debugPrint('Error fetching events from ($url): $e');
       }
+    }
+
+    // Attempt cache fallback if network request fails or times out
+    final cached = await getCachedEvents(isPast: isPast);
+    if (cached.isNotEmpty) {
+      debugPrint('Returning ${cached.length} cached alumni events fallback');
+      return cached;
     }
 
     if (lastException != null) throw lastException;
