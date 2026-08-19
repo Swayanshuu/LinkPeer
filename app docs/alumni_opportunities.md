@@ -132,10 +132,10 @@ lib/features/alumni/
 ### Secure Token & URL Configuration
 The Bearer Token (`ALUMNI_BEARER_TOKEN`) and Base URL (`ALUMNI_BASE_URL`) are loaded dynamically via `flutter_dotenv` from `.env`:
 ```env
-ALUMNI_BEARER_TOKEN=milan_cse_secure_sync_key_77077
-ALUMNI_BASE_URL=https://cse-alumni-backend-ll88.onrender.com/api/alumni/external
+ALUMNI_BEARER_TOKEN=your_secure_alumni_bearer_token
+ALUMNI_BASE_URL=https://your-backend-api-domain.com/api/alumni/external
 ```
-`AlumniConfig` utilizes runtime Base64 decoding (`utf8.decode(base64.decode(...))`) for fallbacks, ensuring zero plain-text raw keys exist in repository code.
+`AlumniConfig` utilizes runtime obfuscation fallbacks, ensuring zero plain-text raw keys or live credentials exist in repository code or public documentation.
 
 ### Endpoints
 
