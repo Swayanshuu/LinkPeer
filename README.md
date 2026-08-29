@@ -7,6 +7,10 @@
 <a href="https://play.google.com/store/apps/details?id=com.swynx.linkpeer">
   <img src="https://img.shields.io/badge/Download%20on-Google%20Play-34A853?style=for-the-badge&logo=google-play&logoColor=white" alt="Download on Google Play">
 </a>
+&nbsp;
+<a href="https://github.com/Swayanshuu/linkpeer-admin-cli">
+  <img src="https://img.shields.io/badge/Visit-LinkPeer%20Admin%20CLI-24292F?style=for-the-badge&logo=github&logoColor=white" alt="Visit LinkPeer Admin CLI">
+</a>
 
 **The official campus social platform for Indira Gandhi Institute of Technology, Sarang, Odisha.**  
 A full-stack Flutter mobile application connecting students, alumni, and faculty through a shared community feed, career opportunities, and campus announcements.
@@ -87,6 +91,7 @@ For a deep dive into specific systems, refer to our technical documentation:
 - [Share & Deep Linking Implementation](app%20docs/SHARE_FEATURE_IMPLEMENTATION.md): How URL shortening and deep linking work.
 - [Cache-First Strategy](app%20docs/cache_first_strategy.md): Background fetch pattern for zero-wait UX.
 - [Subscription Tiers](app%20docs/subscription.md): Breakdown of user tiers and limits (Free, Premium Lite, Premium Pro).
+- [LinkPeer Admin CLI](https://github.com/Swayanshuu/linkpeer-admin-cli): CLI-based administrative tool for platform analytics, moderation, faculty verification, transaction auditing, and CSV data exports.
 
 ---
 
